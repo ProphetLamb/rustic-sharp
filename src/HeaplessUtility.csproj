@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <LangVersion>9</LangVersion>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Title>HeaplessUtiliy</Title>
+    <Authors>ProphetLamb</Authors>
+    <Owners>ProphetLamb</Owners>
+    <Description>Commonly used utilties with minimal heap allocations.</Description>
+    <Copyright>Copyright (c) 2021 Prophet Lamb</Copyright>
+    <PackageProjectUrl>https://github.com/ProphetLamb/HeaplessUtiliy</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/ProphetLamb/HeaplessUtiliy.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <PackageTags>C#</PackageTags>
+    <Version>x.x.x</Version>
+  </PropertyGroup>
+
+</Project>

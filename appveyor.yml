@@ -1,0 +1,42 @@
+version: '0.1.{build}'
+
+cache:
+  - '%USERPROFILE%\.nuget\packages'
+  - C:\ProgramData\chocolatey\bin -> appveyor.yml
+  - C:\ProgramData\chocolatey\lib -> appveyor.yml
+
+environment:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+os: Visual Studio 2019
+
+init:
+  - ps: $Env:LABEL = "CI" + $Env:APPVEYOR_BUILD_NUMBER.PadLeft(5, "0")
+
+platform: Any CPU
+
+configuration:
+  - Debug
+
+before_build:
+  - dotnet restore
+  - nuget restore
+  - choco install opencover.portable
+  - choco install codecov
+
+build_script:
+  - dotnet build "src/" --no-dependencies --version-suffix %LABEL%
+  - dotnet build "tests/" --no-dependencies --version-suffix %LABEL%
+
+after_build:
+  - dotnet pack "src/" --no-build --version-suffix %LABEL% -o artifacts
+  - dotnet pack "tests/" --no-build --version-suffix %LABEL% -o artifacts
+  - dotnet publish "src/" --no-build --version-suffix %LABEL% -o artifacts\publish
+
+test_script:
+  - dotnet test "tests/" --no-build --no-restore --test-adapter-path:. --logger:"Appveyor;LogFilePath=./tests/overage.opencover.xml" /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+  - codecov -f "tests/coverage.opencover.xml"
+
+artifacts:
+  - path: tests\coverage*.xml
+  - path: artifacts\**\*.*
