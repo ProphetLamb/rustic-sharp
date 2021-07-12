@@ -20,9 +20,9 @@ namespace HeaplessUtility.DebuggerViews
             {
                 if (_writerRef.TryGetTarget(out PoolBufferWriter<T>? writer))
                 {
-                    if (writer._buffer != null)
+                    if (writer.RawStorage != null)
                     {
-                        var span = writer._buffer.AsSpan(0, writer.Count);
+                        var span = writer.RawStorage.AsSpan(0, writer.Count);
                         return span.ToArray();
                     }
 

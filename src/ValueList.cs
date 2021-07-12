@@ -12,30 +12,40 @@ namespace HeaplessUtility
     /// <summary>
     ///     Represents a strongly typed list of object that can be accessed by ref. Provides a similar interface as <see cref="List{T}"/>. 
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of items of the list.</typeparam>
     [DebuggerDisplay("{GetDebuggerDisplay(),nq}")]
-    public ref struct RefList<T>
+    public ref struct ValueList<T>
     {
         private T[]? _arrayToReturnToPool;
         private Span<T> _storage;
         private int _count;
 
-        public RefList(Span<T> initialBuffer)
+        /// <summary>
+        ///     Initializes a new list with a initial buffer.
+        /// </summary>
+        /// <param name="initialBuffer">The initial buffer.</param>
+        public ValueList(Span<T> initialBuffer)
         {
             _arrayToReturnToPool = null;
             _storage = initialBuffer;
             _count = 0;
         }
-
-        public RefList(int initialCapacity)
+        
+        /// <summary>
+        ///     Initializes a new list with a specified minimum initial capacity.
+        /// </summary>
+        /// <param name="initialMinimumCapacity">The minimum initial capacity.</param>
+        public ValueList(int initialMinimumCapacity)
         {
-            _arrayToReturnToPool = ArrayPool<T>.Shared.Rent(initialCapacity);
+            _arrayToReturnToPool = ArrayPool<T>.Shared.Rent(initialMinimumCapacity);
             _storage = _arrayToReturnToPool;
             _count = 0;
         }
-
+        
+        /// <inheritdoc cref="List{T}.Capacity"/>
         public int Capacity => _storage.Length;
 
+        /// <inheritdoc cref="List{T}.Count"/>
         public int Count
         {
             get => _count;
@@ -46,7 +56,11 @@ namespace HeaplessUtility
                 _count = value;
             }
         }
+            
+        /// <inheritdoc cref="Span{T}.IsEmpty"/>
+        public bool IsEmpty => 0 >= (uint)_count;
 
+        /// <inheritdoc cref="List{T}.this"/>
         public ref T this[int index]
         {
             get
@@ -56,7 +70,16 @@ namespace HeaplessUtility
             }
         }
 
-        public void EnsureCapacity(int capacity)
+        public ref T this[Index index] => ref _storage[index];
+
+        public ReadOnlySpan<T> this[Range range] => _storage[range];
+
+        /// <summary>
+        ///     Ensures that the list has a minimum capacity. 
+        /// </summary>
+        /// <param name="capacity">The minimum capacity.</param>
+        /// <returns>The new capacity.</returns>
+        public int EnsureCapacity(int capacity)
         {
             // This is not expected to be called this with negative capacity
             Debug.Assert(capacity >= 0);
@@ -66,6 +89,8 @@ namespace HeaplessUtility
             {
                 Grow(capacity - _count);
             }
+
+            return Capacity;
         }
 
         /// <summary>
@@ -77,37 +102,6 @@ namespace HeaplessUtility
         public ref T GetPinnableReference()
         {
             return ref MemoryMarshal.GetReference(_storage);
-        }
-
-        public override string ToString()
-        {
-            var s = _storage.Slice(0, _count).ToString();
-            Dispose();
-            return s;
-        }
-
-        private string GetDebuggerDisplay()
-        {
-            if (Count == 0)
-                return "Length = 0, Values = []";
-            StringBuilder sb = new(256);
-            sb.Append("Length = ").Append(_count);
-            sb.Append(", Values = [");
-
-            int last = _count - 1;
-            for (int i = 0; i < last; i++)
-            {
-                sb.Append(_storage[i]);
-                sb.Append(", ");
-            }
-
-            if (Count > 0)
-            {
-                sb.Append(_storage[last]);
-            }
-            
-            sb.Append(']');
-            return sb.ToString();
         }
 
         /// <summary>
@@ -122,12 +116,23 @@ namespace HeaplessUtility
         {
             return _storage.Slice(0, _count);
         }
-
+        
+        /// <summary>
+        ///     Returns a span around a portion of the contents of the list.
+        /// </summary>
+        /// <param name="start">The zero-based index of the first element.</param>
+        /// <returns>The span representing the content.</returns>
         public ReadOnlySpan<T> AsSpan(int start)
         {
             return _storage.Slice(start, _count - start);
         }
 
+        /// <summary>
+        ///     Returns a span around a portion of the contents of the list. 
+        /// </summary>
+        /// <param name="start">The zero-based index of the first element.</param>
+        /// <param name="length">The number of elements from the <paramref name="start"/>.</param>
+        /// <returns></returns>
         public ReadOnlySpan<T> AsSpan(int start, int length)
         {
             return _storage.Slice(start, length);
@@ -135,7 +140,7 @@ namespace HeaplessUtility
 
         /// <inheritdoc cref="List{T}.Add"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Add(T value)
+        public void Add(in T value)
         {
             int pos = _count;
 
@@ -163,7 +168,12 @@ namespace HeaplessUtility
             value.CopyTo(_storage.Slice(_count));
             _count += value.Length;
         }
-
+    
+        /// <summary>
+        ///     Appends a span to the list, and return the handle.
+        /// </summary>
+        /// <param name="length">The length of the span to add.</param>
+        /// <returns>The span appended to the list.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Span<T> AppendSpan(int length)
         {
@@ -178,19 +188,19 @@ namespace HeaplessUtility
         }
 
         /// <inheritdoc cref="List{T}.BinarySearch(T)"/>
-        public int BinarySearch(T item)
+        public int BinarySearch(in T item)
         {
             return _storage.BinarySearch(item, Comparer<T>.Default);
         }
 
         /// <inheritdoc cref="List{T}.BinarySearch(T, IComparer{T})"/>
-        public int BinarySearch(T item, IComparer<T> comparer)
+        public int BinarySearch(in T item, IComparer<T> comparer)
         {
             return _storage.BinarySearch(item, comparer);
         }
 
         /// <inheritdoc cref="List{T}.BinarySearch(int, int, T, IComparer{T})"/>
-        public int BinarySearch(int index, int count, T item, IComparer<T> comparer)
+        public int BinarySearch(int index, int count, in T item, IComparer<T> comparer)
         {
             return _storage.Slice(index, count).BinarySearch(item, comparer);
         }
@@ -211,7 +221,7 @@ namespace HeaplessUtility
         }
 
         /// <inheritdoc cref="List{T}.Contains"/>
-        public bool Contains(T item) => IndexOf(item, null) >= 0;
+        public bool Contains(in T item) => IndexOf(item, null) >= 0;
         
         /// <summary>
         ///     Determines whether an element is in the list.
@@ -219,7 +229,7 @@ namespace HeaplessUtility
         /// <param name="item">The object to locate in the list. The value can be null for reference types.</param>
         /// <param name="comparer">The comparer used to determine whether two items are equal.</param>
         /// <returns><see langword="true"/> if item is found in the list; otherwise, <see langword="false"/>.</returns>
-        public bool Contains(T item, IEqualityComparer<T>? comparer) => IndexOf(item, comparer) >= 0;
+        public bool Contains(in T item, IEqualityComparer<T>? comparer) => IndexOf(item, comparer) >= 0;
 
         /// <inheritdoc cref="Span{T}.CopyTo"/>
         public void CopyTo(Span<T> destination)
@@ -228,10 +238,10 @@ namespace HeaplessUtility
         }
         
         /// <inheritdoc cref="IList{T}.IndexOf"/>
-        public int IndexOf(T item) => IndexOf(item, null);
+        public int IndexOf(in T item) => IndexOf(item, null);
 
         /// <inheritdoc cref="IList{T}.IndexOf"/>
-        public int IndexOf(T item, IEqualityComparer<T>? comparer)
+        public int IndexOf(in T item, IEqualityComparer<T>? comparer)
         {
             if (comparer == null)
             {
@@ -247,40 +257,28 @@ namespace HeaplessUtility
 
                         return i;
                     }
-                }
-                else
-                {
-                    comparer = EqualityComparer<T>.Default;
-                    
-                    for (int i = 0; i < _count; i++)
-                    {
-                        if (!comparer.Equals(item, _storage[i]))
-                        {
-                            continue;
-                        }
 
-                        return i;
-                    }
+                    return -1;
                 }
+                
+                comparer = EqualityComparer<T>.Default;
             }
-            else
+            
+            for (int i = 0; i < _count; i++)
             {
-                for (int i = 0; i < _count; i++)
+                if (!comparer.Equals(item, _storage[i]))
                 {
-                    if (!comparer.Equals(item, _storage[i]))
-                    {
-                        continue;
-                    }
-
-                    return i;
+                    continue;
                 }
+
+                return i;
             }
 
             return -1;
         }
 
         /// <inheritdoc cref="List{T}.Insert"/>
-        public void Insert(int index, T value)
+        public void Insert(int index, in T value)
         {
             if (_count > _storage.Length - 1)
             {
@@ -300,8 +298,16 @@ namespace HeaplessUtility
             {
                 ThrowHelper.ThrowArgumentOutOfRangeException_LessZero(ExceptionArgument.index);
             }
+            if (index > _count)
+            {
+                ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.index, index);
+            }
 
             int count = span.Length;
+            if (count == 0)
+            {
+                return;
+            }
 
             if (_count > _storage.Length - count)
             {
@@ -315,10 +321,10 @@ namespace HeaplessUtility
         }
         
         /// <inheritdoc cref="List{T}.LastIndexOf(T)"/>
-        public int LastIndexOf(T item) => LastIndexOf(item, null);
+        public int LastIndexOf(in T item) => LastIndexOf(item, null);
 
         /// <inheritdoc cref="List{T}.LastIndexOf(T)"/>
-        public int LastIndexOf(T item, IEqualityComparer<T>? comparer)
+        public int LastIndexOf(in T item, IEqualityComparer<T>? comparer)
         {
             if (comparer == null)
             {
@@ -334,43 +340,31 @@ namespace HeaplessUtility
 
                         return i;
                     }
-                }
-                else
-                {
-                    comparer = EqualityComparer<T>.Default;
-                    
-                    for (int i = _count - 1; i >= 0; i--)
-                    {
-                        if (!comparer.Equals(item, _storage[i]))
-                        {
-                            continue;
-                        }
 
-                        return i;
-                    }
+                    return -1;
                 }
+                
+                comparer = EqualityComparer<T>.Default;
             }
-            else
+            
+            for (int i = _count - 1; i >= 0; i--)
             {
-                for (int i = _count - 1; i >= 0; i--)
+                if (!comparer.Equals(item, _storage[i]))
                 {
-                    if (!comparer.Equals(item, _storage[i]))
-                    {
-                        continue;
-                    }
-
-                    return i;
+                    continue;
                 }
+
+                return i;
             }
 
             return -1;
         }
 
         /// <inheritdoc cref="List{T}.Remove"/>
-        public bool Remove(T item) => Remove(item, null);
+        public bool Remove(in T item) => Remove(item, null);
 
         /// <inheritdoc cref="List{T}.Remove"/>
-        public bool Remove(T item, IEqualityComparer<T>? comparer)
+        public bool Remove(in T item, IEqualityComparer<T>? comparer)
         {
             int index = IndexOf(item, comparer);
             if (index >= 0)
@@ -410,60 +404,72 @@ namespace HeaplessUtility
         }
 
         /// <inheritdoc cref="List{T}.Reverse()"/>
-        public void Reverse() => _storage.Reverse();
+        public void Reverse() => _storage.Slice(0, _count).Reverse();
 
         /// <inheritdoc cref="List{T}.Reverse(int, int)"/>
-        public void Reverse(int start, int count) => _storage.Slice(start, count).Reverse();
+        public void Reverse(int start, int count)
+        {
+            if ((uint)start >= (uint)_count)
+            {
+                ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.start, start);
+            }
+            if (count < 0)
+            {
+                ThrowHelper.ThrowArgumentOutOfRangeException_LessZero(ExceptionArgument.count);
+            }
+            if (_count - start < count)
+            {
+                ThrowHelper.ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument.value);
+            }
+            _storage.Slice(start, count).Reverse();
+        }
 
         /// <inheritdoc cref="List{T}.Sort()"/>
         public void Sort()
         {
-            _storage.Sort();
+            _storage.Slice(0, _count).Sort();
         }
 
         /// <inheritdoc cref="List{T}.Sort(Comparison{T})"/>
         public void Sort(Comparison<T> comparison)
         {
-            _storage.Sort(comparison);
+            _storage.Slice(0, _count).Sort(comparison);
         }
 
         /// <inheritdoc cref="List{T}.Sort(IComparer{T})"/>
         public void Sort(IComparer<T> comparer)
         {
-            _storage.Sort(comparer);
+            _storage.Slice(0, _count).Sort(comparer);
         }
 
         /// <inheritdoc cref="List{T}.Sort(int, int, IComparer{T})"/>
         public void Sort(int start, int count, IComparer<T> comparer)
         {
-            _storage.Slice(start, count).Sort(comparer);
-        }
-        
-        /// <inheritdoc cref="Span{T}.TryCopyTo"/>
-        public bool TryCopyTo(Span<T> destination, out int charsWritten)
-        {
-            if (_storage.Slice(0, _count).TryCopyTo(destination))
+            if ((uint)start >= (uint)_count)
             {
-                charsWritten = _count;
-                Dispose();
-                return true;
+                ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.start, start);
             }
-
-            charsWritten = 0;
-            Dispose();
-            return false;
+            if (count < 0)
+            {
+                ThrowHelper.ThrowArgumentOutOfRangeException_LessZero(ExceptionArgument.count);
+            }
+            if (_count - start < count)
+            {
+                ThrowHelper.ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument.value);
+            }
+            _storage.Slice(start, count).Sort(comparer);
         }
 
         /// <inheritdoc cref="Span{T}.ToArray"/>
         public T[] ToArray()
         {
             T[] array = new T[_count];
-            _storage.CopyTo(array.AsSpan());
+            _storage.Slice(0, _count).CopyTo(array.AsSpan());
             return array;
         }
         
         /// <summary>
-        /// Creates a <see cref="List{T}"/> from a <see cref="RefList{T}"/>.
+        /// Creates a <see cref="List{T}"/> from a <see cref="ValueList{T}"/>.
         /// </summary>
         /// <returns>A <see cref="List{T}"/> that contains elements form the input sequence.</returns>
         public List<T> ToList()
@@ -477,8 +483,19 @@ namespace HeaplessUtility
             return list;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Dispose()
+        {
+            T[]? toReturn = _arrayToReturnToPool;
+            this = default; // for safety, to avoid using pooled array if this instance is erroneously appended to again
+            if (toReturn != null)
+            {
+                ArrayPool<T>.Shared.Return(toReturn);
+            }
+        }
+
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void GrowAndAppend(T value)
+        private void GrowAndAppend(in T value)
         {
             Grow(1);
             Add(value);
@@ -499,7 +516,7 @@ namespace HeaplessUtility
             Debug.Assert(_count > _storage.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
 
             // Make sure to let Rent throw an exception if the caller has a bug and the desired capacity is negative
-            T[]? poolArray = ArrayPool<T>.Shared.Rent((int) Math.Max((uint) (_count + additionalCapacityBeyondPos), (uint) _storage.Length * 2));
+            T[] poolArray = ArrayPool<T>.Shared.Rent((int) Math.Max((uint) (_count + additionalCapacityBeyondPos), (uint) _storage.Length * 2));
 
             _storage.Slice(0, _count).CopyTo(poolArray);
 
@@ -511,14 +528,83 @@ namespace HeaplessUtility
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Dispose()
+        private string GetDebuggerDisplay()
         {
-            T[]? toReturn = _arrayToReturnToPool;
-            this = default; // for safety, to avoid using pooled array if this instance is erroneously appended to again
-            if (toReturn != null)
+            if (Count == 0)
+                return "Length = 0, Values = []";
+            StringBuilder sb = new(256);
+            sb.Append("Length = ").Append(_count);
+            sb.Append(", Values = [");
+            if (Count < 10)
             {
-                ArrayPool<T>.Shared.Return(toReturn);
+                int last = _count - 1;
+                for (int i = 0; i < last; i++)
+                {
+                    sb.Append(_storage[i]);
+                    sb.Append(", ");
+                }
+
+                if (Count > 0)
+                {
+                    sb.Append(_storage[last]);
+                }
+            }
+            else
+            {
+                sb.Append("...");
+            }
+            sb.Append(']');
+            return sb.ToString();
+        }
+
+        public Enumerator GetEnumerator() => new(this);
+
+        /// <summary>Enumerates the elements of a <see cref="ValueList{T}"/>.</summary>
+        public ref struct Enumerator
+        {
+            private readonly ValueList<T> _list;
+            private int _index;
+            
+            /// <summary>Initialize the enumerator.</summary>
+            /// <param name="list">The list to enumerate.</param>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Enumerator(ValueList<T> list)
+            {
+                _list = list;
+                _index = -1;
+            }
+
+            /// <summary>Advances the enumerator to the next element of the span.</summary>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool MoveNext()
+            {
+                int index = _index + 1;
+                if ((uint)index < (uint)_list.Count)
+                {
+                    _index = index;
+                    return true;
+                }
+
+                return false;
+            }
+
+            /// <summary>Gets the element at the current position of the enumerator.</summary>
+            public ref readonly T Current
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => ref _list[_index];
+            }
+
+            /// <summary>Resets the enumerator to the initial state.</summary>
+            public void Reset()
+            {
+                _index = -1;
+            }
+
+            /// <summary>Disposes the enumerator.</summary>
+            public void Dispose()
+            {
+                this = default;
             }
         }
     }

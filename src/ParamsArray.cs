@@ -159,7 +159,7 @@ namespace HeaplessUtility
             {
                 if ((uint) index >= _length)
                 {
-                    ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.index);
+                    ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.index, index);
                 }
                 
                 return index switch

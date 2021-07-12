@@ -46,7 +46,7 @@ namespace HeaplessUtility
             {
                 if ((uint)value >= (uint)_source.Length)
                 {
-                    ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.value);
+                    ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.value, value);
                 }
                 
                 if (value >= _index)
@@ -145,7 +145,7 @@ namespace HeaplessUtility
         {
             if ((uint)position >= (uint)_source.Length)
             {
-                ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.position);
+                ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.position, position);
             }
 
             int head = Head;

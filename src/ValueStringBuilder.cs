@@ -9,7 +9,7 @@ namespace HeaplessUtility
 {
     // Source: https://source.dot.net/System.Private.CoreLib/ValueStringBuilder.cs.html
     [DebuggerDisplay("{GetDebuggerDisplay(),nq}")]
-    internal ref struct ValueStringBuilder
+    public ref struct ValueStringBuilder
     {
         private char[]? _arrayToReturnToPool;
         private Span<char> _chars;

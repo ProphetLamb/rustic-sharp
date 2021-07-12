@@ -47,7 +47,7 @@ namespace HeaplessUtility
         IReadOnlyList<T>,
         IDisposable
     {
-        internal T[]? _buffer;
+        private T[]? _buffer;
         private readonly int _minimumCapacity;
         private int _index;
 
@@ -67,6 +67,8 @@ namespace HeaplessUtility
             _minimumCapacity = initialCapacity;
             _index = 0;
         }
+
+        internal T[]? RawStorage => _buffer; 
 
         /// <inheritdoc cref="IReadOnlyList{T}.Count" />
         public int Count => _index;
@@ -256,7 +258,7 @@ namespace HeaplessUtility
 
             if (array.Length - arrayIndex < Count)
             {
-                ThrowHelper.ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument.array, Count);
+                ThrowHelper.ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument.array);
             }
 
             if (_buffer != null)

@@ -42,14 +42,14 @@ namespace HeaplessUtility
             {
                 if (array.Length - offset > count)
                 {
-                    ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.array);
+                    ThrowHelper.ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument.array);
                 }
             }
             else
             {
                 if (offset != 0 || count != 0)
                 {
-                    ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.array);
+                    ThrowHelper.ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument.array);
                 }
             }
 
@@ -93,7 +93,7 @@ namespace HeaplessUtility
             {
                 if ((uint) index >= (uint)_count)
                 {
-                    ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.index);
+                    ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.index, index);
                 }
 
                 return ref _array![_offset + index];
@@ -108,7 +108,7 @@ namespace HeaplessUtility
             {
                 if ((uint) index >= (uint)_count)
                 {
-                    ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.index);
+                    ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.index, index);
                 }
 
                 return _array![_offset + index];

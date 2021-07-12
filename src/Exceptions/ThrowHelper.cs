@@ -40,9 +40,21 @@ namespace HeaplessUtility.Exceptions
         }
 
         [DoesNotReturn]
-        public static void ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument argument)
+        public static void ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument argument, int index)
         {
-            throw new ArgumentOutOfRangeException(GetArgumentName(argument), "The index is outside of the range of the array.");
+            throw new ArgumentOutOfRangeException(GetArgumentName(argument), $"The index {index} is outside of the range of the array.");
+        }
+
+        [DoesNotReturn]
+        public static void ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument argument)
+        {
+            throw new ArgumentException("To array has insufficient capacity.", GetArgumentName(argument));
+        }
+
+        [DoesNotReturn]
+        public static void ThrowArgumentException_CollectionEmpty(ExceptionArgument argument)
+        {
+            throw new ArgumentException("The collection cannot be empty.", GetArgumentName(argument));
         }
 
         public static void ThrowIfObjectDisposed([DoesNotReturnIf(true)] bool disposed)
@@ -83,18 +95,6 @@ namespace HeaplessUtility.Exceptions
         public static void ThrowArgumentOutOfRangeException_UnderMin(ExceptionArgument argument, object? value, object? minimum)
         {
             throw new ArgumentOutOfRangeException(GetArgumentName(argument), $"The value {value} cannot be less then the minimum {minimum}.");
-        }
-
-        [DoesNotReturn]
-        public static void ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument argument, int index)
-        {
-            throw new ArgumentException($"The index {index} is outside the of the array ", GetArgumentName(argument));
-        }
-
-        [DoesNotReturn]
-        public static void ThrowArgumentException_CollectionEmpty(ExceptionArgument argument)
-        {
-            throw new ArgumentException("The collection cannot be empty.", GetArgumentName(argument));
         }
     }
 
