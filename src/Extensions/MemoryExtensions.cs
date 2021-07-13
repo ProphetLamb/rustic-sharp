@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using HeaplessUtility.Exceptions;
+using HeaplessUtility.Helpers;
 
 namespace HeaplessUtility
 {
@@ -119,5 +121,33 @@ namespace HeaplessUtility
             // The internal spans are not the same, but are present, so the operation is always cheap.
             return span.ToSpan(true).SequenceEqual(other.ToSpan(true));
         }
+
+#if !NET50_OR_GREATER
+        
+        public static void Sort<T>(this Span<T> span)
+        {
+            Sort(span, Comparer<T>.Default.Compare);
+        }
+
+        public static void Sort<T>(this Span<T> span, IComparer<T> comparer)
+        {
+            if (span.Length > 1)
+            {
+                SpanSortHelper<T>.Sort(span, comparer.Compare);
+            }
+        }
+
+        public static void Sort<T>(this Span<T> span, Comparison<T>? comparison)
+        {
+            if (comparison == null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.comparison);
+            }
+            if (span.Length > 1)
+            {
+                SpanSortHelper<T>.Sort(span, comparison);
+            }
+        }
+#endif
     }
 }

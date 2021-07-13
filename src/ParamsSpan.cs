@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using System.Text;
 using HeaplessUtility.Exceptions;
@@ -305,7 +306,7 @@ namespace HeaplessUtility
             return new ReadOnlySpan<T>(array!, 0, _length);
         }
 
-        public string GetDebuggerDisplay()
+        private string GetDebuggerDisplay()
         {
             StringBuilder sb = new();
             sb.Append("Length = ");
@@ -328,6 +329,8 @@ namespace HeaplessUtility
             return sb.ToString();
         }
 
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Enumerator GetEnumerator() => new(this);
 
         /// <summary>Enumerates the elements of a <see cref="ParamsSpan{T}"/>.</summary>

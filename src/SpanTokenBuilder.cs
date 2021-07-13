@@ -7,7 +7,7 @@ using HeaplessUtility.Exceptions;
 namespace HeaplessUtility
 {
     /// <summary>
-    ///     Tokenizes a sequence, for use in lexer & parser state machines.
+    ///     Tokenizes a sequence, for use in lexer &amp; parser state machines.
     /// </summary>
     /// <typeparam name="T">The type of an element of the span.</typeparam>
     /// <remarks>
@@ -40,6 +40,7 @@ namespace HeaplessUtility
         /// </summary>
         public int Head
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _index + _tokenLength;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
@@ -60,7 +61,8 @@ namespace HeaplessUtility
                 }
             }
         }
-
+        
+        /// <inheritdoc cref="Span{T}.Length"/>
         public int Length => _source.Length;
 
         /// <summary>
@@ -118,14 +120,15 @@ namespace HeaplessUtility
             _tokenLength = _source.Length - _index;
             return false;
         }
-
+        
+        /// <inheritdoc cref="IDisposable.Dispose"/>
         public void Dispose()
         {
             this = default;
         }
 
         /// <summary>
-        ///     Returns & clears the <see cref="Token"/>, and moves the iterator to the first element after the token.
+        ///     Returns &amp; clears the <see cref="Token"/>, and moves the iterator to the first element after the token.
         /// </summary>
         /// <returns>The span representing the token.</returns>
         public ReadOnlySpan<T> FinalizeToken()
@@ -135,12 +138,19 @@ namespace HeaplessUtility
             _tokenLength = 0;
             return token;
         }
-
+        
+        /// <summary>
+        ///     Resets teh builder to the initial state.
+        /// </summary>
         public void Reset()
         {
             Head = 0;
         }
-
+            
+        /// <summary>
+        ///     Advances the <see cref="Head"/> to a specific <paramref name="position"/>, always consumes elements.
+        /// </summary>
+        /// <param name="position">The target position</param>
         public void Advance(int position)
         {
             if ((uint)position >= (uint)_source.Length)
@@ -189,6 +199,7 @@ namespace HeaplessUtility
         /// </summary>
         /// <param name="expectedSequence">The sequence of elements.</param>
         /// <returns><see langword="true"/> if the following elements are equal to the sequence of elements; otherwise, <see langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool ReadNextSequence(in ReadOnlySpan<T> expectedSequence)
         {
             bool success = PeekNextSequence(expectedSequence, out int head);
@@ -201,6 +212,7 @@ namespace HeaplessUtility
         /// </summary>
         /// <param name="expectedSequence">The sequence of elements.</param>
         /// <returns><see langword="true"/> if the following elements are equal to the sequence of elements; otherwise, <see langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryReadNextSequence(in ReadOnlySpan<T> expectedSequence)
         {
             if (PeekNextSequence(expectedSequence, out int head))
@@ -287,6 +299,7 @@ namespace HeaplessUtility
         /// </summary>
         /// <param name="expectedSequence">The sequence of elements.</param>
         /// <returns><see langword="true"/> if the remaining elements contain the sequence of elements; otherwise, <see langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryReadSequence(in ReadOnlySpan<T> expectedSequence)
         {
             if (PeekSequence(expectedSequence, out int head))

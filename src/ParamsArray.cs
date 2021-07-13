@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using HeaplessUtility.Exceptions;
 
@@ -155,6 +156,7 @@ namespace HeaplessUtility
 
         public T this[int index]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 if ((uint) index >= _length)
@@ -171,22 +173,6 @@ namespace HeaplessUtility
                     _ => _params[index],
                 };
             }
-        }
-
-        [Obsolete]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public override bool Equals(object? obj)
-        {
-            ThrowHelper.ThrowNotSupportedException();
-            return default!; // unreachable.
-        }
-
-        [Obsolete]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public override int GetHashCode()
-        {
-            ThrowHelper.ThrowNotSupportedException();
-            return default!; // unreachable.
         }
 
         public void CopyTo(Span<T> destination)
@@ -246,10 +232,26 @@ namespace HeaplessUtility
                     break;
             }
         }
+        
+        public bool Equals(ParamsArray<T> other)
+        {
+            return this == other;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is ParamsArray<T> other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
 
         /// <summary>
         ///     Returns <see langword="false"/> if left and right point at the same memory and have the same length.  Note that
-        ///     this does *not* check to see if the *contents* are equal.
+        ///     this does *not* necessarily check to see if the *contents* are equal.
         /// </summary>
         public static bool operator ==(ParamsArray<T> left, ParamsArray<T> right)
         {
@@ -277,11 +279,13 @@ namespace HeaplessUtility
 
         /// <summary>Retrieves the backing span of the <see cref="ParamsArray{T}"/> or allocates a array which is returned as a span.</summary>
         /// <returns>The span containing all items.</returns>
+        [Pure]
         public ReadOnlySpan<T> ToSpan() => ToSpan(false);
         
         /// <summary>Returns the span representation of the <see cref="ParamsArray{T}"/>.</summary>
         /// <param name="onlyIfCheap">Whether return an empty span instead of allocating an array, if no span is backing the <see cref="ParamsArray{T}"/>.</param>
         /// <returns>The span containing all items.</returns>
+        [Pure]
         public ReadOnlySpan<T> ToSpan(bool onlyIfCheap)
         {
             if (onlyIfCheap || IsEmpty || _params.Count > 0)
@@ -306,7 +310,7 @@ namespace HeaplessUtility
             return new ReadOnlySpan<T>(array, 0, _length);
         }
 
-        public string GetDebuggerDisplay()
+        private string GetDebuggerDisplay()
         {
             ValueStringBuilder vsb = new(stackalloc char[256]);
             vsb.Append("Length = ");
@@ -329,6 +333,9 @@ namespace HeaplessUtility
             return vsb.ToString();
         }
 
+        /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Enumerator GetEnumerator() => new(this);
 
         IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();

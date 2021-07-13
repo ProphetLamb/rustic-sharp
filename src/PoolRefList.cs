@@ -3,6 +3,7 @@ using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using System.Text;
 using HeaplessUtility.DebuggerViews;
@@ -16,39 +17,42 @@ namespace HeaplessUtility
     /// <typeparam name="T">The type of items of the list.</typeparam>
     [DebuggerDisplay("{GetDebuggerDisplay(),nq}")]
     [DebuggerTypeProxy(typeof(IReadOnlyCollectionDebugView<>))]
-    public class PoolBoundRefList<T> :
+    public class PoolRefList<T> :
         IReadOnlyCollection<T>,
         IDisposable
     {
         private T[]? _storage;
         private int _count;
-        private bool _isPoolBound;
+        private bool _isHeapBound;
 
-        public PoolBoundRefList()
+        /// <summary>
+        ///     Initializes a new list.
+        /// </summary>
+        public PoolRefList()
         {
-            _isPoolBound = true;
+            
         }
 
         /// <summary>
         ///     Initializes a new list with a initial buffer.
         /// </summary>
         /// <param name="initialBuffer">The initial buffer.</param>
-        public PoolBoundRefList(T[] initialBuffer)
+        public PoolRefList(T[] initialBuffer)
         {
             _storage = initialBuffer;
             _count = 0;
-            _isPoolBound = true;
+            _isHeapBound = false;
         }
         
         /// <summary>
         ///     Initializes a new list with a specified minimum initial capacity.
         /// </summary>
         /// <param name="initialMinimumCapacity">The minimum initial capacity.</param>
-        public PoolBoundRefList(int initialMinimumCapacity)
+        public PoolRefList(int initialMinimumCapacity)
         {
             _storage = ArrayPool<T>.Shared.Rent(initialMinimumCapacity);
             _count = 0;
-            _isPoolBound = true;
+            _isHeapBound = false;
         }
         
         /// <inheritdoc cref="List{T}.Capacity"/>
@@ -72,21 +76,29 @@ namespace HeaplessUtility
                 _count = value;
             }
         }
-
+        
+        /// <summary>
+        ///     Defines whether the list is bound to the shared array-pool or not.
+        /// </summary>
+        /// <remarks>
+        ///     If changed to false, releases the array from the pool.
+        /// <br/>
+        ///     If changed to true, draws the array from the pool on the next resize.
+        /// </remarks>
         public bool IsPoolBound
         {
-            get => _isPoolBound;
+            get => !_isHeapBound;
             set
             {
-                if (_isPoolBound && !value && _storage != null)
+                if (!(_isHeapBound || value || _storage == null))
                 {
-                    T[] storage = new T[Math.Max(16, (uint)_count)];
+                    T[] storage = new T[Math.Max(16, (uint) _count)];
                     Array.Copy(_storage, 0, storage, 0, _count);
                     ArrayPool<T>.Shared.Return(_storage);
                     _storage = storage;
                 }
 
-                _isPoolBound = value;
+                _isHeapBound = value;
             }
         }
 
@@ -101,6 +113,7 @@ namespace HeaplessUtility
         /// <inheritdoc cref="List{T}.this"/>
         public ref T this[int index]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 ThrowHelper.ThrowIfObjectNotInitialized(_storage == null);
@@ -109,8 +122,10 @@ namespace HeaplessUtility
             }
         }
 
+#if NET50_OR_GREATER || NETCOREAPP3_1
         public ref T this[Index index]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 ThrowHelper.ThrowIfObjectNotInitialized(_storage == null);
@@ -118,14 +133,18 @@ namespace HeaplessUtility
             }
         }
 
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ReadOnlySpan<T> this[Range range]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 ThrowHelper.ThrowIfObjectNotInitialized(_storage == null);
                 return _storage[range];
             }
         }
+#endif
 
         /// <summary>
         ///     Ensures that the list has a minimum capacity. 
@@ -146,9 +165,9 @@ namespace HeaplessUtility
             return Capacity;
         }
 
+#if NET50_OR_GREATER || NETCOREAPP3_1
         /// <summary>
         ///     Get a pinnable reference to the list.
-        ///     Does not ensure there is a null T after <see cref="Count" />
         ///     This overload is pattern matched in the C# 7.3+ compiler so you can omit
         ///     the explicit method call, and write eg "fixed (T* c = list)"
         /// </summary>
@@ -162,10 +181,11 @@ namespace HeaplessUtility
 
             return ref ret;
         }
-
+#endif
         /// <summary>
         ///     Returns a span around the contents of the list.
         /// </summary>
+        [Pure]
         public ReadOnlySpan<T> AsSpan()
         {
             return new(_storage, 0, _count);
@@ -176,6 +196,7 @@ namespace HeaplessUtility
         /// </summary>
         /// <param name="start">The zero-based index of the first element.</param>
         /// <returns>The span representing the content.</returns>
+        [Pure]
         public ReadOnlySpan<T> AsSpan(int start)
         {
             return new(_storage, start, _count - start);
@@ -187,6 +208,7 @@ namespace HeaplessUtility
         /// <param name="start">The zero-based index of the first element.</param>
         /// <param name="length">The number of elements from the <paramref name="start"/>.</param>
         /// <returns></returns>
+        [Pure]
         public ReadOnlySpan<T> AsSpan(int start, int length)
         {
             return new(_storage, start, length);
@@ -252,6 +274,7 @@ namespace HeaplessUtility
         }
 
         /// <inheritdoc cref="List{T}.BinarySearch(T, IComparer{T})"/>
+        [Pure]
         public int BinarySearch(in T item, IComparer<T> comparer)
         {
             if (_storage == null)
@@ -262,6 +285,7 @@ namespace HeaplessUtility
         }
 
         /// <inheritdoc cref="List{T}.BinarySearch(int, int, T, IComparer{T})"/>
+        [Pure]
         public int BinarySearch(int index, int count, in T item, IComparer<T> comparer)
         {
             if (_storage == null)
@@ -282,6 +306,8 @@ namespace HeaplessUtility
         }
 
         /// <inheritdoc cref="List{T}.Contains"/>
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(in T item) => IndexOf(item, null) >= 0;
         
         /// <summary>
@@ -290,6 +316,8 @@ namespace HeaplessUtility
         /// <param name="item">The object to locate in the list. The value can be null for reference types.</param>
         /// <param name="comparer">The comparer used to determine whether two items are equal.</param>
         /// <returns><see langword="true"/> if item is found in the list; otherwise, <see langword="false"/>.</returns>
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(in T item, IEqualityComparer<T>? comparer) => IndexOf(item, comparer) >= 0;
 
         /// <inheritdoc cref="Span{T}.CopyTo"/>
@@ -308,9 +336,12 @@ namespace HeaplessUtility
         }
         
         /// <inheritdoc cref="IList{T}.IndexOf"/>
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int IndexOf(in T item) => IndexOf(item, null);
 
         /// <inheritdoc cref="IList{T}.IndexOf"/>
+        [Pure]
         public int IndexOf(in T item, IEqualityComparer<T>? comparer)
         {
             if (_storage == null)
@@ -396,9 +427,12 @@ namespace HeaplessUtility
         }
         
         /// <inheritdoc cref="List{T}.LastIndexOf(T)"/>
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int LastIndexOf(in T item) => LastIndexOf(item, null);
 
         /// <inheritdoc cref="List{T}.LastIndexOf(T)"/>
+        [Pure]
         public int LastIndexOf(in T item, IEqualityComparer<T>? comparer)
         {
             if (_storage == null)
@@ -566,7 +600,8 @@ namespace HeaplessUtility
 
             return list;
         }
-
+        
+        /// <inheritdoc cref="IDisposable.Dispose"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Dispose()
         {
@@ -599,7 +634,7 @@ namespace HeaplessUtility
         {
             Debug.Assert(additionalCapacityBeyondPos > 0);
 
-            if (_isPoolBound)
+            if (!_isHeapBound)
             {
                 if (_storage != null)
                 {
@@ -646,22 +681,24 @@ namespace HeaplessUtility
             return sb.ToString();
         }
 
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Enumerator GetEnumerator() => new(this);
 
         IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        /// <summary>Enumerates the elements of a <see cref="PoolBoundRefList{T}"/>.</summary>
+        /// <summary>Enumerates the elements of a <see cref="PoolRefList{T}"/>.</summary>
         public struct Enumerator : IEnumerator<T>
         {
-            private readonly PoolBoundRefList<T> _list;
+            private readonly PoolRefList<T> _list;
             private int _index;
             
             /// <summary>Initialize the enumerator.</summary>
             /// <param name="list">The list to enumerate.</param>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public Enumerator(PoolBoundRefList<T> list)
+            public Enumerator(PoolRefList<T> list)
             {
                 _list = list;
                 _index = -1;

@@ -96,10 +96,29 @@ namespace HeaplessUtility.Exceptions
         {
             throw new ArgumentOutOfRangeException(GetArgumentName(argument), $"The value {value} cannot be less then the minimum {minimum}.");
         }
+
+        [DoesNotReturn]
+        public static void ThrowArgumentException_BadComparer(object comparer)
+        {
+            throw new ArgumentException($"Bad comparer {comparer}");
+        }
+
+        [DoesNotReturn]
+        public static void ThrowInvalidOperationException(string message, Exception exception)
+        {
+            throw new InvalidOperationException(message, exception);
+        }
+
+        [DoesNotReturn]
+        public static void ThrowArgumentNullException(ExceptionArgument comparison)
+        {
+            throw new ArgumentNullException(GetArgumentName(comparison), "The value cannot be null or default.");
+        }
     }
 
     internal enum ExceptionArgument
     {
+// ReSharper disable InconsistentNaming
         index,
         arrayIndex,
         array,
@@ -111,6 +130,8 @@ namespace HeaplessUtility.Exceptions
         separators,
         value,
         amount,
-        position
+        position,
+        comparison
+// ReSharper restore InconsistentNaming
     }
 }

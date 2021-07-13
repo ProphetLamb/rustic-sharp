@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics.Contracts;
+using System.Runtime.CompilerServices;
 
 namespace HeaplessUtility
 {
@@ -10,6 +12,8 @@ namespace HeaplessUtility
         /// <param name="segment">The segment.</param>
         /// <typeparam name="T">The type of elements in the array.</typeparam>
         /// <returns></returns>
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ArraySegmentIterator<T> GetIterator<T>(this ArraySegment<T> segment) => new(segment.Array, segment.Offset, segment.Count);
         
         /// <summary>
@@ -18,6 +22,8 @@ namespace HeaplessUtility
         /// <param name="array">The array.</param>
         /// <typeparam name="T">The type of elements in the array.</typeparam>
         /// <returns></returns>
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ArraySegmentIterator<T> GetIterator<T>(this T[] array) => new(array, 0, array.Length);
         
         /// <summary>
@@ -28,6 +34,8 @@ namespace HeaplessUtility
         /// <typeparam name="T">The type of elements in the array.</typeparam>
         /// 
         /// <returns></returns>
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ArraySegmentIterator<T> GetIterator<T>(this T[] array, int offset) => new(array, offset, array.Length - offset);
         
         /// <summary>
@@ -38,6 +46,8 @@ namespace HeaplessUtility
         /// <param name="count">The number of elements form the <paramref name="offset"/>.</param>
         /// <typeparam name="T">The type of elements in the array.</typeparam>
         /// <returns></returns>
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ArraySegmentIterator<T> GetIterator<T>(this T[] array, int offset, int count) => new(array, offset, count);
     }
 }

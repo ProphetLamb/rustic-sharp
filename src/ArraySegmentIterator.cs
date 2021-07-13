@@ -58,14 +58,15 @@ namespace HeaplessUtility
             _count = count;
             _index = -1;
         }
-
+        
+        /// <inheritdoc cref="ArraySegment{T}.Array"/>
         public T[]? Array => _array;
 
         /// <inheritdoc cref="IEnumerator{T}.Current" />
-        public ref readonly T CurrentRef => ref _array![_offset + _index];
+        public ref readonly T Current => ref _array![_offset + _index];
 
         /// <inheritdoc />
-        public T Current => _array![_offset + _index];
+        T IEnumerator<T>.Current => Current;
 
         /// <inheritdoc />
         object? IEnumerator.Current => Current;
@@ -83,6 +84,7 @@ namespace HeaplessUtility
         /// </summary>
         public bool IsEmpty => 0 >= (uint)_count;
 
+        /// <inheritdoc cref="ArraySegment{T}.Offset"/>
         public int Offset => _offset;
 
         /// <inheritdoc cref="IReadOnlyList{T}.this" />
@@ -114,12 +116,19 @@ namespace HeaplessUtility
                 return _array![_offset + index];
             }
         }
-    
+        
+        
+        /// <summary>
+        ///     Returns the segment represented by the <see cref="ArraySegmentIterator{T}"/> as a span.
+        /// </summary>
+        /// <returns>The span representing the segment.</returns>
         [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ReadOnlySpan<T> AsSpan() => new(_array, _offset, _count);
 
         /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
         [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ArraySegmentIterator<T> GetEnumerator()
         {
             if (_index == -1)
@@ -161,7 +170,12 @@ namespace HeaplessUtility
         {
             _index = -1;
         }
-
-        public static explicit operator ArraySegment<T>(ArraySegmentIterator<T> segment) => new(segment.Array!, segment.Offset, segment.Count);
+        
+        /// <summary>
+        ///     Instantiates a new <see cref="ArraySegment{T}"/> representing the same segment as the iterator. 
+        /// </summary>
+        /// <param name="segment">The iterator.</param>
+        /// <returns></returns>
+        public static explicit operator ArraySegment<T>(in ArraySegmentIterator<T> segment) => segment.Array != null ? new(segment.Array, segment.Offset, segment.Count) : default;
     }
 }

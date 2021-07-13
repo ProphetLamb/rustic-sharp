@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using HeaplessUtility.DebuggerViews;
 using HeaplessUtility.Exceptions;
@@ -98,6 +99,7 @@ namespace HeaplessUtility
         /// <inheritdoc cref="IList{T}.this"/>
         public ref T this[int index]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 if (_buffer == null)
@@ -121,6 +123,7 @@ namespace HeaplessUtility
         T IList<T>.this[int index] { get => this[index]; set => this[index] = value; }
 
         /// <inheritdoc />
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Advance(int count)
         {
             if (count < 0)
@@ -183,9 +186,12 @@ namespace HeaplessUtility
         }
 
         /// <inheritdoc />
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(T item) => IndexOf(item) >= 0;
 
         /// <inheritdoc cref="IList{T}.IndexOf(T)" />
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int IndexOf(T item)
         {
             if (_buffer != null)
@@ -284,6 +290,7 @@ namespace HeaplessUtility
         /// <remarks>
         ///     Resets the object, but does not return the pool-array.
         /// </remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Span<T> ToSpan(out T[] leased)
         {
             ThrowHelper.ThrowIfObjectNotInitialized(_buffer == null);
@@ -310,6 +317,7 @@ namespace HeaplessUtility
         /// <remarks>
         ///     Resets the object, but does not return the pool-array.
         /// </remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Memory<T> ToMemory(out T[] leased)
         {
             ThrowHelper.ThrowIfObjectNotInitialized(_buffer == null);
@@ -329,6 +337,7 @@ namespace HeaplessUtility
         /// <remarks>
         ///     Resets the object.
         /// </remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T[] ToArray() => ToArray(false);
 
         /// <summary>
@@ -359,7 +368,6 @@ namespace HeaplessUtility
         }
 
         /// <summary>Resets the writer to the initial state and returns the buffer to the array-pool.</summary>
-        [MethodImpl(MethodImplOptions.NoInlining)]
         public void Reset()
         {
             ThrowHelper.ThrowIfObjectDisposed(_index == -1);
@@ -375,7 +383,6 @@ namespace HeaplessUtility
         }
 
         /// <inheritdoc />
-        [MethodImpl(MethodImplOptions.NoInlining)]
         public void Dispose()
         {
             _index = -1;
@@ -388,6 +395,8 @@ namespace HeaplessUtility
         }
 
         /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ArraySegmentIterator<T> GetEnumerator() => new(_buffer, 0, _index);
 
         /// <inheritdoc />

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using HeaplessUtility.Exceptions;
 
@@ -55,6 +56,8 @@ namespace HeaplessUtility
         /// <summary>
         ///     Returns a new <see cref="SpanSplitIterator{T}"/> enumerator with the same input in the initial state.
         /// </summary>
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SpanSplitIterator<T> GetEnumerator()
         {
             if ((_index == 0) & (_segmentLength == 0))
@@ -102,52 +105,41 @@ namespace HeaplessUtility
                             break;
                         }
                     } while(consumeNext & (++position < _source.Length));
-                }
-                else
-                {
-                    // Object type: Shared Generic, EqualityComparer<TValue>.Default won't devirtualize (https://github.com/dotnet/runtime/issues/10050),
-                    // so cache in a local rather than get EqualityComparer per loop iteration.
-                    comparer = EqualityComparer<T>.Default;
-                    do
-                    {
-                        T current = _source[position];
-                        for(int i = 0; i < _separators.Length; i++)
-                        {
-                            if (!comparer.Equals(_separators[i], current))
-                            {
-                                continue;
-                            }
 
-                            consumeNext = false;
-                            break;
-                        }
-                    } while(consumeNext & (++position < _source.Length));
+                    _segmentLength = position - _index;
+                    return EnsureOptionsAllowMoveNext(position);
                 }
+
+                // Object type: Shared Generic, EqualityComparer<TValue>.Default won't devirtualize (https://github.com/dotnet/runtime/issues/10050),
+                // so cache in a local rather than get EqualityComparer per loop iteration.
+                comparer = EqualityComparer<T>.Default;
             }
-            else
+
+            do
             {
-                do
+                T current = _source[position];
+                for(int i = 0; i < _separators.Length; i++)
                 {
-                    T current = _source[position];
-                    for(int i = 0; i < _separators.Length; i++)
+                    if (!comparer.Equals(_separators[i], current))
                     {
-                        if (!comparer.Equals(_separators[i], current))
-                        {
-                            continue;
-                        }
-
-                        consumeNext = false;
-                        break;
+                        continue;
                     }
-                } while(consumeNext & (++position < _source.Length));
-            }
+
+                    consumeNext = false;
+                    break;
+                }
+            } while(consumeNext & (++position < _source.Length));
 
             _segmentLength = position - _index;
+            return EnsureOptionsAllowMoveNext(position);
+        }
 
+        private bool EnsureOptionsAllowMoveNext(int position)
+        {
             bool success;
 
             if ((_options & SplitOptions.RemoveEmptyEntries) == 0 | _segmentLength != 0 // RemoveEmpty & length == 0 => MoveNext
-             || (_options & SplitOptions.SkipLeadingSegment) == 0 | _index != 0) // SkipLeading & _index == 0 => MoveNext
+                || (_options & SplitOptions.SkipLeadingSegment) == 0 | _index != 0) // SkipLeading & _index == 0 => MoveNext
             {
                 if ((_options & SplitOptions.SkipTailingSegment) == 0 | position != _source.Length) // SkipTailing & at end => false
                 {
