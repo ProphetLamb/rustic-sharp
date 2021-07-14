@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace HeaplessUtility.DebuggerViews
 {
-    public class IReadOnlyCollectionDebugView<T>
+    internal class IReadOnlyCollectionDebugView<T>
     {
         private readonly IReadOnlyCollection<T> _collection;
         

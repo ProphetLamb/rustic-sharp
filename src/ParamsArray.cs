@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
@@ -10,6 +9,9 @@ using HeaplessUtility.Exceptions;
 
 namespace HeaplessUtility
 {
+    /// <summary>
+    ///     Partially inlined immutable collection of function parameters. 
+    /// </summary>
     public static class ParamsArray
     {
         /// <summary>
@@ -154,6 +156,7 @@ namespace HeaplessUtility
         /// <summary>Returns true if Length is 0.</summary>
         public bool IsEmpty => 0 >= (uint)_length;
 
+        /// <inheritdoc cref="IReadOnlyList{T}.this"/>
         public T this[int index]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -174,7 +177,8 @@ namespace HeaplessUtility
                 };
             }
         }
-
+        
+        /// <inheritdoc cref="Span{T}.CopyTo"/>
         public void CopyTo(Span<T> destination)
         {
             if (_params.Count > 0)
@@ -188,6 +192,7 @@ namespace HeaplessUtility
             }
         }
 
+        /// <inheritdoc cref="Span{T}.TryCopyTo"/>
         public bool TryCopyTo(Span<T> destination)
         {
             bool retVal = false;
@@ -232,22 +237,24 @@ namespace HeaplessUtility
                     break;
             }
         }
-        
-        public bool Equals(ParamsArray<T> other)
+
+        /// <inheritdoc cref="Object.Equals(Object)" />
+        public bool Equals(in ParamsArray<T> other)
         {
             return this == other;
         }
 
+        /// <inheritdoc/>
         public override bool Equals(object? obj)
         {
             return obj is ParamsArray<T> other && Equals(other);
         }
 
+        /// <inheritdoc/>
         public override int GetHashCode()
         {
             return base.GetHashCode();
         }
-
 
         /// <summary>
         ///     Returns <see langword="false"/> if left and right point at the same memory and have the same length.  Note that
@@ -338,8 +345,10 @@ namespace HeaplessUtility
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Enumerator GetEnumerator() => new(this);
 
+        /// <inheritdoc/>
         IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
+        /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         /// <summary>Enumerates the elements of a <see cref="ParamsArray{T}"/>.</summary>

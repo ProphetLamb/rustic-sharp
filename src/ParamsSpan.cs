@@ -10,6 +10,9 @@ using HeaplessUtility.Exceptions;
 
 namespace HeaplessUtility
 {
+    /// <summary>
+    ///     Partially inlined immutable collection of function parameters. 
+    /// </summary>
     public static class ParamsSpan
     {
         /// <summary>
@@ -158,6 +161,7 @@ namespace HeaplessUtility
         /// <summary>Returns true if Length is 0.</summary>
         public bool IsEmpty => 0 >= (uint)_length;
 
+        /// <inheritdoc cref="IReadOnlyList{T}.this" />
         public T this[int index]
         {
             get
@@ -178,6 +182,7 @@ namespace HeaplessUtility
             }
         }
 
+        /// <inheritdoc cref="Object.Equals(Object)" />
         [Obsolete]
         [EditorBrowsable(EditorBrowsableState.Never)]
         public override bool Equals(object? obj)
@@ -186,6 +191,7 @@ namespace HeaplessUtility
             return default!; // unreachable.
         }
 
+        /// <inheritdoc cref="Object.GetHashCode" />
         [Obsolete]
         [EditorBrowsable(EditorBrowsableState.Never)]
         public override int GetHashCode()
@@ -194,6 +200,7 @@ namespace HeaplessUtility
             return default!; // unreachable.
         }
 
+        /// <inheritdoc cref="Span{T}.CopyTo"/>
         public void CopyTo(Span<T> destination)
         {
             if (!_arguments.IsEmpty)
@@ -207,6 +214,7 @@ namespace HeaplessUtility
             }
         }
 
+        /// <inheritdoc cref="Span{T}.TryCopyTo"/>
         public bool TryCopyTo(Span<T> destination)
         {
             bool retVal = false;
@@ -329,6 +337,7 @@ namespace HeaplessUtility
             return sb.ToString();
         }
 
+        /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
         [Pure]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Enumerator GetEnumerator() => new(this);

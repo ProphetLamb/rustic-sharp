@@ -10,7 +10,7 @@ namespace HeaplessUtility.Helpers
 #if !NET50_OR_GREATER
     
     // Source: https://source.dot.net/#System.Private.CoreLib/ArraySortHelper.cs
-    public class SpanSortHelper<T>
+    internal class SpanSortHelper<T>
     {
         private static ReadOnlySpan<byte> Log2DeBruijn => new byte[32]
         {

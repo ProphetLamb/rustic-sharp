@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Bogus;
 using FluentAssertions;
+using HeaplessUtility.Pool;
 using NUnit.Framework;
 
 namespace HeaplessUtility.Tests
@@ -14,7 +15,7 @@ namespace HeaplessUtility.Tests
         public void TestAdd()
         {
             List<User> reference = new();
-            PoolRefList<User> list = new();
+            RefList<User> list = new();
 
             list.Add(null);
             reference.Add(null);
@@ -32,7 +33,7 @@ namespace HeaplessUtility.Tests
         public void TestAddRange()
         {
             List<User> reference = new();
-            PoolRefList<User> list = new();
+            RefList<User> list = new();
 
             int increment;
             for (int i = 0; i < 400; i += increment)
@@ -51,7 +52,7 @@ namespace HeaplessUtility.Tests
         public void TestClear()
         {
             List<User> reference = new();
-            PoolRefList<User> list = new();
+            RefList<User> list = new();
 
             reference.Clear();
             list.Clear();
@@ -76,7 +77,7 @@ namespace HeaplessUtility.Tests
         public void TestIndexOf()
         {
             List<User> reference = new();
-            PoolRefList<User> list = new();
+            RefList<User> list = new();
 
             list.AddRange(SampleData.Users);
             reference.AddRange(SampleData.Users);
@@ -94,7 +95,7 @@ namespace HeaplessUtility.Tests
         public void TestInsert()
         {
             List<User> reference = new();
-            PoolRefList<User> list = new();
+            RefList<User> list = new();
 
             for (int i = 0; i < 100; i++)
             {
@@ -104,15 +105,15 @@ namespace HeaplessUtility.Tests
                 list.Insert(index, user);
             }
 
-            Assert.Throws<ArgumentOutOfRangeException>(() => new PoolRefList<User>().Insert(-1, null));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new PoolRefList<User>().Insert(1, null));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new RefList<User>().Insert(-1, null));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new RefList<User>().Insert(1, null));
         }
 
         [Test]
         public void TestInsertRange()
         {
             List<User> reference = new();
-            PoolRefList<User> list = new();
+            RefList<User> list = new();
 
             int increment;
             for (int i = 0; i < 400; i += increment)
@@ -127,15 +128,15 @@ namespace HeaplessUtility.Tests
 
             list.ToArray().Should().BeEquivalentTo(reference);
 
-            Assert.Throws<ArgumentOutOfRangeException>(() => new PoolRefList<User>().InsertRange(-1, Array.Empty<User>()));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new PoolRefList<User>().InsertRange(1, Array.Empty<User>()));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new RefList<User>().InsertRange(-1, Array.Empty<User>()));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new RefList<User>().InsertRange(1, Array.Empty<User>()));
         }
 
         [Test]
         public void TestLastIndexOf()
         {
             List<User> reference = new();
-            PoolRefList<User> list = new();
+            RefList<User> list = new();
 
             list.AddRange(SampleData.Users);
             reference.AddRange(SampleData.Users);
@@ -153,7 +154,7 @@ namespace HeaplessUtility.Tests
         public void TestRemove()
         {
             List<User> reference = new();
-            PoolRefList<User> list = new();
+            RefList<User> list = new();
 
             list.AddRange(SampleData.Users);
             reference.AddRange(SampleData.Users);
@@ -175,7 +176,7 @@ namespace HeaplessUtility.Tests
         public void TestRemoveAt()
         {
             List<User> reference = new();
-            PoolRefList<User> list = new();
+            RefList<User> list = new();
 
             list.AddRange(SampleData.Users);
             reference.AddRange(SampleData.Users);
@@ -189,15 +190,15 @@ namespace HeaplessUtility.Tests
 
             list.ToArray().Should().BeEquivalentTo(reference);
 
-            Assert.Throws<ArgumentOutOfRangeException>(() => new PoolRefList<User>(2).RemoveAt(-1));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new PoolRefList<User>(2).RemoveAt(1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new RefList<User>(2).RemoveAt(-1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new RefList<User>(2).RemoveAt(1));
         }
 
         [Test]
         public void TestRemoveRange()
         {
             List<User> reference = new();
-            PoolRefList<User> list = new();
+            RefList<User> list = new();
 
             list.AddRange(SampleData.Users);
             reference.AddRange(SampleData.Users);
@@ -218,18 +219,18 @@ namespace HeaplessUtility.Tests
 
             list.ToArray().Should().BeEquivalentTo(reference);
 
-            Assert.Throws<ArgumentOutOfRangeException>(() => new PoolRefList<User>(2).RemoveRange(-1, 0));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new PoolRefList<User>(2).RemoveRange(1, 0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new RefList<User>(2).RemoveRange(-1, 0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new RefList<User>(2).RemoveRange(1, 0));
 
-            Assert.Throws<ArgumentOutOfRangeException>(() => new PoolRefList<User>(2).RemoveRange(0, -1));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new PoolRefList<User>(2).RemoveRange(0, 1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new RefList<User>(2).RemoveRange(0, -1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new RefList<User>(2).RemoveRange(0, 1));
         }
 
         [Test]
         public void TestReverse()
         {
             List<User> reference = new();
-            PoolRefList<User> list = new();
+            RefList<User> list = new();
 
             list.AddRange(SampleData.Users);
             reference.AddRange(SampleData.Users);
@@ -248,15 +249,15 @@ namespace HeaplessUtility.Tests
         [Test]
         public void TestSort()
         {
-            new PoolRefList<User>().Sort();
-            new PoolRefList<User>(SampleData.Users.ToArray()).Sort();
+            new RefList<User>().Sort();
+            new RefList<User>(SampleData.Users.ToArray()).Sort();
         }
 
         [Test]
         public void TestSortComparer()
         {
             List<User> reference = new();
-            PoolRefList<User> list = new();
+            RefList<User> list = new();
 
             list.AddRange(SampleData.Users);
             reference.AddRange(SampleData.Users);
@@ -271,17 +272,17 @@ namespace HeaplessUtility.Tests
 
             list.ToArray().Should().BeEquivalentTo(reference);
 
-            Assert.Throws<ArgumentOutOfRangeException>(() => new PoolRefList<User>().Sort(-1, 0, UserComparer.Instance));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new PoolRefList<User>().Sort(1, 0, UserComparer.Instance));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new PoolRefList<User>().Sort(0, -1, UserComparer.Instance));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new PoolRefList<User>().Sort(0, 1, UserComparer.Instance));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new RefList<User>().Sort(-1, 0, UserComparer.Instance));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new RefList<User>().Sort(1, 0, UserComparer.Instance));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new RefList<User>().Sort(0, -1, UserComparer.Instance));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new RefList<User>().Sort(0, 1, UserComparer.Instance));
         }
 
         [Test]
         public void TestSortComparison()
         {
             List<User> reference = new();
-            PoolRefList<User> list = new();
+            RefList<User> list = new();
 
             list.AddRange(SampleData.Users);
             reference.AddRange(SampleData.Users);

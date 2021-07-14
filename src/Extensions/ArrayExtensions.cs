@@ -4,6 +4,9 @@ using System.Runtime.CompilerServices;
 
 namespace HeaplessUtility
 {
+    /// <summary>
+    ///     Extension methods for <see cref="ArraySegment{T}"/> and <see cref="Array"/>.
+    /// </summary>
     public static class ArrayExtensions
     {
         /// <summary>

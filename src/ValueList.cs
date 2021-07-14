@@ -150,7 +150,7 @@ namespace HeaplessUtility
         /// <summary>
         ///     Returns the underlying storage of the list.
         /// </summary>
-        public Span<T> RawStorage => _storage;
+        internal Span<T> RawStorage => _storage;
 
         /// <summary>
         ///     Returns a span around the contents of the list.
@@ -526,6 +526,7 @@ namespace HeaplessUtility
             return list;
         }
 
+        /// <inheritdoc cref="IDisposable.Dispose"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Dispose()
         {
@@ -599,7 +600,9 @@ namespace HeaplessUtility
             sb.Append(']');
             return sb.ToString();
         }
-
+        
+        /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Enumerator GetEnumerator() => new(this);
 
         /// <summary>Enumerates the elements of a <see cref="ValueList{T}"/>.</summary>

@@ -114,6 +114,11 @@ namespace HeaplessUtility.Exceptions
         {
             throw new ArgumentNullException(GetArgumentName(comparison), "The value cannot be null or default.");
         }
+
+        public static void ThrowArgumentOutOfRangeException(ExceptionArgument argument, string? message)
+        {
+            throw new ArgumentOutOfRangeException(GetArgumentName(argument), message);
+        }
     }
 
     internal enum ExceptionArgument
@@ -133,5 +138,7 @@ namespace HeaplessUtility.Exceptions
         position,
         comparison
 // ReSharper restore InconsistentNaming
+,
+range
     }
 }

@@ -26,10 +26,15 @@ namespace HeaplessUtility
         private readonly IEqualityComparer<T>? _comparer;
         private int _index;
         private int _tokenLength;
-
-        public SpanTokenBuilder(ReadOnlySpan<T> span, IEqualityComparer<T>? comparer)
+        
+        /// <summary>
+        ///     Initializes a new instance of <see cref="SpanTokenBuilder{T}"/> with the specified <paramref name="input"/> and <paramref name="comparer"/>. 
+        /// </summary>
+        /// <param name="input">The input sequence.</param>
+        /// <param name="comparer">The comparer used to determine whether two objects are equal.</param>
+        public SpanTokenBuilder(ReadOnlySpan<T> input, IEqualityComparer<T>? comparer)
         {
-            _source = span;
+            _source = input;
             _comparer = comparer;
             _index = 0;
             _tokenLength = 0;

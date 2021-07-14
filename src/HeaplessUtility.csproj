@@ -28,7 +28,7 @@
     <Version>0.2.1</Version>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' != 'net5'">
+  <ItemGroup Condition=" '$(TargetFramework)' != 'net5.0'">
     <PackageReference Include="System.Memory" Version="4.5.4" />
   </ItemGroup>
 
