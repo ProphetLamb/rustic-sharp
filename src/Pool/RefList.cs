@@ -9,7 +9,7 @@ using System.Text;
 using HeaplessUtility.DebuggerViews;
 using HeaplessUtility.Exceptions;
 
-namespace HeaplessUtility
+namespace HeaplessUtility.Pool
 {
     /// <summary>
     ///     Represents a strongly typed list of object that can be accessed by ref. Provides a similar interface as <see cref="List{T}"/>. 
@@ -17,8 +17,10 @@ namespace HeaplessUtility
     /// <typeparam name="T">The type of items of the list.</typeparam>
     [DebuggerDisplay("{GetDebuggerDisplay(),nq}")]
     [DebuggerTypeProxy(typeof(IReadOnlyCollectionDebugView<>))]
-    public class PoolRefList<T> :
-        IReadOnlyCollection<T>,
+    public class RefList<T> :
+        IList<T>,
+        ICollection,
+        IReadOnlyList<T>,
         IDisposable
     {
         private T[]? _storage;
@@ -28,7 +30,7 @@ namespace HeaplessUtility
         /// <summary>
         ///     Initializes a new list.
         /// </summary>
-        public PoolRefList()
+        public RefList()
         {
             
         }
@@ -37,7 +39,7 @@ namespace HeaplessUtility
         ///     Initializes a new list with a initial buffer.
         /// </summary>
         /// <param name="initialBuffer">The initial buffer.</param>
-        public PoolRefList(T[] initialBuffer)
+        public RefList(T[] initialBuffer)
         {
             _storage = initialBuffer;
             _count = 0;
@@ -48,7 +50,7 @@ namespace HeaplessUtility
         ///     Initializes a new list with a specified minimum initial capacity.
         /// </summary>
         /// <param name="initialMinimumCapacity">The minimum initial capacity.</param>
-        public PoolRefList(int initialMinimumCapacity)
+        public RefList(int initialMinimumCapacity)
         {
             _storage = ArrayPool<T>.Shared.Rent(initialMinimumCapacity);
             _count = 0;
@@ -76,9 +78,18 @@ namespace HeaplessUtility
                 _count = value;
             }
         }
-        
+
+        /// <inheritdoc/>
+        bool ICollection.IsSynchronized => false;
+
+        /// <inheritdoc/>
+        object ICollection.SyncRoot => null!;
+
+        /// <inheritdoc/>
+        bool ICollection<T>.IsReadOnly => false;
+
         /// <summary>
-        ///     Defines whether the list is bound to the shared array-pool or not.
+        ///     Specifies whether the list is bound to the shared array-pool or not.
         /// </summary>
         /// <remarks>
         ///     If changed to false, releases the array from the pool.
@@ -108,7 +119,7 @@ namespace HeaplessUtility
         /// <summary>
         ///     Returns the underlying storage of the list.
         /// </summary>
-        public Span<T> RawStorage => _storage;
+        internal Span<T> RawStorage => _storage;
 
         /// <inheritdoc cref="List{T}.this"/>
         public ref T this[int index]
@@ -244,7 +255,7 @@ namespace HeaplessUtility
 
         /// <inheritdoc cref="List{T}.Add"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Add(in T value)
+        public void Add(T value)
         {
             int pos = _count;
 
@@ -337,6 +348,9 @@ namespace HeaplessUtility
         [Pure]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(in T item) => IndexOf(item, null) >= 0;
+
+        /// <inheritdoc/>
+        bool ICollection<T>.Contains(T item) => Contains(item);
         
         /// <summary>
         ///     Determines whether an element is in the list.
@@ -353,7 +367,8 @@ namespace HeaplessUtility
         {
             _storage.CopyTo(destination);
         }
-
+        
+        /// <inheritdoc cref="ICollection{T}.CopyTo"/>
         public void CopyTo(T[] array, int arrayIndex)
         {
             if (_storage == null)
@@ -362,6 +377,9 @@ namespace HeaplessUtility
             }
             Array.Copy(_storage, 0, array, arrayIndex, _count);
         }
+        
+        /// <inheritdoc/>
+        void ICollection.CopyTo(Array array, int index) => CopyTo((T[])array, index);
         
         /// <inheritdoc cref="IList{T}.IndexOf"/>
         [Pure]
@@ -424,6 +442,9 @@ namespace HeaplessUtility
             storage[index] = value;
             _count += 1;
         }
+
+        /// <inheritdoc />
+        void IList<T>.Insert(int index, T item) => Insert(index, item);
         
         /// <inheritdoc cref="List{T}.InsertRange"/>
         public void InsertRange(int index, ReadOnlySpan<T> span)
@@ -505,6 +526,9 @@ namespace HeaplessUtility
         /// <inheritdoc cref="List{T}.Remove"/>
         public bool Remove(in T item) => Remove(item, null);
 
+        /// <inheritdoc/>
+        bool ICollection<T>.Remove(T item) => Remove(item, null);
+
         /// <inheritdoc cref="List{T}.Remove"/>
         public bool Remove(in T item, IEqualityComparer<T>? comparer)
         {
@@ -517,6 +541,9 @@ namespace HeaplessUtility
 
             return false;
         }
+
+        /// <inheritdoc />
+        int IList<T>.IndexOf(T item) => IndexOf(item);
 
         /// <inheritdoc cref="List{T}.RemoveAt"/>
         public void RemoveAt(int index)
@@ -708,7 +735,8 @@ namespace HeaplessUtility
             sb.Append("Count = ").Append(_count);
             return sb.ToString();
         }
-
+        
+        /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
         [Pure]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Enumerator GetEnumerator() => new(this);
@@ -717,16 +745,16 @@ namespace HeaplessUtility
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        /// <summary>Enumerates the elements of a <see cref="PoolRefList{T}"/>.</summary>
+        /// <summary>Enumerates the elements of a <see cref="RefList{T}"/>.</summary>
         public struct Enumerator : IEnumerator<T>
         {
-            private readonly PoolRefList<T> _list;
+            private readonly RefList<T> _list;
             private int _index;
             
             /// <summary>Initialize the enumerator.</summary>
             /// <param name="list">The list to enumerate.</param>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public Enumerator(PoolRefList<T> list)
+            public Enumerator(RefList<T> list)
             {
                 _list = list;
                 _index = -1;
