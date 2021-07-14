@@ -122,29 +122,57 @@ namespace HeaplessUtility
             }
         }
 
-#if NET50_OR_GREATER || NETCOREAPP3_1
+        T IList<T>.this[int index] { get => this[index]; set => this[index] = value; }
+        
+        /// <inheritdoc/>
+        T IReadOnlyList<T>.this[int index] => this[index];
+
+        /// <summary>
+        ///     Gets or sets the element at the specified <paramref name="index"/>.
+        /// </summary>
+        /// <param name="index">The index of the element to get or set.</param>
         public ref T this[Index index]
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                ThrowHelper.ThrowIfObjectNotInitialized(_storage == null);
-                return ref _storage[index];
+                int offset = index.GetOffset(_count);
+                if ((uint)offset >= (uint)_count)
+                {
+                    ThrowHelper.ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument.index);
+                }
+                return ref _storage![offset];
             }
         }
 
-        [Pure]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        /// <summary>
+        ///     Gets a span of elements of elements from the specified <paramref name="range"/>.
+        /// </summary>
+        /// <param name="range">The range of elements to get or set.</param>
         public ReadOnlySpan<T> this[Range range]
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                ThrowHelper.ThrowIfObjectNotInitialized(_storage == null);
-                return _storage[range];
+                (int start, int length) = range.GetOffsetAndLength(_count);
+                if (_count - start < length)
+                {
+                    ThrowHelper.ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument.range);
+                }
+                return new ReadOnlySpan<T>(_storage, start, length);
+            }
+            set
+            {
+                (int start, int length) = range.GetOffsetAndLength(_count);
+                if (_count - start < length)
+                {
+                    ThrowHelper.ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument.range);
+                }
+                if (value.Length != length)
+                {
+                    ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.value, "The length of the span is not equal to the lenght of the range.");
+                }
+                value.CopyTo(_storage.AsSpan(start, length));
             }
         }
-#endif
 
         /// <summary>
         ///     Ensures that the list has a minimum capacity. 

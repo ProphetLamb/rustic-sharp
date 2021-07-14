@@ -70,9 +70,52 @@ namespace HeaplessUtility
             }
         }
 
-        public ref T this[Index index] => ref _storage[index];
+        /// <summary>
+        ///     Gets or sets the element at the specified <paramref name="index"/>.
+        /// </summary>
+        /// <param name="index">The index of the element to get or set.</param>
+        public ref T this[Index index]
+        {
+            get
+            {
+                int offset = index.GetOffset(_count);
+                if ((uint)offset >= _count)
+                {
+                    ThrowHelper.ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument.index);
+                }
+                return ref _storage[offset];
+            }
+        }
 
-        public ReadOnlySpan<T> this[Range range] => _storage[range];
+        /// <summary>
+        ///     Gets a span of elements of elements from the specified <paramref name="range"/>.
+        /// </summary>
+        /// <param name="range">The range of elements to get or set.</param>
+        public ReadOnlySpan<T> this[Range range]
+        {
+            get
+            {
+                (int start, int length) = range.GetOffsetAndLength(_count);
+                if (_count - start < length)
+                {
+                    ThrowHelper.ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument.range);
+                }
+                return _storage.Slice(start, length);
+            }
+            set
+            {
+                (int start, int length) = range.GetOffsetAndLength(_count);
+                if (_count - start < length)
+                {
+                    ThrowHelper.ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument.range);
+                }
+                if (value.Length != length)
+                {
+                    ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.value, "The length of the span is not equal to the lenght of the range.");
+                }
+                value.CopyTo(_storage.Slice(start, length));
+            }
+        }
 
         /// <summary>
         ///     Ensures that the list has a minimum capacity. 
