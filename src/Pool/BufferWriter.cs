@@ -9,10 +9,10 @@ using System.Runtime.CompilerServices;
 using HeaplessUtility.DebuggerViews;
 using HeaplessUtility.Exceptions;
 
-namespace HeaplessUtility
+namespace HeaplessUtility.Pool
 {
     /// <summary>
-    ///     Reuseable <see cref="IBufferWriter{T}"/> consuming from the <see cref="ArrayPool{T}.Shared"/> intended for use as a thread-static singleton.
+    ///     Reusable <see cref="IBufferWriter{T}"/> intended for use as a thread-static singleton.
     /// </summary>
     /// <typeparam name="T">The type of the items.</typeparam>
     /// <remarks>
@@ -41,7 +41,7 @@ namespace HeaplessUtility
     /// </remarks>
     [DebuggerDisplay("Count: {Count}")]
     [DebuggerTypeProxy(typeof(PoolBufferWriterDebuggerView<>))]
-    internal sealed class PoolBufferWriter<T> :
+    public sealed class BufferWriter<T> :
         IBufferWriter<T>,
         IList<T>,
         ICollection,
@@ -51,45 +51,53 @@ namespace HeaplessUtility
         private T[]? _buffer;
         private readonly int _minimumCapacity;
         private int _index;
-
-        public PoolBufferWriter()
+        
+        /// <summary>
+        ///     Initializes a new instance of <see cref="BufferWriter{T}"/>.
+        /// </summary>
+        public BufferWriter()
         {
+            _buffer = null;
             _minimumCapacity = 16;
+            _index = 0;
         }
 
-        public PoolBufferWriter(int initialCapacity)
+        /// <summary>
+        ///     Initializes a new instance of <see cref="BufferWriter{T}"/>.
+        /// </summary>
+        /// <param name="initialCapacity">The minimum capacity of the writer.</param>
+        public BufferWriter(int initialCapacity)
         {
             if (initialCapacity <= 0)
             {
                 ThrowHelper.ThrowArgumentOutOfRangeException_LessEqualZero(ExceptionArgument.initialCapacity);
             }
 
-            _buffer = ArrayPool<T>.Shared.Rent(initialCapacity);
+            _buffer = null;
             _minimumCapacity = initialCapacity;
             _index = 0;
         }
 
-        internal T[]? RawStorage => _buffer; 
+        /// <summary>
+        ///     Returns the underlying storage of the list.
+        /// </summary>
+        internal Span<T> RawStorage => _buffer; 
 
-        /// <inheritdoc cref="IReadOnlyList{T}.Count" />
+        /// <inheritdoc cref="List{T}.Count" />
         public int Count => _index;
 
         /// <inheritdoc />
-        public bool IsSynchronized => false;
+        bool ICollection.IsSynchronized => false;
 
         /// <inheritdoc />
-        public object SyncRoot
-        {
-            get
-            {
-                ThrowHelper.ThrowNotSupportedException();
-                return default!;
-            }
-        }
+        object ICollection.SyncRoot => null!;
 
         /// <inheritdoc />
-        public bool IsReadOnly => false;
-
+        bool ICollection<T>.IsReadOnly => false;
+        
+        /// <summary>
+        ///     The current capacity of the writer.
+        /// </summary>
         public int Capacity
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -201,7 +209,8 @@ namespace HeaplessUtility
 
             return -1;
         }
-
+        
+        /// <inheritdoc cref="IList{T}.Insert(int,T)" />
         public void Insert(int index, T item)
         {
             if (_index >= Capacity - 1)
@@ -413,17 +422,14 @@ namespace HeaplessUtility
             if (_buffer != null)
             {
                 Debug.Assert(_index > _buffer.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
-                T[] poolArray = ArrayPool<T>.Shared.Rent(Math.Max(_index + additionalCapacityBeyondPos, _buffer.Length * 2));
-                _buffer.AsSpan(0, _index).CopyTo(poolArray);
-
-                T[] toReturn = _buffer;
-                _buffer = poolArray;
-                ArrayPool<T>.Shared.Return(toReturn);
+                T[] temp = new T[Math.Max(_index + additionalCapacityBeyondPos, _buffer.Length * 2)];
+                _buffer.AsSpan(0, _index).CopyTo(temp);
+                _buffer = temp;
             }
             else
             {
                 ThrowHelper.ThrowIfObjectDisposed(_index == -1);
-                _buffer = ArrayPool<T>.Shared.Rent(Math.Max(additionalCapacityBeyondPos, _minimumCapacity));
+                _buffer = new T[Math.Max(additionalCapacityBeyondPos, _minimumCapacity)];
             }
         }
         

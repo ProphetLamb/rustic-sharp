@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Diagnostics;
 using HeaplessUtility.Exceptions;
+using HeaplessUtility.Pool;
 
 namespace HeaplessUtility.DebuggerViews
 {
     internal sealed class PoolBufferWriterDebuggerView<T>
     {
-        private readonly WeakReference<PoolBufferWriter<T>> _writerRef;
+        private readonly WeakReference<BufferWriter<T>> _writerRef;
 
-        public PoolBufferWriterDebuggerView(PoolBufferWriter<T> writer)
+        public PoolBufferWriterDebuggerView(BufferWriter<T> writer)
         {
-            _writerRef = new WeakReference<PoolBufferWriter<T>>(writer);
+            _writerRef = new WeakReference<BufferWriter<T>>(writer);
         }
     
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
@@ -18,11 +19,11 @@ namespace HeaplessUtility.DebuggerViews
         {
             get
             {
-                if (_writerRef.TryGetTarget(out PoolBufferWriter<T>? writer))
+                if (_writerRef.TryGetTarget(out BufferWriter<T>? writer))
                 {
                     if (writer.RawStorage != null)
                     {
-                        var span = writer.RawStorage.AsSpan(0, writer.Count);
+                        var span = writer.RawStorage.Slice(0, writer.Count);
                         return span.ToArray();
                     }
 
