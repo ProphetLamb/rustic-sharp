@@ -24,6 +24,7 @@ namespace HeaplessUtility.Helpers
         // Empirically, 16 seems to speed up most cases without slowing down others, at least for integers.
         // Large value types may benefit from a smaller number.
         internal const int IntrosortSizeThreshold = 16;
+
         internal static void Sort(Span<T> keys, Comparison<T> comparer)
         {
             Debug.Assert(comparer != null, "Check the arguments in the caller!");
@@ -141,7 +142,7 @@ namespace HeaplessUtility.Helpers
                 int p = PickPivotAndPartition(keys.Slice(0, partitionSize), comparer);
  
                 // Note we've already partitioned around the pivot and do not have to move the pivot again.
-                IntroSort(keys[(p+1)..partitionSize], depthLimit, comparer);
+                IntroSort(keys.Slice(p+1, partitionSize - (p+1)), depthLimit, comparer);
                 partitionSize = p;
             }
         }

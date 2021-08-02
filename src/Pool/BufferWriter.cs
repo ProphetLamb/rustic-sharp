@@ -46,12 +46,13 @@ namespace HeaplessUtility.Pool
         IList<T>,
         ICollection,
         IReadOnlyList<T>,
+        IStrongEnumerable<T, ArraySegmentIterator<T>>,
         IDisposable
     {
         private T[]? _buffer;
-        private readonly int _minimumCapacity;
+        private readonly ushort _minimumCapacity;
         private int _index;
-        
+
         /// <summary>
         ///     Initializes a new instance of <see cref="BufferWriter{T}"/>.
         /// </summary>
@@ -68,20 +69,21 @@ namespace HeaplessUtility.Pool
         /// <param name="initialCapacity">The minimum capacity of the writer.</param>
         public BufferWriter(int initialCapacity)
         {
-            if (initialCapacity <= 0)
+            ushort minimumCapacity = (ushort)initialCapacity;
+            if (minimumCapacity != initialCapacity)
             {
-                ThrowHelper.ThrowArgumentOutOfRangeException_LessEqualZero(ExceptionArgument.initialCapacity);
+                ThrowHelper.ThrowArgumentOutOfRangeException_OverEqualsMax(ExceptionArgument.initialCapacity, initialCapacity, UInt16.MaxValue);
             }
-
+            
             _buffer = null;
-            _minimumCapacity = initialCapacity;
+            _minimumCapacity = minimumCapacity;
             _index = 0;
         }
 
         /// <summary>
         ///     Returns the underlying storage of the list.
         /// </summary>
-        internal Span<T> RawStorage => _buffer; 
+        internal Span<T> RawStorage => _buffer;
 
         /// <inheritdoc cref="List{T}.Count" />
         public int Count => _index;
@@ -304,12 +306,13 @@ namespace HeaplessUtility.Pool
         {
             ThrowHelper.ThrowIfObjectNotInitialized(_buffer == null);
 
+            int count = _index;
             leased = _buffer;
             _buffer = null; // Ensure that reset doesn't return the buffer.
 
             Reset();
 
-            return new Span<T>(leased, 0, _index);
+            return new Span<T>(leased, 0, count);
         }
 
         /// <summary>
@@ -331,12 +334,13 @@ namespace HeaplessUtility.Pool
         {
             ThrowHelper.ThrowIfObjectNotInitialized(_buffer == null);
 
+            int count = _index;
             leased = _buffer;
             _buffer = null; // Ensure that reset doesn't return the buffer.
 
             Reset();
 
-            return new Memory<T>(leased, 0, _index);
+            return new Memory<T>(leased, 0, count);
         }
 
         /// <summary>
@@ -422,18 +426,28 @@ namespace HeaplessUtility.Pool
             if (_buffer != null)
             {
                 Debug.Assert(_index > _buffer.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
-                T[] temp = new T[Math.Max(_index + additionalCapacityBeyondPos, _buffer.Length * 2)];
-                _buffer.AsSpan(0, _index).CopyTo(temp);
-                _buffer = temp;
+
+                // Make sure to let Rent throw an exception if the caller has a bug and the desired capacity is negative
+                T[] poolArray = ArrayPool<T>.Shared.Rent((int)Math.Max((uint)(_index + additionalCapacityBeyondPos), (uint)_buffer.Length * 2));
+            
+                Array.Copy(_buffer, 0, poolArray, 0, _index);
+
+                T[]? toReturn = _buffer;
+                _buffer = poolArray;
+                if (toReturn != null)
+                {
+                    ArrayPool<T>.Shared.Return(toReturn);
+                }
             }
             else
             {
-                ThrowHelper.ThrowIfObjectDisposed(_index == -1);
-                _buffer = new T[Math.Max(additionalCapacityBeyondPos, _minimumCapacity)];
+                _buffer = ArrayPool<T>.Shared.Rent(Math.Max(_minimumCapacity, additionalCapacityBeyondPos));
             }
         }
-        
+
+#if NETSTANDARD2_1
         [DoesNotReturn]
+#endif
         private static void ThrowInvalidOperationException_AdvancedTooFar(int capacity)
         {
             throw new InvalidOperationException($"Cannot advance the buffer because the index would exceed the maximum capacity ({capacity}) of the buffer.");
