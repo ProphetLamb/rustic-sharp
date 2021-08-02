@@ -11,6 +11,12 @@ using HeaplessUtility.Exceptions;
 
 namespace HeaplessUtility.Pool
 {
+
+    internal unsafe struct Inlinearray
+    {
+        public fixed byte Storage[32];
+    }
+    
     /// <summary>
     ///     Reusable <see cref="IBufferWriter{T}"/> intended for use as a thread-static singleton.
     /// </summary>
