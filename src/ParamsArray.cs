@@ -5,8 +5,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using HeaplessUtility.Exceptions;
-
-using JetBrains.Annotations;
+using HeaplessUtility.Interfaces;
 
 namespace HeaplessUtility
 {
@@ -104,27 +103,22 @@ namespace HeaplessUtility
           IStrongEnumerable<T, ParamsArray<T>.Enumerator>
     {
         private readonly int _length;
-        [CanBeNull]
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [AllowNull]
 #endif
         private readonly T _arg0;
-        [CanBeNull]
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [AllowNull]
 #endif
         private readonly T _arg1; 
-        [CanBeNull]
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [AllowNull]
 #endif
         private readonly T _arg2; 
-        [CanBeNull]
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [AllowNull]
 #endif
         private readonly T _arg3;
-        
 #if NETSTANDARD2_0 
         private readonly ArraySegmentIterator<T> _params;
 #else
@@ -140,25 +134,19 @@ namespace HeaplessUtility
         /// <param name="arg2">The third argument.</param>
         /// <param name="arg3">The fourth argument.</param>
         internal ParamsArray(int length,
-            [CanBeNull]
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
             [AllowNull]
 #endif
             in T arg0,
-             
-            [CanBeNull]
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
             [AllowNull]
 #endif
             in T arg1,
-             
-            [CanBeNull]
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
             [AllowNull]
 #endif
             in T arg2, 
-            [CanBeNull]
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
             [AllowNull]
 #endif
             in T arg3)

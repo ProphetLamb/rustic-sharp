@@ -7,8 +7,6 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using HeaplessUtility.Exceptions;
 
-using JetBrains.Annotations;
-
 namespace HeaplessUtility
 {
     /// <summary>
@@ -111,24 +109,21 @@ namespace HeaplessUtility
     [DebuggerDisplay("{GetDebuggerDisplay(),nq}")]
     public readonly ref struct ParamsSpan<T>
     {
+#nullable disable
         private readonly int _length;
-        [CanBeNull]
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [AllowNull]
 #endif
         private readonly T _arg0;
-        [CanBeNull]
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [AllowNull]
 #endif
         private readonly T _arg1; 
-        [CanBeNull]
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [AllowNull]
 #endif
         private readonly T _arg2; 
-        [CanBeNull]
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [AllowNull]
 #endif
         private readonly T _arg3;
@@ -143,25 +138,19 @@ namespace HeaplessUtility
         /// <param name="arg2">The third argument.</param>
         /// <param name="arg3">The fourth argument.</param>
         internal ParamsSpan(int length,
-            [CanBeNull]
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
             [AllowNull]
 #endif
             in T arg0,
-             
-            [CanBeNull]
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
             [AllowNull]
 #endif
             in T arg1,
-             
-            [CanBeNull]
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
             [AllowNull]
 #endif
             in T arg2, 
-            [CanBeNull]
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
             [AllowNull]
 #endif
             in T arg3)
@@ -178,6 +167,7 @@ namespace HeaplessUtility
             _arg2 = arg2;
             _arg3 = arg3;
         }
+#nullable restore
 
         /// <summary>
         ///     Initializes a new parameter span with a sequence of arguments.

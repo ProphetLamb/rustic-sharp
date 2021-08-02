@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
@@ -7,9 +6,12 @@ using System.Runtime.InteropServices;
 
 namespace HeaplessUtility
 {
+    /// <summary>
+    ///     Enables unaligned marking of bits in a memory area.
+    /// </summary>
     public readonly ref struct BitMarker
     {
-        public const int IntSize = sizeof(int) * 8;
+        private const int IntSize = sizeof(int) * 8;
         private static readonly int IntShift = Log2Floor(IntSize);
         private static ReadOnlySpan<int> MultiplyDeBruijnBitPosition => new[]
         {
@@ -24,6 +26,10 @@ namespace HeaplessUtility
         
         private readonly Span<int> _span;
 
+        /// <summary>
+        ///     initializes a new instance of <see cref="BitMarker"/>.
+        /// </summary>
+        /// <param name="span">The span of 32bit integers to be used for marking bits.</param>
         public BitMarker(Span<int> span)
         {
             _span = span;
@@ -59,9 +65,8 @@ namespace HeaplessUtility
             int bitArrayIndex = bitIndex >> IntShift;
             if ((uint)bitArrayIndex < (uint)_span.Length)
             {
-                ref int spPtr = ref MemoryMarshal.GetReference(_span);
                 int mask = ~(1 << (bitIndex % IntSize));
-                _span[bitArrayIndex] = (Unsafe.AddByteOffset(ref spPtr, (IntPtr)bitArrayIndex)  & mask) | (value * ~mask);
+                _span[bitArrayIndex] = (_span[bitArrayIndex] & mask) | (value * ~mask);
             }
         }
         

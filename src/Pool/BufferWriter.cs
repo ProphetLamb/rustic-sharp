@@ -8,6 +8,7 @@ using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using HeaplessUtility.DebuggerViews;
 using HeaplessUtility.Exceptions;
+using HeaplessUtility.Interfaces;
 
 namespace HeaplessUtility.Pool
 {
@@ -308,7 +309,7 @@ namespace HeaplessUtility.Pool
         ///     Resets the object, but does not return the pool-array.
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Span<T> ToSpan(out T[] leased)
+        public Span<T> ToSpan(out T[]? leased)
         {
             ThrowHelper.ThrowIfObjectNotInitialized(_buffer == null);
 
@@ -336,7 +337,7 @@ namespace HeaplessUtility.Pool
         ///     Resets the object, but does not return the pool-array.
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Memory<T> ToMemory(out T[] leased)
+        public Memory<T> ToMemory(out T[]? leased)
         {
             ThrowHelper.ThrowIfObjectNotInitialized(_buffer == null);
 
@@ -451,7 +452,7 @@ namespace HeaplessUtility.Pool
             }
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [DoesNotReturn]
 #endif
         private static void ThrowInvalidOperationException_AdvancedTooFar(int capacity)

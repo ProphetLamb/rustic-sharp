@@ -2,24 +2,15 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using HeaplessUtility.Exceptions;
 
 namespace HeaplessUtility.Helpers
 {
 #if !NET50_OR_GREATER
-    
+#nullable disable
     // Source: https://source.dot.net/#System.Private.CoreLib/ArraySortHelper.cs
     internal class SpanSortHelper<T>
     {
-        private static ReadOnlySpan<byte> Log2DeBruijn => new byte[32]
-        {
-            00, 09, 01, 10, 13, 21, 02, 29,
-            11, 14, 16, 18, 22, 25, 03, 30,
-            08, 12, 20, 28, 15, 17, 24, 07,
-            19, 27, 23, 06, 26, 05, 04, 31
-        };
-        
         // This is the threshold where Introspective sort switches to Insertion sort.
         // Empirically, 16 seems to speed up most cases without slowing down others, at least for integers.
         // Large value types may benefit from a smaller number.
@@ -98,7 +89,7 @@ namespace HeaplessUtility.Helpers
  
             if (keys.Length > 1)
             {
-                IntroSort(keys, 2 * (Log2((uint)keys.Length) + 1), comparer);
+                IntroSort(keys, 2 * (BitMarker.Log2((uint)keys.Length) + 1), comparer);
             }
         }
  
@@ -242,27 +233,7 @@ namespace HeaplessUtility.Helpers
                 keys[j + 1] = t;
             }
         }
-        
-        private static unsafe int Log2(uint value)
-        {
-            // No AggressiveInlining due to large method size
-            // Has conventional contract 0->0 (Log(0) is undefined)
- 
-            // Fill trailing zeros with ones, eg 00010010 becomes 00011111
-            value |= value >> 01;
-            value |= value >> 02;
-            value |= value >> 04;
-            value |= value >> 08;
-            value |= value >> 16;
- 
-            // uint.MaxValue >> 27 is always in range [0 - 31] so we use Unsafe.AddByteOffset to avoid bounds check
-            // Using deBruijn sequence, k=2, n=5 (2^5=32) : 0b_0000_0111_1100_0100_1010_1100_1101_1101u
-            fixed(byte* deBruijnPtr = &MemoryMarshal.GetReference(Log2DeBruijn))
-            {
-                return *(deBruijnPtr + (int)((value * 0x07C4ACDDu) >> 27));
-            }
-        }
-        
+#nullable restore
 #endif
     }
 }

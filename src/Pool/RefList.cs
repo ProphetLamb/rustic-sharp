@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using HeaplessUtility.DebuggerViews;
 using HeaplessUtility.Exceptions;
+using HeaplessUtility.Interfaces;
 
 namespace HeaplessUtility.Pool
 {
@@ -154,7 +155,7 @@ namespace HeaplessUtility.Pool
         /// <inheritdoc/>
         T IReadOnlyList<T>.this[int index] => this[index];
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         /// <summary>
         ///     Gets or sets the element at the specified <paramref name="index"/>.
         /// </summary>
@@ -222,7 +223,7 @@ namespace HeaplessUtility.Pool
             return Capacity;
         }
 
-#if NET50 || NETCOREAPP3_1
+#if NET5_0 || NETCOREAPP3_1
         /// <summary>
         ///     Get a pinnable reference to the list.
         ///     This overload is pattern matched in the C# 7.3+ compiler so you can omit

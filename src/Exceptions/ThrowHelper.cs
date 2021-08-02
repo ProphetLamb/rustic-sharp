@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
-#if NETSTANDARD2_1
 using System.Diagnostics.CodeAnalysis;
-#endif
 
 namespace HeaplessUtility.Exceptions
 {
@@ -24,7 +21,7 @@ namespace HeaplessUtility.Exceptions
             return name!;
         }
         
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1 || NET5_0
         [DoesNotReturn]
 #endif
         public static void ThrowNotSupportedException()
@@ -32,7 +29,7 @@ namespace HeaplessUtility.Exceptions
             throw new NotSupportedException();
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [DoesNotReturn]
 #endif
         public static void ThrowInvalidOperationException_ObjectDisposed()
@@ -40,7 +37,7 @@ namespace HeaplessUtility.Exceptions
             throw new InvalidOperationException("The operation cannot be performed on an object is disposed.");
         }
         
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [DoesNotReturn]
 #endif
         public static void ThrowInvalidOperationException_ObjectNotInitialized()
@@ -48,7 +45,7 @@ namespace HeaplessUtility.Exceptions
             throw new InvalidOperationException("The operation cannot be performed before the object is initialized.");
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [DoesNotReturn]
 #endif
         public static void ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument argument, int index)
@@ -56,7 +53,7 @@ namespace HeaplessUtility.Exceptions
             throw new ArgumentOutOfRangeException(GetArgumentName(argument), $"The index {index} is outside of the range of the array.");
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [DoesNotReturn]
 #endif
         public static void ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument argument)
@@ -64,7 +61,7 @@ namespace HeaplessUtility.Exceptions
             throw new ArgumentException("The array has insufficient capacity.", GetArgumentName(argument));
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [DoesNotReturn]
 #endif
         public static void ThrowArgumentException_CollectionEmpty(ExceptionArgument argument)
@@ -73,7 +70,7 @@ namespace HeaplessUtility.Exceptions
         }
 
         public static void ThrowIfObjectDisposed(
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
             [DoesNotReturnIf(true)]
 #endif
             bool disposed)
@@ -85,7 +82,7 @@ namespace HeaplessUtility.Exceptions
         }
 
         public static void ThrowIfObjectNotInitialized(
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1 || NET5_0
             [DoesNotReturnIf(true)]
 #endif
             bool notInitialized)
@@ -96,7 +93,7 @@ namespace HeaplessUtility.Exceptions
             }
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [DoesNotReturn]
 #endif
         public static void ThrowArgumentOutOfRangeException_LessEqualZero(ExceptionArgument argument)
@@ -104,7 +101,7 @@ namespace HeaplessUtility.Exceptions
             throw new ArgumentOutOfRangeException(GetArgumentName(argument), "The value cannot be less then or equal to zero.");
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [DoesNotReturn]
 #endif
         public static void ThrowArgumentOutOfRangeException_LessZero(ExceptionArgument argument)
@@ -112,7 +109,7 @@ namespace HeaplessUtility.Exceptions
             throw new ArgumentOutOfRangeException(GetArgumentName(argument), "The value cannot be less then zero.");
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [DoesNotReturn]
 #endif
         public static void ThrowArgumentOutOfRangeException_OverEqualsMax(ExceptionArgument argument, object? value, object? maximum)
@@ -120,7 +117,7 @@ namespace HeaplessUtility.Exceptions
             throw new ArgumentOutOfRangeException(GetArgumentName(argument), $"The value {value} cannot be greater then or equal to the maximum {maximum}.");
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [DoesNotReturn]
 #endif
         public static void ThrowArgumentOutOfRangeException_UnderMin(ExceptionArgument argument, object? value, object? minimum)
@@ -128,7 +125,7 @@ namespace HeaplessUtility.Exceptions
             throw new ArgumentOutOfRangeException(GetArgumentName(argument), $"The value {value} cannot be less then the minimum {minimum}.");
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [DoesNotReturn]
 #endif
         public static void ThrowArgumentException_BadComparer(object comparer)
@@ -136,7 +133,7 @@ namespace HeaplessUtility.Exceptions
             throw new ArgumentException($"Bad comparer {comparer}");
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [DoesNotReturn]
 #endif
         public static void ThrowInvalidOperationException(string message, Exception exception)
@@ -144,7 +141,7 @@ namespace HeaplessUtility.Exceptions
             throw new InvalidOperationException(message, exception);
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [DoesNotReturn]
 #endif
         public static void ThrowArgumentNullException(ExceptionArgument comparison)

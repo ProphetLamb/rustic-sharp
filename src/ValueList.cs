@@ -70,7 +70,7 @@ namespace HeaplessUtility
             }
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         /// <summary>
         ///     Gets or sets the element at the specified <paramref name="index"/>.
         /// </summary>

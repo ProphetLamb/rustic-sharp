@@ -55,7 +55,7 @@ namespace HeaplessUtility.Pool
         /// <param name="writer">The writer to place in the cache.</param>
         /// <param name="leased">The reference to the pool-array, to be returned to the pool when no longer needed.</param>
         /// <returns></returns>
-        public static Span<T> GetSpanAndRelease(BufferWriter<T> writer, out T[] leased)
+        public static Span<T> GetSpanAndRelease(BufferWriter<T> writer, out T[]? leased)
         {
             Span<T> span = writer.ToSpan(out leased);
             Release(writer);
