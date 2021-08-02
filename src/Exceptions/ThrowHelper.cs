@@ -61,7 +61,7 @@ namespace HeaplessUtility.Exceptions
 #endif
         public static void ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument argument)
         {
-            throw new ArgumentException("To array has insufficient capacity.", GetArgumentName(argument));
+            throw new ArgumentException("The array has insufficient capacity.", GetArgumentName(argument));
         }
 
 #if NETSTANDARD2_1

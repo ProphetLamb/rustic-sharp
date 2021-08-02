@@ -363,6 +363,41 @@ namespace HeaplessUtility.Pool
             _count = 0;
         }
 
+        /// <summary>
+        ///     Fill the segment of the list with the value. --or-- Clears the segment of the list if the <paramref name="element"/> is <see langword="default!"/>.
+        /// </summary>
+        /// <param name="element">The element with which to fill the segment.</param>
+        /// <param name="start">The zero-based index of the first element in the list.</param>
+        public void Fill(T element, int start) => Fill(element, start, Count - start);
+        
+        /// <summary>
+        ///     Fill the segment of the list with the value. --or-- Clears the segment of the list if the <paramref name="element"/> is <see langword="default!"/>.
+        /// </summary>
+        /// <param name="element">The element with which to fill the segment.</param>
+        /// <param name="start">The zero-based index of the first element in the list.</param>
+        /// <param name="count">The number of elements after the first element.</param>
+        public void Fill(T element, int start, int count)
+        {
+            if (start < 0)
+                ThrowHelper.ThrowArgumentOutOfRangeException_LessZero(ExceptionArgument.start);
+            if (count < 0)
+                ThrowHelper.ThrowArgumentOutOfRangeException_LessZero(ExceptionArgument.count);
+            if (Count - start < count)
+                ThrowHelper.ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument.count);
+            
+            if (_storage != null)
+            {
+                if (EqualityComparer<T>.Default.Equals(default!, element))
+                {
+                    Array.Clear(_storage, start, count);
+                }
+                else
+                {
+                    _storage.AsSpan(start, count).Fill(element);   
+                }
+            }
+        }
+
         /// <inheritdoc cref="List{T}.Contains"/>
         [Pure]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
