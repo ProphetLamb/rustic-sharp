@@ -176,5 +176,8 @@ namespace HeaplessUtility.Exceptions
         comparison,
         range
 // ReSharper restore InconsistentNaming
+,
+offset,
+elements
     }
 }

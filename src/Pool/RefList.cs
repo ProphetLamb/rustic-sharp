@@ -173,7 +173,7 @@ namespace HeaplessUtility.Pool
         }
 
         /// <summary>
-        ///     Gets a span of elements of elements from the specified <paramref name="range"/>.
+        ///     Gets or sets a span of elements of elements from the specified <paramref name="range"/>.
         /// </summary>
         /// <param name="range">The range of elements to get or set.</param>
         public ReadOnlySpan<T> this[Range range]
@@ -198,7 +198,7 @@ namespace HeaplessUtility.Pool
                 {
                     ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.value, "The length of the span is not equal to the lenght of the range.");
                 }
-                value.CopyTo(_storage.AsSpan(start, length));
+                FillRange(start, value.Slice(0, length));
             }
         }
 #endif
@@ -222,7 +222,7 @@ namespace HeaplessUtility.Pool
             return Capacity;
         }
 
-#if NET50_OR_GREATER || NETCOREAPP3_1
+#if NET50 || NETCOREAPP3_1
         /// <summary>
         ///     Get a pinnable reference to the list.
         ///     This overload is pattern matched in the C# 7.3+ compiler so you can omit
@@ -382,7 +382,7 @@ namespace HeaplessUtility.Pool
                 ThrowHelper.ThrowArgumentOutOfRangeException_LessZero(ExceptionArgument.start);
             if (count < 0)
                 ThrowHelper.ThrowArgumentOutOfRangeException_LessZero(ExceptionArgument.count);
-            if (Count - start < count)
+            if (_count - start < count)
                 ThrowHelper.ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument.count);
             
             if (_storage != null)
@@ -396,6 +396,21 @@ namespace HeaplessUtility.Pool
                     _storage.AsSpan(start, count).Fill(element);   
                 }
             }
+        }
+
+        /// <summary>
+        ///     Fills a segment of the list at the <paramref name="offset"/> with <paramref name="elements"/>.
+        /// </summary>
+        /// <param name="offset">The zero-based offset of the first element.</param>
+        /// <param name="elements">The elements to fill the segment with.</param>
+        public void FillRange(int offset, ReadOnlySpan<T> elements)
+        {
+            if (offset < 0)
+                ThrowHelper.ThrowArgumentOutOfRangeException_LessZero(ExceptionArgument.offset);
+            if (_count - offset < elements.Length)
+                ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.elements, offset + elements.Length);
+
+            elements.CopyTo(_storage.AsSpan(offset));
         }
 
         /// <inheritdoc cref="List{T}.Contains"/>
@@ -419,7 +434,7 @@ namespace HeaplessUtility.Pool
         /// <inheritdoc cref="Span{T}.CopyTo"/>
         public void CopyTo(Span<T> destination)
         {
-            _storage.CopyTo(destination);
+            _storage?.CopyTo(destination);
         }
         
         /// <inheritdoc cref="ICollection{T}.CopyTo"/>
@@ -430,6 +445,23 @@ namespace HeaplessUtility.Pool
                 return;
             }
             Array.Copy(_storage, 0, array, arrayIndex, _count);
+        }
+        
+        /// <inheritdoc cref="List{T}.CopyTo(int,T[],int,int)"/>
+        public void CopyTo(int offset, T[] destination, int start, int count)
+        {
+            if (offset < 0)
+                ThrowHelper.ThrowArgumentOutOfRangeException_LessZero(ExceptionArgument.offset);
+            if (_count - offset < count)
+                ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.elements, offset + count);
+            
+            if (count == 0)
+            {
+                return;
+            }
+            ThrowHelper.ThrowIfObjectNotInitialized(_storage == null);
+
+            _storage.AsSpan(offset).CopyTo(destination.AsSpan(start, count));
         }
         
         /// <inheritdoc/>
