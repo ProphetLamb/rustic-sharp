@@ -21,9 +21,11 @@ namespace HeaplessUtility.Pool
         IList<T>,
         ICollection,
         IReadOnlyList<T>,
+        IStrongEnumerable<T, RefList<T>.Enumerator>,
         IDisposable
     {
         private T[]? _storage;
+        private readonly ushort _minimumCapacity;
         private int _count;
         private bool _isHeapBound;
 
@@ -32,7 +34,7 @@ namespace HeaplessUtility.Pool
         /// </summary>
         public RefList()
         {
-            
+            _minimumCapacity = 16;
         }
 
         /// <summary>
@@ -42,6 +44,7 @@ namespace HeaplessUtility.Pool
         public RefList(T[] initialBuffer)
         {
             _storage = initialBuffer;
+            _minimumCapacity = 16;
             _count = 0;
             _isHeapBound = false;
         }
@@ -49,10 +52,17 @@ namespace HeaplessUtility.Pool
         /// <summary>
         ///     Initializes a new list with a specified minimum initial capacity.
         /// </summary>
-        /// <param name="initialMinimumCapacity">The minimum initial capacity.</param>
-        public RefList(int initialMinimumCapacity)
+        /// <param name="initialCapacity">The minimum initial capacity.</param>
+        public RefList(int initialCapacity)
         {
-            _storage = ArrayPool<T>.Shared.Rent(initialMinimumCapacity);
+            ushort minimumCapacity = (ushort)initialCapacity;
+            if (minimumCapacity != initialCapacity)
+            {
+                ThrowHelper.ThrowArgumentOutOfRangeException_OverEqualsMax(ExceptionArgument.initialCapacity, initialCapacity, UInt16.MaxValue);
+            }
+            
+            _storage = null;
+            _minimumCapacity = minimumCapacity;
             _count = 0;
             _isHeapBound = false;
         }
@@ -63,7 +73,7 @@ namespace HeaplessUtility.Pool
             get
             {
                 ThrowHelper.ThrowIfObjectNotInitialized(_storage == null);
-                return _storage.Length;
+                return _storage!.Length;
             }
         }
 
@@ -73,8 +83,11 @@ namespace HeaplessUtility.Pool
             get => _count;
             set
             {
-                Debug.Assert(value >= 0);
-                Debug.Assert(_storage == null || value <= _storage.Length);
+                ThrowHelper.ThrowIfObjectNotInitialized(_storage == null);
+                if ((uint) value >= (uint)_storage!.Length)
+                {
+                    ThrowHelper.ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument.value);
+                }
                 _count = value;
             }
         }
@@ -127,9 +140,12 @@ namespace HeaplessUtility.Pool
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
+                if ((uint)index >= (uint)_count)
+                {
+                    ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.index, index);
+                }
                 ThrowHelper.ThrowIfObjectNotInitialized(_storage == null);
-                Debug.Assert(index < _count);
-                return ref _storage[index];
+                return ref _storage![index];
             }
         }
 
@@ -138,6 +154,7 @@ namespace HeaplessUtility.Pool
         /// <inheritdoc/>
         T IReadOnlyList<T>.this[int index] => this[index];
 
+#if NETSTANDARD2_1
         /// <summary>
         ///     Gets or sets the element at the specified <paramref name="index"/>.
         /// </summary>
@@ -184,6 +201,7 @@ namespace HeaplessUtility.Pool
                 value.CopyTo(_storage.AsSpan(start, length));
             }
         }
+#endif
 
         /// <summary>
         ///     Ensures that the list has a minimum capacity. 
@@ -221,6 +239,7 @@ namespace HeaplessUtility.Pool
             return ref ret;
         }
 #endif
+
         /// <summary>
         ///     Returns a span around the contents of the list.
         /// </summary>
@@ -709,20 +728,22 @@ namespace HeaplessUtility.Pool
                 }
                 else
                 {
-                    _storage = ArrayPool<T>.Shared.Rent(additionalCapacityBeyondPos);
+                    _storage = ArrayPool<T>.Shared.Rent((int)Math.Max(_minimumCapacity, (uint)additionalCapacityBeyondPos));
                 }
             }
             else
             {
                 if (_storage != null)
                 {
+                    Debug.Assert(_count > _storage.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
+
                     T[] storage = new T[(int)Math.Max((uint)(_count + additionalCapacityBeyondPos), (uint)_storage.Length * 2)];
                     Array.Copy(_storage, 0, storage, 0, _count);
                     _storage = storage;
                 }
                 else
                 {
-                    _storage = new T[Math.Max(16, (uint)additionalCapacityBeyondPos)];
+                    _storage = new T[Math.Max(_minimumCapacity, (uint)additionalCapacityBeyondPos)];
                 }
             }
         }

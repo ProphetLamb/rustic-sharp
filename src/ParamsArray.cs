@@ -3,9 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using HeaplessUtility.Exceptions;
+
+using JetBrains.Annotations;
 
 namespace HeaplessUtility
 {
@@ -27,7 +28,7 @@ namespace HeaplessUtility
         /// <param name="arg0">The first argument.</param>
         public static ParamsArray<T> From<T>(in T arg0)
         {
-            return new(1, arg0, default, default, default);
+            return new(1, arg0, default!, default!, default!);
         }
         
         /// <summary>
@@ -37,7 +38,7 @@ namespace HeaplessUtility
         /// <param name="arg1">The second argument.</param>
         public static ParamsArray<T> From<T>(in T arg0, in T arg1)
         {
-            return new(2, arg0, arg1, default, default);
+            return new(2, arg0, arg1, default!, default!);
         }
         
         /// <summary>
@@ -48,7 +49,7 @@ namespace HeaplessUtility
         /// <param name="arg2">The third argument.</param>
         public static ParamsArray<T> From<T>(in T arg0, in T arg1, in T arg2)
         {
-            return new(3, arg0, arg1, arg2, default);
+            return new(3, arg0, arg1, arg2, default!);
         }
         
         /// <summary>
@@ -99,14 +100,36 @@ namespace HeaplessUtility
     /// </summary>
     [DebuggerDisplay("{GetDebuggerDisplay(),nq}")]
     public readonly struct ParamsArray<T>
-        : IReadOnlyList<T>
+        : IReadOnlyList<T>,
+          IStrongEnumerable<T, ParamsArray<T>.Enumerator>
     {
         private readonly int _length;
-        [AllowNull] private readonly T _arg0;
-        [AllowNull] private readonly T _arg1;
-        [AllowNull] private readonly T _arg2;
-        [AllowNull] private readonly T _arg3;
+        [CanBeNull]
+#if NETSTANDARD2_1
+        [AllowNull]
+#endif
+        private readonly T _arg0;
+        [CanBeNull]
+#if NETSTANDARD2_1
+        [AllowNull]
+#endif
+        private readonly T _arg1; 
+        [CanBeNull]
+#if NETSTANDARD2_1
+        [AllowNull]
+#endif
+        private readonly T _arg2; 
+        [CanBeNull]
+#if NETSTANDARD2_1
+        [AllowNull]
+#endif
+        private readonly T _arg3;
+        
+#if NETSTANDARD2_0 
+        private readonly ArraySegmentIterator<T> _params;
+#else
         private readonly ArraySegment<T> _params;
+#endif
 
         /// <summary>
         ///     Initializes a new parameter span with one argument.
@@ -116,7 +139,29 @@ namespace HeaplessUtility
         /// <param name="arg1">The second argument.</param>
         /// <param name="arg2">The third argument.</param>
         /// <param name="arg3">The fourth argument.</param>
-        internal ParamsArray(int length, [AllowNull] in T arg0, [AllowNull] in T arg1, [AllowNull] in T arg2, [AllowNull] in T arg3)
+        internal ParamsArray(int length,
+            [CanBeNull]
+#if NETSTANDARD2_1
+            [AllowNull]
+#endif
+            in T arg0,
+             
+            [CanBeNull]
+#if NETSTANDARD2_1
+            [AllowNull]
+#endif
+            in T arg1,
+             
+            [CanBeNull]
+#if NETSTANDARD2_1
+            [AllowNull]
+#endif
+            in T arg2, 
+            [CanBeNull]
+#if NETSTANDARD2_1
+            [AllowNull]
+#endif
+            in T arg3)
         {
             if ((uint)length > 4)
             {
@@ -137,14 +182,19 @@ namespace HeaplessUtility
         /// <param name="segment">The segment of parameters.</param>
         internal ParamsArray(in ArraySegment<T> segment)
         {
+#if NETSTANDARD2_0
+            _params = segment.GetIterator();
+#else
             _params = segment;
-            _length = segment.Count;
+#endif
+
+            _length = _params.Count;
 
             int i = 0;
-            _arg0 = _length > 0 ? segment[i++] : default!;
-            _arg1 = _length > 1 ? segment[i++] : default!;
-            _arg2 = _length > 2 ? segment[i++] : default!;
-            _arg3 = _length > 3 ? segment[i] : default!;
+            _arg0 = _length > 0 ? _params[i++] : default!;
+            _arg1 = _length > 1 ? _params[i++] : default!;
+            _arg2 = _length > 2 ? _params[i++] : default!;
+            _arg3 = _length > 3 ? _params[i] : default!;
         }
 
         /// <summary>The number of items in the params span.</summary>
@@ -286,13 +336,13 @@ namespace HeaplessUtility
 
         /// <summary>Retrieves the backing span of the <see cref="ParamsArray{T}"/> or allocates a array which is returned as a span.</summary>
         /// <returns>The span containing all items.</returns>
-        [Pure]
+        [System.Diagnostics.Contracts.Pure]
         public ReadOnlySpan<T> ToSpan() => ToSpan(false);
         
         /// <summary>Returns the span representation of the <see cref="ParamsArray{T}"/>.</summary>
         /// <param name="onlyIfCheap">Whether return an empty span instead of allocating an array, if no span is backing the <see cref="ParamsArray{T}"/>.</param>
         /// <returns>The span containing all items.</returns>
-        [Pure]
+        [System.Diagnostics.Contracts.Pure]
         public ReadOnlySpan<T> ToSpan(bool onlyIfCheap)
         {
             if (onlyIfCheap || IsEmpty || _params.Count > 0)
@@ -341,7 +391,7 @@ namespace HeaplessUtility
         }
 
         /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
-        [Pure]
+        [System.Diagnostics.Contracts.Pure]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Enumerator GetEnumerator() => new(this);
 

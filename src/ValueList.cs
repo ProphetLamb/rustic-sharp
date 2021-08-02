@@ -70,6 +70,7 @@ namespace HeaplessUtility
             }
         }
 
+#if NETSTANDARD2_1
         /// <summary>
         ///     Gets or sets the element at the specified <paramref name="index"/>.
         /// </summary>
@@ -116,6 +117,7 @@ namespace HeaplessUtility
                 value.CopyTo(_storage.Slice(start, length));
             }
         }
+#endif
 
         /// <summary>
         ///     Ensures that the list has a minimum capacity. 
