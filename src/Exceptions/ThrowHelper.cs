@@ -144,20 +144,43 @@ namespace HeaplessUtility.Exceptions
 #if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [DoesNotReturn]
 #endif
-        public static void ThrowArgumentNullException(ExceptionArgument comparison)
+        public static void ThrowArgumentNullException(ExceptionArgument argument)
         {
-            throw new ArgumentNullException(GetArgumentName(comparison), "The value cannot be null or default.");
+            throw new ArgumentNullException(GetArgumentName(argument), "The value cannot be null or default.");
         }
 
         public static void ThrowArgumentOutOfRangeException(ExceptionArgument argument, string? message)
         {
             throw new ArgumentOutOfRangeException(GetArgumentName(argument), message);
         }
+
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
+        [DoesNotReturn]
+#endif
+        public static void ThrowArgumentException_UnsupportedObjectType(ExceptionArgument argument)
+        {
+            throw new ArgumentException("The type of the object is not supported.", GetArgumentName(argument));
+        }
+
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
+        [DoesNotReturn]
+#endif
+        public static void ThrowArgumentException_ArraysLengthNotEquals(ExceptionArgument argument)
+        {
+            throw new ArgumentException("The length of the array is not equal to the length of the reference array.", GetArgumentName(argument));
+        }
+
+#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
+        [DoesNotReturn]
+#endif
+        public static void ThrowInvalidOperationException_EnumeratorInvalidCollectionVersion()
+        {
+            throw new InvalidOperationException("The enumerator is for a different version of the collection.");
+        }
     }
 
     internal enum ExceptionArgument
-    {
-// ReSharper disable InconsistentNaming
+    { // ReSharper disable InconsistentNaming
         index,
         arrayIndex,
         array,
@@ -171,10 +194,11 @@ namespace HeaplessUtility.Exceptions
         amount,
         position,
         comparison,
-        range
-// ReSharper restore InconsistentNaming
-,
-offset,
-elements
-    }
+        range,
+        offset,
+        elements,
+        values,
+        comparer,
+        other
+    } // ReSharper restore InconsistentNaming
 }
