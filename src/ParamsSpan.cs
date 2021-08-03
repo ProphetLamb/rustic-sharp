@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using System.Text;
 using HeaplessUtility.Exceptions;
@@ -367,10 +368,46 @@ namespace HeaplessUtility
         }
 
         /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
-        [System.Diagnostics.Contracts.Pure]
+        [Pure]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Enumerator GetEnumerator() => new(this);
 
+        /// <summary>
+        /// Creates a new <see cref="ParamsSpan{T}"/> with the contents of the <paramref name="span"/>. 
+        /// </summary>
+        /// <param name="span">The span to wrap.</param>
+        /// <returns>The <see cref="ParamsSpan{T}"/> representation of the <paramref name="span"/>.</returns>
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static implicit operator ParamsSpan<T>(in ReadOnlySpan<T> span) => new(span);
+
+        /// <summary>
+        /// Creates a new <see cref="ParamsSpan{T}"/> containing the first and second element of the tuple.
+        /// </summary>
+        /// <param name="tuple">The tuple to wrap.</param>
+        /// <returns>The <see cref="ParamsSpan{T}"/> representation of the <paramref name="tuple"/>.</returns>
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static implicit operator ParamsSpan<T>(in ValueTuple<T, T> tuple) => ParamsSpan.From(tuple.Item1, tuple.Item2);
+
+        /// <summary>
+        /// Creates a new <see cref="ParamsSpan{T}"/> containing the first, second and third element of the tuple.
+        /// </summary>
+        /// <param name="tuple">The tuple to wrap.</param>
+        /// <returns>The <see cref="ParamsSpan{T}"/> representation of the <paramref name="tuple"/>.</returns>
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static implicit operator ParamsSpan<T>(in ValueTuple<T, T, T> tuple) => ParamsSpan.From(tuple.Item1, tuple.Item2, tuple.Item3);
+
+        /// <summary>
+        /// Creates a new <see cref="ParamsSpan{T}"/> containing the first, second, third and fourth element of the tuple.
+        /// </summary>
+        /// <param name="tuple">The tuple to wrap.</param>
+        /// <returns>The <see cref="ParamsSpan{T}"/> representation of the <paramref name="tuple"/>.</returns>
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static implicit operator ParamsSpan<T>(in ValueTuple<T, T, T, T> tuple) => ParamsSpan.From(tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4);
+        
         /// <summary>Enumerates the elements of a <see cref="ParamsSpan{T}"/>.</summary>
         public ref struct Enumerator
         {

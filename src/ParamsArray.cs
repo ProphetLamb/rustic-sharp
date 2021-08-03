@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using HeaplessUtility.Exceptions;
 using HeaplessUtility.Interfaces;
@@ -388,6 +389,42 @@ namespace HeaplessUtility
 
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        /// <summary>
+        /// Creates a new <see cref="ParamsArray{T}"/> with the contents of the <paramref name="segment"/>. 
+        /// </summary>
+        /// <param name="segment">The span to wrap.</param>
+        /// <returns>The <see cref="ParamsArray{T}"/> representation of the <paramref name="segment"/>.</returns>
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static implicit operator ParamsArray<T>(in ArraySegment<T> segment) => new(segment);
+
+        /// <summary>
+        /// Creates a new <see cref="ParamsArray{T}"/> containing the first and second element of the tuple.
+        /// </summary>
+        /// <param name="tuple">The tuple to wrap.</param>
+        /// <returns>The <see cref="ParamsArray{T}"/> representation of the <paramref name="tuple"/>.</returns>
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static implicit operator ParamsArray<T>(in ValueTuple<T, T> tuple) => ParamsArray.From(tuple.Item1, tuple.Item2);
+
+        /// <summary>
+        /// Creates a new <see cref="ParamsArray{T}"/> containing the first, second and third element of the tuple.
+        /// </summary>
+        /// <param name="tuple">The tuple to wrap.</param>
+        /// <returns>The <see cref="ParamsArray{T}"/> representation of the <paramref name="tuple"/>.</returns>
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static implicit operator ParamsArray<T>(in ValueTuple<T, T, T> tuple) => ParamsArray.From(tuple.Item1, tuple.Item2, tuple.Item3);
+
+        /// <summary>
+        /// Creates a new <see cref="ParamsArray{T}"/> containing the first, second, third and fourth element of the tuple.
+        /// </summary>
+        /// <param name="tuple">The tuple to wrap.</param>
+        /// <returns>The <see cref="ParamsArray{T}"/> representation of the <paramref name="tuple"/>.</returns>
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static implicit operator ParamsArray<T>(in ValueTuple<T, T, T, T> tuple) => ParamsArray.From(tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4);
 
         /// <summary>Enumerates the elements of a <see cref="ParamsArray{T}"/>.</summary>
         public struct Enumerator : IEnumerator<T>
