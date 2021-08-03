@@ -293,7 +293,7 @@ namespace HeaplessUtility
         ///     Sorts the elements in the entire <see cref="Span{T}" /> using the <typeparamref name="TComparer" />.
         /// </summary>
         /// <param name="span">The <see cref="Span{T}"/> to sort.</param>
-        /// <param name="comparer"></param>
+        /// <param name="comparer">The <see cref="Comparer{T}"/> used to compare elements.</param>
         /// <typeparam name="T">The type of the elements of the span.</typeparam>
         /// <typeparam name="TComparer">The type of the comparer to use to compare elements.</typeparam>
         public static void Sort<T, TComparer>(this Span<T> span, TComparer comparer)
@@ -314,14 +314,74 @@ namespace HeaplessUtility
         public static void Sort<T>(this Span<T> span, Comparison<T>? comparison)
         {
             if (comparison == null)
-            {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.comparison);
-            }
+
             if (span.Length > 1)
             {
                 SpanSortHelper<T>.Sort(span, comparison);
             }
         }
 #endif
+
+        /// <summary>
+        ///     Sorts the <paramref name="keys"/> and <paramref name="values"/> using the key <see cref="Comparer{TKey}.Default"/>.
+        /// </summary>
+        /// <param name="keys">The keys to sort.</param>
+        /// <param name="values">The values to sort by the keys.</param>
+        /// <typeparam name="TKey">The type of the elements of the <paramref name="keys"/> span.</typeparam>
+        /// <typeparam name="TValue">The type of the elements of the <paramref name="values"/> span.</typeparam>
+        public static void Sort<TKey, TValue>(in this Span<TKey> keys, in Span<TValue> values)
+        {
+            if (keys.Length != values.Length)
+                ThrowHelper.ThrowArgumentException_ArraysLengthNotEquals(ExceptionArgument.values);
+
+            if (keys.Length == 1)
+            {
+                Sort(keys, values, Comparer<TKey>.Default);
+            }
+        }
+
+        /// <summary>
+        ///     Sorts the <paramref name="keys"/> and <paramref name="values"/> using the specified key <see cref="IComparer{TKey}"/>.
+        /// </summary>
+        /// <param name="keys">The keys to sort.</param>
+        /// <param name="values">The values to sort by the keys.</param>
+        /// <param name="comparer">The <see cref="Comparer{T}"/> used to compare elements.</param>
+        /// <typeparam name="TKey">The type of the elements of the <paramref name="keys"/> span.</typeparam>
+        /// <typeparam name="TValue">The type of the elements of the <paramref name="values"/> span.</typeparam>
+        /// <typeparam name="TKeyComparer">The type of the comparer to use to compare elements.</typeparam>
+        public static void Sort<TKey, TValue, TKeyComparer>(in this Span<TKey> keys, in Span<TValue> values, TKeyComparer comparer)
+            where TKeyComparer : IComparer<TKey>
+        {
+            if (keys.Length != values.Length)
+                ThrowHelper.ThrowArgumentException_ArraysLengthNotEquals(ExceptionArgument.values);
+
+            if (keys.Length == 1)
+            {
+                Sort(keys, values, comparer.Compare);
+            }
+        }
+        
+        /// <summary>
+        ///     Sorts the <paramref name="keys"/> and <paramref name="values"/> by the specified key <see cref="Comparison{TKey}"/>.
+        /// </summary>
+        /// <param name="keys">The keys to sort.</param>
+        /// <param name="values">The values to sort by the keys.</param>
+        /// <param name="comparison">The <see cref="Comparison{T}"/> to use when comparing elements.</param>
+        /// <typeparam name="TKey">The type of the elements of the <paramref name="keys"/> span.</typeparam>
+        /// <typeparam name="TValue">The type of the elements of the <paramref name="values"/> span.</typeparam>
+        public static void Sort<TKey, TValue>(in this Span<TKey> keys, in Span<TValue> values, Comparison<TKey> comparison)
+        {
+            if (comparison == null)
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.comparison);
+
+            if (keys.Length != values.Length)
+                ThrowHelper.ThrowArgumentException_ArraysLengthNotEquals(ExceptionArgument.values);
+
+            if (keys.Length > 1)
+            {
+                SpanSortHelper<TKey, TValue>.Sort(keys, values, comparison);
+            }
+        }
     }
 }

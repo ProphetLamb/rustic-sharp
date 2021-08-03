@@ -1,28 +1,27 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+
 using HeaplessUtility.Exceptions;
 
 namespace HeaplessUtility.Helpers
 {
-#if !NET50_OR_GREATER
-    // Source: https://source.dot.net/#System.Private.CoreLib/ArraySortHelper.cs
-    internal class SpanSortHelper<T>
+    internal static class SpanSortHelper<K, V>
     {
         // This is the threshold where Introspective sort switches to Insertion sort.
         // Empirically, 16 seems to speed up most cases without slowing down others, at least for integers.
         // Large value types may benefit from a smaller number.
         internal const int IntrosortSizeThreshold = 16;
 
-        internal static void Sort(in Span<T> keys, Comparison<T> comparer)
+        internal static void Sort(in Span<K> keys, in Span<V> values, Comparison<K> comparer)
         {
             Debug.Assert(comparer != null, "Check the arguments in the caller!");
+            Debug.Assert(keys.Length == values.Length, "Check the arguments in the caller!");
  
             // Add a try block here to detect bogus comparisons
             try
             {
-                IntrospectiveSort(keys, comparer);
+                IntrospectiveSort(keys, values, comparer);
             }
             catch (IndexOutOfRangeException)
             {
@@ -34,64 +33,42 @@ namespace HeaplessUtility.Helpers
             }
         }
  
-        internal static int InternalBinarySearch(T[] array, int index, int length, T value, IComparer<T> comparer)
-        {
-            Debug.Assert(array != null, "Check the arguments in the caller!");
-            Debug.Assert(index >= 0 && length >= 0 && (array.Length - index >= length), "Check the arguments in the caller!");
- 
-            int lo = index;
-            int hi = index + length - 1;
-            while (lo <= hi)
-            {
-                int i = lo + ((hi - lo) >> 1);
-                int order = comparer.Compare(array[i], value);
- 
-                if (order == 0) return i;
-                if (order < 0)
-                {
-                    lo = i + 1;
-                }
-                else
-                {
-                    hi = i - 1;
-                }
-            }
- 
-            return ~lo;
-        }
- 
 #nullable disable
-        private static void SwapIfGreater(in Span<T> keys, Comparison<T> comparer, int i, int j)
+        private static void SwapIfGreater(in Span<K> keys, in Span<V> values, Comparison<K> comparer, int i, int j)
         {
             Debug.Assert(i != j);
  
             if (comparer(keys[i], keys[j]) > 0)
             {
-                Swap(keys, i, j);
+                Swap(keys, values, i, j);
             }
         }
  
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void Swap(in Span<T> keys, int i, int j)
+        private static void Swap(in Span<K> keys, in Span<V> values, int i, int j)
         {
             Debug.Assert(i != j);
  
-            T key = keys[i];
+            K key = keys[i];
             keys[i] = keys[j];
+            V value = values[i];
+            values[i] = values[j];
             keys[j] = key;
+            values[j] = value;
         }
  
-        internal static void IntrospectiveSort(in Span<T> keys, Comparison<T> comparer)
+        internal static void IntrospectiveSort(in Span<K> keys, in Span<V> values, Comparison<K> comparer)
         {
             Debug.Assert(comparer != null);
+            Debug.Assert(keys.Length == values.Length);
  
             if (keys.Length > 1)
             {
-                IntroSort(keys, 2 * (BitMarker.Log2((uint)keys.Length) + 1), comparer);
+                IntroSort(keys, values, 2 * (BitMarker.Log2((uint)keys.Length) + 1), comparer);
             }
         }
- 
-        private static void IntroSort(in Span<T> keys, int depthLimit, Comparison<T> comparer)
+
+        private static void IntroSort(in Span<K> keys, in Span<V> values, int depthLimit, Comparison<K> comparer)
         {
             Debug.Assert(!keys.IsEmpty);
             Debug.Assert(depthLimit >= 0);
@@ -105,38 +82,38 @@ namespace HeaplessUtility.Helpers
  
                     if (partitionSize == 2)
                     {
-                        SwapIfGreater(keys, comparer, 0, 1);
+                        SwapIfGreater(keys, values, comparer, 0, 1);
                         return;
                     }
  
                     if (partitionSize == 3)
                     {
-                        SwapIfGreater(keys, comparer, 0, 1);
-                        SwapIfGreater(keys, comparer, 0, 2);
-                        SwapIfGreater(keys, comparer, 1, 2);
+                        SwapIfGreater(keys, values, comparer, 0, 1);
+                        SwapIfGreater(keys, values, comparer, 0, 2);
+                        SwapIfGreater(keys, values, comparer, 1, 2);
                         return;
                     }
  
-                    InsertionSort(keys.Slice(0, partitionSize), comparer);
+                    InsertionSort(keys.Slice(0, partitionSize), values.Slice(0, partitionSize), comparer);
                     return;
                 }
  
                 if (depthLimit == 0)
                 {
-                    HeapSort(keys.Slice(0, partitionSize), comparer);
+                    HeapSort(keys.Slice(0, partitionSize), values.Slice(0, partitionSize), comparer);
                     return;
                 }
                 depthLimit--;
  
-                int p = PickPivotAndPartition(keys.Slice(0, partitionSize), comparer);
+                int p = PickPivotAndPartition(keys.Slice(0, partitionSize), values.Slice(0, partitionSize), comparer);
  
                 // Note we've already partitioned around the pivot and do not have to move the pivot again.
-                IntroSort(keys.Slice(p+1, partitionSize - (p+1)), depthLimit, comparer);
+                IntroSort(keys.Slice(p+1, partitionSize - (p+1)), values.Slice(p+1, partitionSize - (p+1)), depthLimit, comparer);
                 partitionSize = p;
             }
         }
  
-        private static int PickPivotAndPartition(in Span<T> keys, Comparison<T> comparer)
+        private static int PickPivotAndPartition(in Span<K> keys, in Span<V> values, Comparison<K> comparer)
         {
             Debug.Assert(keys.Length >= IntrosortSizeThreshold);
             Debug.Assert(comparer != null);
@@ -147,12 +124,12 @@ namespace HeaplessUtility.Helpers
             int middle = hi >> 1;
  
             // Sort lo, mid and hi appropriately, then pick mid as the pivot.
-            SwapIfGreater(keys, comparer, 0, middle);  // swap the low with the mid point
-            SwapIfGreater(keys, comparer, 0, hi);   // swap the low with the high
-            SwapIfGreater(keys, comparer, middle, hi); // swap the middle with the high
+            SwapIfGreater(keys, values, comparer, 0, middle);  // swap the low with the mid point
+            SwapIfGreater(keys, values, comparer, 0, hi);   // swap the low with the high
+            SwapIfGreater(keys, values, comparer, middle, hi); // swap the middle with the high
  
-            T pivot = keys[middle];
-            Swap(keys, middle, hi - 1);
+            K pivot = keys[middle];
+            Swap(keys, values, middle, hi - 1);
             int left = 0, right = hi - 1;  // We already partitioned lo and hi and put the pivot in hi - 1.  And we pre-increment & decrement below.
  
             while (left < right)
@@ -163,18 +140,18 @@ namespace HeaplessUtility.Helpers
                 if (left >= right)
                     break;
  
-                Swap(keys, left, right);
+                Swap(keys, values, left, right);
             }
  
             // Put pivot in the right location.
             if (left != hi - 1)
             {
-                Swap(keys, left, hi - 1);
+                Swap(keys, values, left, hi - 1);
             }
             return left;
         }
- 
-        private static void HeapSort(in Span<T> keys, Comparison<T> comparer)
+
+        private static void HeapSort(in Span<K> keys, in Span<V> values, Comparison<K> comparer)
         {
             Debug.Assert(comparer != null);
             Debug.Assert(!keys.IsEmpty);
@@ -182,21 +159,22 @@ namespace HeaplessUtility.Helpers
             int n = keys.Length;
             for (int i = n >> 1; i >= 1; i--)
             {
-                DownHeap(keys, i, n, comparer);
+                DownHeap(keys, values, i, n, comparer);
             }
  
             for (int i = n; i > 1; i--)
             {
-                Swap(keys, 0, i - 1);
-                DownHeap(keys, 1, i - 1, comparer);
+                Swap(keys, values, 0, i - 1);
+                DownHeap(keys, values, 1, i - 1, comparer);
             }
         }
  
-        private static void DownHeap(in Span<T> keys, int i, int n, Comparison<T> comparer)
+        private static void DownHeap(in Span<K> keys, in Span<V> values, int i, int n, Comparison<K> comparer)
         {
             Debug.Assert(comparer != null);
  
-            T d = keys[i - 1];
+            K key = keys[i - 1];
+            V value = values[i - 1];
             while (i <= n >> 1)
             {
                 int child = 2 * i;
@@ -205,33 +183,37 @@ namespace HeaplessUtility.Helpers
                     child++;
                 }
  
-                if (!(comparer(d, keys[child - 1]) < 0))
+                if (!(comparer(key, keys[child - 1]) < 0))
                     break;
  
                 keys[i - 1] = keys[child - 1];
+                values[i - 1] = values[child - 1];
                 i = child;
             }
  
-            keys[i - 1] = d;
+            keys[i - 1] = key;
+            values[i - 1] = value;
         }
  
-        private static void InsertionSort(in Span<T> keys, Comparison<T> comparer)
+        private static void InsertionSort(in Span<K> keys, in Span<V> values, Comparison<K> comparer)
         {
             for (int i = 0; i < keys.Length - 1; i++)
             {
-                T t = keys[i + 1];
+                K key = keys[i + 1];
+                V value = values[i + 1];
  
                 int j = i;
-                while (j >= 0 && comparer(t, keys[j]) < 0)
+                while (j >= 0 && comparer(key, keys[j]) < 0)
                 {
                     keys[j + 1] = keys[j];
+                    values[j + 1] = values[j];
                     j--;
                 }
  
-                keys[j + 1] = t;
+                keys[j + 1] = key;
+                values[j + 1] = value;
             }
         }
 #nullable restore
     }
-#endif
 }
