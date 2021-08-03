@@ -13,7 +13,7 @@ namespace HeaplessUtility.Pool
         /// </summary>
         public const int MaxWriterCapacity = 420;
 
-        [ThreadStatic] private static BufferWriter<T>? t_cachedInstance;
+        [ThreadStatic] private static BufferWriter<T>? s_cachedInstance;
         
         /// <summary>
         ///     Gets a <see cref="BufferWriter{T}"/> with at least the specified <paramref name="capacity"/>.
@@ -23,12 +23,12 @@ namespace HeaplessUtility.Pool
         /// <remarks>If a <see cref="BufferWriter{T}"/> of an appropriate size is cached, it will be returned and the cache emptied.</remarks>
         public static BufferWriter<T> Acquire(int capacity = 16)
         {
-            BufferWriter<T>? writer = t_cachedInstance;
+            BufferWriter<T>? writer = s_cachedInstance;
             if (writer != null)
             {
                 if (capacity <= writer.Capacity)
                 {
-                    t_cachedInstance = null;
+                    s_cachedInstance = null;
                     writer.Clear();
                     return writer;
                 }
@@ -45,7 +45,7 @@ namespace HeaplessUtility.Pool
         {
             if (writer.Capacity <= 16)
             {
-                t_cachedInstance = writer;
+                s_cachedInstance = writer;
             }
         }
         

@@ -6,18 +6,13 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
-using HeaplessUtility.DebuggerViews;
+
+using HeaplessUtility.DebugViews;
 using HeaplessUtility.Exceptions;
 using HeaplessUtility.Interfaces;
 
 namespace HeaplessUtility.Pool
 {
-
-    internal unsafe struct Inlinearray
-    {
-        public fixed byte Storage[32];
-    }
-    
     /// <summary>
     ///     Reusable <see cref="IBufferWriter{T}"/> intended for use as a thread-static singleton.
     /// </summary>
@@ -47,7 +42,7 @@ namespace HeaplessUtility.Pool
     /// </code>
     /// </remarks>
     [DebuggerDisplay("Count: {Count}")]
-    [DebuggerTypeProxy(typeof(PoolBufferWriterDebuggerView<>))]
+    [DebuggerTypeProxy(typeof(PoolBufferWriterDebugView<>))]
     public sealed class BufferWriter<T> :
         IBufferWriter<T>,
         IList<T>,

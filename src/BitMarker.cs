@@ -93,10 +93,10 @@ namespace HeaplessUtility
 
             // This is equivalent of (uint)Math.BigMul(multiplier * value, divisor, out _). This version
             // is faster than BigMul currently because we only need the high bits.
-            uint highbits = (uint)(((((multiplier * value) >> 32) + 1) * divisor) >> 32);
+            uint hi = (uint)(((((multiplier * value) >> 32) + 1) * divisor) >> 32);
 
-            Debug.Assert(highbits == value % divisor);
-            return highbits;
+            Debug.Assert(hi == value % divisor);
+            return hi;
         }
 
         /// <summary>Performs a mod operation on a 32bit unsigned integer where the divisor is a multiple of 2.</summary>

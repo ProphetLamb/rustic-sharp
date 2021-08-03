@@ -133,9 +133,9 @@ namespace HeaplessUtility
         }
 
         /// <summary>
-        ///     Returns &amp; clears the <see cref="Token"/>, and moves the iterator to the first element after the token.
+        ///     Returns &amp; clears the <see cref="Token"/>, then moves the iterator to the first element after the token.
         /// </summary>
-        /// <returns>The span representing the token.</returns>
+        /// <returns>The span of the source sequence representing the token.</returns>
         public ReadOnlySpan<T> FinalizeToken()
         {
             ReadOnlySpan<T> token = Token;
@@ -205,7 +205,7 @@ namespace HeaplessUtility
         /// <param name="expectedSequence">The sequence of elements.</param>
         /// <returns><see langword="true"/> if the following elements are equal to the sequence of elements; otherwise, <see langword="false"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool ReadNextSequence(in ReadOnlySpan<T> expectedSequence)
+        public bool ReadNextSequence(in ParamsSpan<T> expectedSequence)
         {
             bool success = PeekNextSequence(expectedSequence, out int head);
             Head = head;
@@ -218,7 +218,7 @@ namespace HeaplessUtility
         /// <param name="expectedSequence">The sequence of elements.</param>
         /// <returns><see langword="true"/> if the following elements are equal to the sequence of elements; otherwise, <see langword="false"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryReadNextSequence(in ReadOnlySpan<T> expectedSequence)
+        public bool TryReadNextSequence(in ParamsSpan<T> expectedSequence)
         {
             if (PeekNextSequence(expectedSequence, out int head))
             {
@@ -236,7 +236,7 @@ namespace HeaplessUtility
         /// <param name="head">The position of the element after the sequence.</param>
         /// <returns><see langword="true"/> if the following elements are equal to the sequence of elements; otherwise, <see langword="false"/>.</returns>
         [Pure]
-        public bool PeekNextSequence(in ReadOnlySpan<T> expectedSequence, out int head)
+        public bool PeekNextSequence(in ParamsSpan<T> expectedSequence, out int head)
         {
             head = Head;
             if (head == _source.Length)
@@ -292,7 +292,7 @@ namespace HeaplessUtility
         /// </summary>
         /// <param name="expectedSequence">The expected sequence.</param>
         /// <returns><see langword="true"/> if the remaining elements contain the sequence of elements; otherwise, <see langword="false"/>.</returns>
-        public bool ReadSequence(in ReadOnlySpan<T> expectedSequence)
+        public bool ReadSequence(in ParamsSpan<T> expectedSequence)
         {
             bool success = PeekSequence(expectedSequence, out int head);
             Head = head;
@@ -305,7 +305,7 @@ namespace HeaplessUtility
         /// <param name="expectedSequence">The sequence of elements.</param>
         /// <returns><see langword="true"/> if the remaining elements contain the sequence of elements; otherwise, <see langword="false"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryReadSequence(in ReadOnlySpan<T> expectedSequence)
+        public bool TryReadSequence(in ParamsSpan<T> expectedSequence)
         {
             if (PeekSequence(expectedSequence, out int head))
             {
@@ -323,7 +323,7 @@ namespace HeaplessUtility
         /// <param name="head">The position of the element after the sequence.</param>
         /// <returns><see langword="true"/> if the remaining elements contain the sequence of elements; otherwise, <see langword="false"/>.</returns>
         [Pure]
-        public bool PeekSequence(in ReadOnlySpan<T> expectedSequence, out int head)
+        public bool PeekSequence(in ParamsSpan<T> expectedSequence, out int head)
         {
             head = Head;
             if (head == _source.Length)
@@ -532,7 +532,7 @@ namespace HeaplessUtility
             do
             {
                 T current = _source[head];
-                for(int i = 0; i < expected.Length; i++)
+                for (int i = 0; i < expected.Length; i++)
                 {
                     if (!comparer.Equals(expected[i], current))
                     {
