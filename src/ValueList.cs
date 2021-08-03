@@ -2,6 +2,7 @@
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -63,6 +64,7 @@ namespace HeaplessUtility
         /// <inheritdoc cref="List{T}.this"/>
         public ref T this[int index]
         {
+            [Pure]
             get
             {
                 Debug.Assert(index < _count);
@@ -77,6 +79,7 @@ namespace HeaplessUtility
         /// <param name="index">The index of the element to get or set.</param>
         public ref T this[Index index]
         {
+            [Pure]
             get
             {
                 int offset = index.GetOffset(_count);
@@ -94,6 +97,7 @@ namespace HeaplessUtility
         /// <param name="range">The range of elements to get or set.</param>
         public ReadOnlySpan<T> this[Range range]
         {
+            [Pure]
             get
             {
                 (int start, int length) = range.GetOffsetAndLength(_count);
@@ -152,11 +156,12 @@ namespace HeaplessUtility
         /// <summary>
         ///     Returns the underlying storage of the list.
         /// </summary>
-        internal Span<T> RawStorage => _storage;
+        public Span<T> RawStorage => _storage;
 
         /// <summary>
         ///     Returns a span around the contents of the list.
         /// </summary>
+        [Pure]
         public ReadOnlySpan<T> AsSpan()
         {
             return _storage.Slice(0, _count);
@@ -167,6 +172,7 @@ namespace HeaplessUtility
         /// </summary>
         /// <param name="start">The zero-based index of the first element.</param>
         /// <returns>The span representing the content.</returns>
+        [Pure]
         public ReadOnlySpan<T> AsSpan(int start)
         {
             return _storage.Slice(start, _count - start);
@@ -177,10 +183,46 @@ namespace HeaplessUtility
         /// </summary>
         /// <param name="start">The zero-based index of the first element.</param>
         /// <param name="length">The number of elements from the <paramref name="start"/>.</param>
-        /// <returns></returns>
+        /// <returns>The span representing the content.</returns>
+        [Pure]
         public ReadOnlySpan<T> AsSpan(int start, int length)
         {
             return _storage.Slice(start, length);
+        }
+
+        /// <summary>
+        ///     Fill the segment of the list with the value. --or-- Clears the segment of the list if the <paramref name="element"/> is <see langword="default!"/>.
+        /// </summary>
+        /// <param name="element">The element with which to fill the segment.</param>
+        /// <param name="start">The zero-based index of the first element in the list.</param>
+        public void Fill(T element, int start) => Fill(element, start, Count - start);
+        
+        /// <summary>
+        ///     Fill the segment of the list with the value. --or-- Clears the segment of the list if the <paramref name="element"/> is <see langword="default!"/>.
+        /// </summary>
+        /// <param name="element">The element with which to fill the segment.</param>
+        /// <param name="start">The zero-based index of the first element in the list.</param>
+        /// <param name="count">The number of elements after the first element.</param>
+        public void Fill(T element, int start, int count)
+        {
+            if (start < 0)
+                ThrowHelper.ThrowArgumentOutOfRangeException_LessZero(ExceptionArgument.start);
+            if (count < 0)
+                ThrowHelper.ThrowArgumentOutOfRangeException_LessZero(ExceptionArgument.count);
+            if (_count - start < count)
+                ThrowHelper.ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument.count);
+            
+            if (_storage != null && count != 0)
+            {
+                if (EqualityComparer<T>.Default.Equals(default!, element))
+                {
+                    _storage.Slice(start, count).Clear();
+                }
+                else
+                {
+                    _storage.Slice(start, count).Fill(element);   
+                }
+            }
         }
 
         /// <inheritdoc cref="List{T}.Add"/>
@@ -233,18 +275,21 @@ namespace HeaplessUtility
         }
 
         /// <inheritdoc cref="List{T}.BinarySearch(T)"/>
+        [Pure]
         public int BinarySearch(in T item)
         {
             return _storage.BinarySearch(item, Comparer<T>.Default);
         }
 
         /// <inheritdoc cref="List{T}.BinarySearch(T, IComparer{T})"/>
+        [Pure]
         public int BinarySearch(in T item, IComparer<T> comparer)
         {
             return _storage.BinarySearch(item, comparer);
         }
 
         /// <inheritdoc cref="List{T}.BinarySearch(int, int, T, IComparer{T})"/>
+        [Pure]
         public int BinarySearch(int index, int count, in T item, IComparer<T> comparer)
         {
             return _storage.Slice(index, count).BinarySearch(item, comparer);
@@ -266,6 +311,7 @@ namespace HeaplessUtility
         }
 
         /// <inheritdoc cref="List{T}.Contains"/>
+        [Pure]
         public bool Contains(in T item) => IndexOf(item, null) >= 0;
         
         /// <summary>
@@ -274,6 +320,7 @@ namespace HeaplessUtility
         /// <param name="item">The object to locate in the list. The value can be null for reference types.</param>
         /// <param name="comparer">The comparer used to determine whether two items are equal.</param>
         /// <returns><see langword="true"/> if item is found in the list; otherwise, <see langword="false"/>.</returns>
+        [Pure]
         public bool Contains(in T item, IEqualityComparer<T>? comparer) => IndexOf(item, comparer) >= 0;
 
         /// <inheritdoc cref="Span{T}.CopyTo"/>
@@ -283,9 +330,11 @@ namespace HeaplessUtility
         }
         
         /// <inheritdoc cref="IList{T}.IndexOf"/>
+        [Pure]
         public int IndexOf(in T item) => IndexOf(item, null);
 
         /// <inheritdoc cref="IList{T}.IndexOf"/>
+        [Pure]
         public int IndexOf(in T item, IEqualityComparer<T>? comparer)
         {
             if (comparer == null)
@@ -366,9 +415,11 @@ namespace HeaplessUtility
         }
         
         /// <inheritdoc cref="List{T}.LastIndexOf(T)"/>
+        [Pure]
         public int LastIndexOf(in T item) => LastIndexOf(item, null);
 
         /// <inheritdoc cref="List{T}.LastIndexOf(T)"/>
+        [Pure]
         public int LastIndexOf(in T item, IEqualityComparer<T>? comparer)
         {
             if (comparer == null)
@@ -447,7 +498,7 @@ namespace HeaplessUtility
 
             _count = end;
         }
-
+        
         /// <inheritdoc cref="List{T}.Reverse()"/>
         public void Reverse() => _storage.Slice(0, _count).Reverse();
 
@@ -505,7 +556,52 @@ namespace HeaplessUtility
             _storage.Slice(start, count).Sort(comparer);
         }
 
+        /// <summary>
+        /// Determines whether two lists are equal by comparing the elements using the <paramref name="comparer"/>.
+        /// </summary>
+        /// <param name="other">The list to compare to.</param>
+        /// <param name="comparer">The compares used to determine whether two elements are equal.</param>
+        [Pure]
+        public bool SequenceEqual(in ValueList<T> other, IEqualityComparer<T> comparer)
+        {
+            Span<T> raw = RawStorage, otherRaw = other.RawStorage;
+            int length = Count;
+            if (length != other.Count)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < length; i++)
+            {
+                if (comparer.Equals(raw[i], otherRaw[i]))
+                {
+                    continue;
+                }
+
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Determines the relative order of the lists being compared by comparing the elements the <paramref name="comparer"/>.
+        /// </summary>
+        /// <param name="other">The list to compare to.</param>
+        /// <param name="comparer">The compares used to compare two elements.</param>
+        [Pure]
+        public int SequenceCompareTo(in ValueList<T> other, IComparer<T> comparer)
+        {
+            if (IsEmpty && other.IsEmpty)
+                return 0;
+            if (IsEmpty || other.IsEmpty)
+                return Count.CompareTo(other.Count);
+            return RefListExtensions.SequenceCompareHelper(ref MemoryMarshal.GetReference(RawStorage), Count,
+                ref MemoryMarshal.GetReference(other.RawStorage), other.Count, comparer);
+        }
+
         /// <inheritdoc cref="Span{T}.ToArray"/>
+        [Pure]
         public T[] ToArray()
         {
             T[] array = new T[_count];
@@ -517,6 +613,7 @@ namespace HeaplessUtility
         /// Creates a <see cref="List{T}"/> from a <see cref="ValueList{T}"/>.
         /// </summary>
         /// <returns>A <see cref="List{T}"/> that contains elements form the input sequence.</returns>
+        [Pure]
         public List<T> ToList()
         {
             List<T> list = new(_count);
@@ -616,7 +713,7 @@ namespace HeaplessUtility
             /// <summary>Initialize the enumerator.</summary>
             /// <param name="list">The list to enumerate.</param>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public Enumerator(ValueList<T> list)
+            internal Enumerator(ValueList<T> list)
             {
                 _list = list;
                 _index = -1;
