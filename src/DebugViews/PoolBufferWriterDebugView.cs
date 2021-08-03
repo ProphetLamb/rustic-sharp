@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Diagnostics;
+
 using HeaplessUtility.Exceptions;
 using HeaplessUtility.Pool;
 
-namespace HeaplessUtility.DebuggerViews
+namespace HeaplessUtility.DebugViews
 {
-    internal sealed class PoolBufferWriterDebuggerView<T>
+    internal sealed class PoolBufferWriterDebugView<T>
     {
         private readonly WeakReference<BufferWriter<T>> _writerRef;
 
-        public PoolBufferWriterDebuggerView(BufferWriter<T> writer)
+        public PoolBufferWriterDebugView(BufferWriter<T> writer)
         {
             _writerRef = new WeakReference<BufferWriter<T>>(writer);
         }
