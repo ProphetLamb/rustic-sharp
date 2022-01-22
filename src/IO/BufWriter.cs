@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 using HeaplessUtility.DebuggerViews;
 using HeaplessUtility.Exceptions;
 
-namespace HeaplessUtility.Pool
+namespace HeaplessUtility.IO
 {
     /// <summary>
     ///     Reusable <see cref="IBufferWriter{T}"/> intended for use as a thread-static singleton.
@@ -20,7 +20,7 @@ namespace HeaplessUtility.Pool
     /// <code>
     ///     var obj = [...]
     /// <br/>
-    ///     PoolBufferWriter&lt;byte&gt; writer = new();
+    ///     BufWriter&lt;byte&gt; writer = new();
     /// <br/>
     ///     Serializer.Serialize(writer, obj);
     /// <br/>
@@ -32,7 +32,7 @@ namespace HeaplessUtility.Pool
     /// <code>
     ///     var obj = [...]
     /// <br/>
-    ///     PoolBufferWriter&lt;byte&gt; writer = new();
+    ///     BufWriter&lt;byte&gt; writer = new();
     /// <br/>
     ///     Serializer.Serialize(writer, obj);
     /// <br/>
@@ -40,8 +40,8 @@ namespace HeaplessUtility.Pool
     /// </code>
     /// </remarks>
     [DebuggerDisplay("Count: {Count}")]
-    [DebuggerTypeProxy(typeof(PoolBufferWriterDebuggerView<>))]
-    public sealed class BufferWriter<T> :
+    [DebuggerTypeProxy(typeof(PoolBufWriterDebuggerView<>))]
+    public sealed class BufWriter<T> :
         IBufferWriter<T>,
         IList<T>,
         ICollection,
@@ -51,11 +51,11 @@ namespace HeaplessUtility.Pool
         private T[]? _buffer;
         private readonly int _minimumCapacity;
         private int _index;
-        
+
         /// <summary>
-        ///     Initializes a new instance of <see cref="BufferWriter{T}"/>.
+        ///     Initializes a new instance of <see cref="BufWriter{T}"/>.
         /// </summary>
-        public BufferWriter()
+        public BufWriter()
         {
             _buffer = null;
             _minimumCapacity = 16;
@@ -63,10 +63,10 @@ namespace HeaplessUtility.Pool
         }
 
         /// <summary>
-        ///     Initializes a new instance of <see cref="BufferWriter{T}"/>.
+        ///     Initializes a new instance of <see cref="BufWriter{T}"/>.
         /// </summary>
         /// <param name="initialCapacity">The minimum capacity of the writer.</param>
-        public BufferWriter(int initialCapacity)
+        public BufWriter(int initialCapacity)
         {
             if (initialCapacity <= 0)
             {
@@ -81,7 +81,7 @@ namespace HeaplessUtility.Pool
         /// <summary>
         ///     Returns the underlying storage of the list.
         /// </summary>
-        internal Span<T> RawStorage => _buffer; 
+        internal Span<T> RawStorage => _buffer;
 
         /// <inheritdoc cref="List{T}.Count" />
         public int Count => _index;
@@ -94,7 +94,7 @@ namespace HeaplessUtility.Pool
 
         /// <inheritdoc />
         bool ICollection<T>.IsReadOnly => false;
-        
+
         /// <summary>
         ///     The current capacity of the writer.
         /// </summary>
@@ -107,6 +107,7 @@ namespace HeaplessUtility.Pool
         /// <inheritdoc cref="IList{T}.this"/>
         public ref T this[int index]
         {
+            [Pure]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
@@ -194,6 +195,7 @@ namespace HeaplessUtility.Pool
         }
 
         /// <inheritdoc />
+        [Pure]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(T item) => IndexOf(item) >= 0;
 
@@ -209,7 +211,7 @@ namespace HeaplessUtility.Pool
 
             return -1;
         }
-        
+
         /// <inheritdoc cref="IList{T}.Insert(int,T)" />
         public void Insert(int index, T item)
         {
@@ -219,7 +221,7 @@ namespace HeaplessUtility.Pool
             }
 
             int remaining = _index - index;
-            
+
             if (remaining != 0)
             {
                 Array.Copy(_buffer!, index, _buffer!, index + 1, remaining);
@@ -238,12 +240,12 @@ namespace HeaplessUtility.Pool
             ThrowHelper.ThrowIfObjectDisposed(_buffer == null);
 
             int remaining = _index - index - 1;
-            
+
             if (remaining != 0)
             {
                 Array.Copy(_buffer, index + 1, _buffer, index, remaining);
             }
-            
+
             _buffer![--_index] = default!;
         }
 
@@ -283,7 +285,7 @@ namespace HeaplessUtility.Pool
         }
 
         /// <inheritdoc />
-        void ICollection.CopyTo(Array array, int index) => CopyTo((T[]) array, index);
+        void ICollection.CopyTo(Array array, int index) => CopyTo((T[])array, index);
 
         /// <summary>
         /// Returns the <see cref="Span{T}"/> representing the written / requested to portion of the buffer.
@@ -360,7 +362,7 @@ namespace HeaplessUtility.Pool
         public T[] ToArray(bool dispose)
         {
             ThrowHelper.ThrowIfObjectNotInitialized(_buffer == null);
-            
+
             T[] array = new T[_index];
             _buffer.AsSpan(0, _index).CopyTo(array);
 
@@ -405,8 +407,7 @@ namespace HeaplessUtility.Pool
 
         /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
         [Pure]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ArraySegmentIterator<T> GetEnumerator() => new(_buffer, 0, _index);
+        public VecIter<T> GetEnumerator() => new(_buffer, 0, _index);
 
         /// <inheritdoc />
         IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
@@ -432,7 +433,7 @@ namespace HeaplessUtility.Pool
                 _buffer = new T[Math.Max(additionalCapacityBeyondPos, _minimumCapacity)];
             }
         }
-        
+
         [DoesNotReturn]
         private static void ThrowInvalidOperationException_AdvancedTooFar(int capacity)
         {

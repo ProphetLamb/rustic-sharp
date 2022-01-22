@@ -8,14 +8,14 @@ using NUnit.Framework;
 namespace HeaplessUtility.Tests
 {
     [TestFixture]
-    public class ValueListTest
+    public class RefVecTest
     {
         [Test]
         public void TestAdd()
         {
             List<User> reference = new();
-            ValueList<User> list = new();
-            
+            RefVec<User> list = new();
+
             list.Add(null);
             reference.Add(null);
 
@@ -24,7 +24,7 @@ namespace HeaplessUtility.Tests
                 list.Add(SampleData.Users[i]);
                 reference.Add(SampleData.Users[i]);
             }
-            
+
             list.ToArray().Should().BeEquivalentTo(reference);
         }
 
@@ -32,7 +32,7 @@ namespace HeaplessUtility.Tests
         public void TestAddRange()
         {
             List<User> reference = new();
-            ValueList<User> list = new();
+            RefVec<User> list = new();
 
             int increment;
             for (int i = 0; i < 400; i += increment)
@@ -43,7 +43,7 @@ namespace HeaplessUtility.Tests
                 list.AddRange(users);
                 reference.AddRange(users);
             }
-            
+
             list.ToArray().Should().BeEquivalentTo(reference);
         }
 
@@ -51,24 +51,24 @@ namespace HeaplessUtility.Tests
         public void TestClear()
         {
             List<User> reference = new();
-            ValueList<User> list = new(); 
-            
+            RefVec<User> list = new(); 
+
             reference.Clear();
             list.Clear();
-            
+
             list.ToArray().Should().BeEquivalentTo(reference);
-            
+
             list.AddRange(SampleData.Users);
             reference.AddRange(SampleData.Users);
-            
+
             reference.Clear();
             list.Clear();
-            
+
             list.ToArray().Should().BeEquivalentTo(reference);
-            
+
             reference.Add(SampleData.Users[12]);
             list.Add(SampleData.Users[12]);
-            
+
             list.ToArray().Should().BeEquivalentTo(reference);
         }
 
@@ -76,8 +76,8 @@ namespace HeaplessUtility.Tests
         public void TestIndexOf()
         {
             List<User> reference = new();
-            ValueList<User> list = new();
-            
+            RefVec<User> list = new();
+
             list.AddRange(SampleData.Users);
             reference.AddRange(SampleData.Users);
 
@@ -86,7 +86,7 @@ namespace HeaplessUtility.Tests
                 User user = Randomizer.Seed.ChooseFrom(SampleData.Users);
                 list.IndexOf(user).Should().Be(reference.IndexOf(user));
             }
-            
+
             list.IndexOf(null).Should().Be(reference.IndexOf(null));
         }
 
@@ -94,25 +94,25 @@ namespace HeaplessUtility.Tests
         public void TestInsert()
         {
             List<User> reference = new();
-            ValueList<User> list = new();
+            RefVec<User> list = new();
 
             for (int i = 0; i < 100; i++)
             {
                 User user = Randomizer.Seed.ChooseFrom(SampleData.Users);
-                int index = Randomizer.Seed.Next(0, reference.Count); 
+                int index = Randomizer.Seed.Next(0, reference.Count);
                 reference.Insert(index, user);
                 list.Insert(index, user);
             }
 
-            Assert.Throws<ArgumentOutOfRangeException>(() => new ValueList<User>().Insert(-1, null));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new ValueList<User>().Insert(1, null));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new RefVec<User>().Insert(-1, null));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new RefVec<User>().Insert(1, null));
         }
 
         [Test]
         public void TestInsertRange()
         {
             List<User> reference = new();
-            ValueList<User> list = new();
+            RefVec<User> list = new();
 
             int increment;
             for (int i = 0; i < 400; i += increment)
@@ -120,23 +120,23 @@ namespace HeaplessUtility.Tests
                 increment = Randomizer.Seed.Next(2, 10);
 
                 User[] users = SampleData.Users.AsSpan(i, increment).ToArray();
-                int index = Randomizer.Seed.Next(0, reference.Count); 
+                int index = Randomizer.Seed.Next(0, reference.Count);
                 list.InsertRange(index, users);
                 reference.InsertRange(index, users);
             }
-            
+
             list.ToArray().Should().BeEquivalentTo(reference);
-            
-            Assert.Throws<ArgumentOutOfRangeException>(() => new ValueList<User>().InsertRange(-1, Array.Empty<User>()));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new ValueList<User>().InsertRange(1, Array.Empty<User>()));
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => new RefVec<User>().InsertRange(-1, Array.Empty<User>()));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new RefVec<User>().InsertRange(1, Array.Empty<User>()));
         }
 
         [Test]
         public void TestLastIndexOf()
         {
             List<User> reference = new();
-            ValueList<User> list = new();
-            
+            RefVec<User> list = new();
+
             list.AddRange(SampleData.Users);
             reference.AddRange(SampleData.Users);
 
@@ -145,7 +145,7 @@ namespace HeaplessUtility.Tests
                 User user = Randomizer.Seed.ChooseFrom(SampleData.Users);
                 list.LastIndexOf(user).Should().Be(reference.LastIndexOf(user));
             }
-            
+
             list.LastIndexOf(null).Should().Be(reference.LastIndexOf(null));
         }
 
@@ -153,21 +153,21 @@ namespace HeaplessUtility.Tests
         public void TestRemove()
         {
             List<User> reference = new();
-            ValueList<User> list = new(); 
-            
+            RefVec<User> list = new(); 
+
             list.AddRange(SampleData.Users);
             reference.AddRange(SampleData.Users);
-            
+
             for (int i = 0; i < 100; i++)
             {
                 User user = Randomizer.Seed.ChooseFrom(SampleData.Users);
                 list.Remove(user).Should().Be(reference.Remove(user));
             }
-            
+
             list.ToArray().Should().BeEquivalentTo(reference);
-            
+
             list.Remove(null).Should().Be(reference.Remove(null));
-            
+
             list.ToArray().Should().BeEquivalentTo(reference);
         }
 
@@ -175,61 +175,61 @@ namespace HeaplessUtility.Tests
         public void TestRemoveAt()
         {
             List<User> reference = new();
-            ValueList<User> list = new(); 
-            
+            RefVec<User> list = new(); 
+
             list.AddRange(SampleData.Users);
             reference.AddRange(SampleData.Users);
-            
+
             for (int i = 0; i < 100; i++)
             {
                 int index = Randomizer.Seed.Next(0, list.Count);
                 list.RemoveAt(index);
                 reference.RemoveAt(index);
             }
-            
+
             list.ToArray().Should().BeEquivalentTo(reference);
-            
-            Assert.Throws<ArgumentOutOfRangeException>(() => new ValueList<User>().RemoveAt(-1));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new ValueList<User>().RemoveAt(1));
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => new RefVec<User>().RemoveAt(-1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new RefVec<User>().RemoveAt(1));
         }
 
         [Test]
         public void TestRemoveRange()
         {
             List<User> reference = new();
-            ValueList<User> list = new(); 
-            
+            RefVec<User> list = new(); 
+
             list.AddRange(SampleData.Users);
             reference.AddRange(SampleData.Users);
-            
+
             int increment;
             for (int i = 0; i < 400; i += increment)
             {
                 increment = Randomizer.Seed.Next(2, 10);
 
-                int index = Randomizer.Seed.Next(0, list.Count - increment); 
+                int index = Randomizer.Seed.Next(0, list.Count - increment);
                 list.RemoveRange(index, increment);
                 reference.RemoveRange(index, increment);
             }
 
             list.ToArray().Should().BeEquivalentTo(reference);
-            
+
             list.RemoveRange(0, 0);
-            
+
             list.ToArray().Should().BeEquivalentTo(reference);
-            
-            Assert.Throws<ArgumentOutOfRangeException>(() => new ValueList<User>().RemoveRange(-1, 0));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new ValueList<User>().RemoveRange(1, 0));
-            
-            Assert.Throws<ArgumentOutOfRangeException>(() => new ValueList<User>().RemoveRange(0, -1));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new ValueList<User>().RemoveRange(0, 1));
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => new RefVec<User>().RemoveRange(-1, 0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new RefVec<User>().RemoveRange(1, 0));
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => new RefVec<User>().RemoveRange(0, -1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new RefVec<User>().RemoveRange(0, 1));
         }
 
         [Test]
         public void TestReverse()
         {
             List<User> reference = new();
-            ValueList<User> list = new();
+            RefVec<User> list = new();
 
             list.AddRange(SampleData.Users);
             reference.AddRange(SampleData.Users);
@@ -248,15 +248,15 @@ namespace HeaplessUtility.Tests
         [Test]
         public void TestSort()
         {
-            new ValueList<User>().Sort();
-            new ValueList<User>(SampleData.Users.ToArray()).Sort();
+            new RefVec<User>().Sort();
+            new RefVec<User>(SampleData.Users.ToArray()).Sort();
         }
-        
+
         [Test]
         public void TestSortComparer()
         {
             List<User> reference = new();
-            ValueList<User> list = new();
+            RefVec<User> list = new();
 
             list.AddRange(SampleData.Users);
             reference.AddRange(SampleData.Users);
@@ -271,17 +271,17 @@ namespace HeaplessUtility.Tests
 
             list.ToArray().Should().BeEquivalentTo(reference);
 
-            Assert.Throws<ArgumentOutOfRangeException>(() => new ValueList<User>().Sort(-1, 0, UserComparer.Instance));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new ValueList<User>().Sort(1, 0, UserComparer.Instance));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new ValueList<User>().Sort(0, -1, UserComparer.Instance));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new ValueList<User>().Sort(0, 1, UserComparer.Instance));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new RefVec<User>().Sort(-1, 0, UserComparer.Instance));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new RefVec<User>().Sort(1, 0, UserComparer.Instance));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new RefVec<User>().Sort(0, -1, UserComparer.Instance));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new RefVec<User>().Sort(0, 1, UserComparer.Instance));
         }
-        
+
         [Test]
         public void TestSortComparison()
         {
             List<User> reference = new();
-            ValueList<User> list = new();
+            RefVec<User> list = new();
 
             list.AddRange(SampleData.Users);
             reference.AddRange(SampleData.Users);

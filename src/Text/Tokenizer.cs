@@ -4,7 +4,7 @@ using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using HeaplessUtility.Exceptions;
 
-namespace HeaplessUtility
+namespace HeaplessUtility.Text
 {
     /// <summary>
     ///     Tokenizes a sequence, for use in lexer &amp; parser state machines.
@@ -20,19 +20,19 @@ namespace HeaplessUtility
     /// <br />
     ///     Read always consumes elements, if not successful elements will still be consumed. 
     /// </remarks>
-    public ref struct SpanTokenBuilder<T>
+    public ref struct Tokenizer<T>
     {
         private readonly ReadOnlySpan<T> _source;
         private readonly IEqualityComparer<T>? _comparer;
         private int _index;
         private int _tokenLength;
-        
+
         /// <summary>
-        ///     Initializes a new instance of <see cref="SpanTokenBuilder{T}"/> with the specified <paramref name="input"/> and <paramref name="comparer"/>. 
+        ///     Initializes a new instance of <see cref="Tokenizer{T}"/> with the specified <paramref name="input"/> and <paramref name="comparer"/>. 
         /// </summary>
         /// <param name="input">The input sequence.</param>
         /// <param name="comparer">The comparer used to determine whether two objects are equal.</param>
-        public SpanTokenBuilder(ReadOnlySpan<T> input, IEqualityComparer<T>? comparer)
+        public Tokenizer(ReadOnlySpan<T> input, IEqualityComparer<T>? comparer)
         {
             _source = input;
             _comparer = comparer;
@@ -54,7 +54,7 @@ namespace HeaplessUtility
                 {
                     ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.value, value);
                 }
-                
+
                 if (value >= _index)
                 {
                     _tokenLength = _index - value;
@@ -66,7 +66,7 @@ namespace HeaplessUtility
                 }
             }
         }
-        
+
         /// <inheritdoc cref="Span{T}.Length"/>
         public int Length => _source.Length;
 
@@ -78,7 +78,7 @@ namespace HeaplessUtility
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _source.Slice(_index, _tokenLength);
         }
-        
+
         /// <summary>
         ///     Represents the zero-based start-index of the current token inside the span.
         /// </summary>
@@ -88,7 +88,7 @@ namespace HeaplessUtility
         ///     Represents the length of the current token.
         /// </summary>
         public int TokenLength => _tokenLength;
-        
+
         /// <summary>
         ///     Consumes one element.
         /// </summary>
@@ -103,7 +103,7 @@ namespace HeaplessUtility
 
             return false;
         }
-        
+
         /// <summary>
         ///     Consumes a specified amount of elements.
         /// </summary>
@@ -114,7 +114,7 @@ namespace HeaplessUtility
             {
                 ThrowHelper.ThrowArgumentOutOfRangeException_LessZero(ExceptionArgument.amount);
             }
-            
+
             if (_index < _source.Length - _tokenLength - amount)
             {
                 _tokenLength += amount;
@@ -125,7 +125,7 @@ namespace HeaplessUtility
             _tokenLength = _source.Length - _index;
             return false;
         }
-        
+
         /// <inheritdoc cref="IDisposable.Dispose"/>
         public void Dispose()
         {
@@ -136,6 +136,7 @@ namespace HeaplessUtility
         ///     Returns &amp; clears the <see cref="Token"/>, and moves the iterator to the first element after the token.
         /// </summary>
         /// <returns>The span representing the token.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ReadOnlySpan<T> FinalizeToken()
         {
             ReadOnlySpan<T> token = Token;
@@ -143,7 +144,7 @@ namespace HeaplessUtility
             _tokenLength = 0;
             return token;
         }
-        
+
         /// <summary>
         ///     Resets teh builder to the initial state.
         /// </summary>
@@ -151,7 +152,7 @@ namespace HeaplessUtility
         {
             Head = 0;
         }
-            
+
         /// <summary>
         ///     Advances the <see cref="Head"/> to a specific <paramref name="position"/>, always consumes elements.
         /// </summary>
@@ -173,7 +174,7 @@ namespace HeaplessUtility
                 ThrowHelper.ThrowArgumentOutOfRangeException_UnderMin(ExceptionArgument.position, position, head);
             }
         }
-        
+
         /// <summary>
         ///     Advances the <see cref="Head"/> to a specific <paramref name="position"/>, consumes elements only if successful.
         /// </summary>
@@ -188,7 +189,7 @@ namespace HeaplessUtility
             {
                 return false;
             }
-            
+
             int head = Head;
             if (head < position)
             {
@@ -228,7 +229,7 @@ namespace HeaplessUtility
 
             return false;
         }
-        
+
         /// <summary>
         ///     Returns whether the following elements are the sequence.
         /// </summary>
@@ -263,7 +264,7 @@ namespace HeaplessUtility
                             return false;
                         }
                     } while ((matched != expectedSequence.Length) & (++head < _source.Length));
-                    
+
                     return matched == expectedSequence.Length;
                 }
 
@@ -271,7 +272,7 @@ namespace HeaplessUtility
                 // so cache in a local rather than get EqualityComparer per loop iteration.
                 comparer = EqualityComparer<T>.Default;
             }
-            
+
             do
             {
                 if (comparer.Equals(_source[head], expectedSequence[matched]))
@@ -286,12 +287,13 @@ namespace HeaplessUtility
 
             return matched == expectedSequence.Length;
         }
-        
+
         /// <summary>
         ///     Consumes elements until the specified sequence of elements has been encountered.
         /// </summary>
         /// <param name="expectedSequence">The expected sequence.</param>
         /// <returns><see langword="true"/> if the remaining elements contain the sequence of elements; otherwise, <see langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool ReadSequence(in ReadOnlySpan<T> expectedSequence)
         {
             bool success = PeekSequence(expectedSequence, out int head);
@@ -315,7 +317,7 @@ namespace HeaplessUtility
 
             return false;
         }
-        
+
         /// <summary>
         ///     Returns whether the remaining span contains the sequence.
         /// </summary>
@@ -347,10 +349,10 @@ namespace HeaplessUtility
                         }
                         else
                         {
-                            matched += 1;   
+                            matched += 1;
                         }
                     } while ((matched != expectedSequence.Length) & (++head < _source.Length));
-                    
+
                     return matched == expectedSequence.Length;
                 }
 
@@ -358,7 +360,7 @@ namespace HeaplessUtility
                 // so cache in a local rather than get EqualityComparer per loop iteration.
                 comparer = EqualityComparer<T>.Default;
             }
-            
+
             do
             {
                 if (!comparer.Equals(_source[head], expectedSequence[matched]))
@@ -367,14 +369,14 @@ namespace HeaplessUtility
                 }
                 else
                 {
-                    matched += 1;   
+                    matched += 1;
                 }
             } while ((matched != expectedSequence.Length) & (++head < _source.Length));
 
             return matched == expectedSequence.Length;
         }
 
-#region Next & Until with ParamsSpan
+        #region Next & Until with TinySpan
 
         /// <summary>
         ///     Consumes one element, and returns whether the element matches one of the expected elements.
@@ -382,7 +384,7 @@ namespace HeaplessUtility
         /// <param name="expected">The expected elements.</param>
         /// <returns><see langword="true"/> if the element is as expected; otherwise, <see langword="false"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool ReadNext(in ParamsSpan<T> expected)
+        public bool ReadNext(in TinySpan<T> expected)
         {
             bool success = PeekNext(expected);
             Head += 1;
@@ -395,7 +397,7 @@ namespace HeaplessUtility
         /// <param name="expected">The expected elements.</param>
         /// <returns><see langword="true"/> if the element is as expected; otherwise, <see langword="false"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryReadNext(in ParamsSpan<T> expected)
+        public bool TryReadNext(in TinySpan<T> expected)
         {
             if (PeekNext(expected))
             {
@@ -405,24 +407,24 @@ namespace HeaplessUtility
 
             return false;
         }
-        
+
         /// <summary>
         ///     Returns whether the element matches one of the expected elements.
         /// </summary>
         /// <param name="expected">The expected elements.</param>
         /// <returns><see langword="true"/> if the element is as expected; otherwise, <see langword="false"/>.</returns>
         [Pure]
-        public bool PeekNext(in ParamsSpan<T> expected)
+        public bool PeekNext(in TinySpan<T> expected)
         {
             int head = Head;
             if (head == _source.Length)
             {
                 return false;
             }
-            
+
             T current = _source[head];
             IEqualityComparer<T>? comparer = _comparer;
-            
+
             if (comparer == null)
             {
                 for (var i = 0; i < expected.Length; i++)
@@ -458,20 +460,20 @@ namespace HeaplessUtility
         /// <param name="expected">The expected elements.</param>
         /// <returns><see langword="true"/> if one or more of the expected elements occur in the remaining elements; otherwise, <see langword="false"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool ReadUntil(in ParamsSpan<T> expected)
+        public bool ReadUntil(in TinySpan<T> expected)
         {
             bool success = PeekUntil(expected, out int head);
             Head = head;
             return success;
         }
-        
+
         /// <summary>
         ///     Returns whether the remaining span contains one of the expected elements, and consumes the elements only if it does.
         /// </summary>
         /// <param name="expected">The expected elements.</param>
         /// <returns><see langword="true"/> if one or more of the expected elements occur in the remaining elements; otherwise, <see langword="false"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryReadUntil(in ParamsSpan<T> expected)
+        public bool TryReadUntil(in TinySpan<T> expected)
         {
             if (PeekUntil(expected, out int head))
             {
@@ -481,7 +483,7 @@ namespace HeaplessUtility
 
             return false;
         }
-        
+
         /// <summary>
         ///     Returns whether the remaining span contains one of the expected elements.
         /// </summary>
@@ -489,14 +491,14 @@ namespace HeaplessUtility
         /// <param name="head">The position at which the expected element occured.</param>
         /// <returns><see langword="true"/> if one or more of the expected elements occur in the remaining elements; otherwise, <see langword="false"/>.</returns>
         [Pure]
-        public bool PeekUntil(in ParamsSpan<T> expected, out int head)
+        public bool PeekUntil(in TinySpan<T> expected, out int head)
         {
             head = Head;
             if (head == _source.Length)
             {
                 return false;
             }
-            
+
             bool consumeNext = true;
             IEqualityComparer<T>? comparer = _comparer;
 
@@ -507,7 +509,7 @@ namespace HeaplessUtility
                     do
                     {
                         T current = _source[head];
-                        for(int i = 0; i < expected.Length; i++)
+                        for (int i = 0; i < expected.Length; i++)
                         {
                             // ValueType: Devirtualize with EqualityComparer<TValue>.Default intrinsic
                             if (!EqualityComparer<T>.Default.Equals(expected[i], current))
@@ -518,8 +520,8 @@ namespace HeaplessUtility
                             consumeNext = false;
                             break;
                         }
-                    } while(consumeNext & (++head < _source.Length));
-                    
+                    } while (consumeNext & (++head < _source.Length));
+
                     // Consume next is true if and only if the iterator is at the end of the sequence and no match has been found.
                     return !consumeNext;
                 }
@@ -528,11 +530,11 @@ namespace HeaplessUtility
                 // so cache in a local rather than get EqualityComparer per loop iteration.
                 comparer = EqualityComparer<T>.Default;
             }
-            
+
             do
             {
                 T current = _source[head];
-                for(int i = 0; i < expected.Length; i++)
+                for (int i = 0; i < expected.Length; i++)
                 {
                     if (!comparer.Equals(expected[i], current))
                     {
@@ -542,15 +544,15 @@ namespace HeaplessUtility
                     consumeNext = false;
                     break;
                 }
-            } while(consumeNext & (++head < _source.Length));
+            } while (consumeNext & (++head < _source.Length));
 
             // Consume next is true if and only if the iterator is at the end of the sequence and no match has been found.
             return !consumeNext;
         }
-        
-#endregion
 
-#region Next & Until with one arg
+        #endregion
+
+        #region Next & Until with one arg
 
         /// <summary>
         ///     Consumes one element, and returns whether the element matches one of the expected elements.
@@ -581,7 +583,7 @@ namespace HeaplessUtility
 
             return false;
         }
-        
+
         /// <summary>
         ///     Returns whether the element matches one of the expected elements.
         /// </summary>
@@ -595,10 +597,10 @@ namespace HeaplessUtility
             {
                 return false;
             }
-            
+
             T current = _source[head];
             IEqualityComparer<T>? comparer = _comparer;
-            
+
             if (comparer == null)
             {
                 return EqualityComparer<T>.Default.Equals(expected, current);
@@ -619,7 +621,7 @@ namespace HeaplessUtility
             Head = head;
             return success;
         }
-        
+
         /// <summary>
         ///     Returns whether the remaining span contains one of the expected elements, and consumes the elements only if it does.
         /// </summary>
@@ -636,7 +638,7 @@ namespace HeaplessUtility
 
             return false;
         }
-        
+
         /// <summary>
         ///     Returns whether the remaining span contains one of the expected elements.
         /// </summary>
@@ -651,7 +653,7 @@ namespace HeaplessUtility
             {
                 return false;
             }
-            
+
             IEqualityComparer<T>? comparer = _comparer;
 
             if (comparer == null)
@@ -667,7 +669,7 @@ namespace HeaplessUtility
                         }
 
                         return true;
-                    } while(++head < _source.Length);
+                    } while (++head < _source.Length);
 
                     return false;
                 }
@@ -676,7 +678,7 @@ namespace HeaplessUtility
                 // so cache in a local rather than get EqualityComparer per loop iteration.
                 comparer = EqualityComparer<T>.Default;
             }
-            
+
             do
             {
                 if (!comparer.Equals(expected, _source[head]))
@@ -685,14 +687,14 @@ namespace HeaplessUtility
                 }
 
                 return true;
-            } while(++head < _source.Length);
+            } while (++head < _source.Length);
 
             return false;
         }
-        
-#endregion
 
-#region Next & Until with two args
+        #endregion
+
+        #region Next & Until with two args
 
         /// <summary>
         ///     Consumes one element, and returns whether the element matches one of the expected elements.
@@ -725,7 +727,7 @@ namespace HeaplessUtility
 
             return false;
         }
-        
+
         /// <summary>
         ///     Returns whether the element matches one of the expected elements.
         /// </summary>
@@ -740,10 +742,10 @@ namespace HeaplessUtility
             {
                 return false;
             }
-            
+
             T current = _source[head];
             IEqualityComparer<T>? comparer = _comparer;
-            
+
             if (comparer == null)
             {
                 return EqualityComparer<T>.Default.Equals(expected0, current)
@@ -767,7 +769,7 @@ namespace HeaplessUtility
             Head = head;
             return success;
         }
-        
+
         /// <summary>
         ///     Returns whether the remaining span contains one of the expected elements, and consumes the elements only if it does.
         /// </summary>
@@ -785,7 +787,7 @@ namespace HeaplessUtility
 
             return false;
         }
-        
+
         /// <summary>
         ///     Returns whether the remaining span contains one of the expected elements.
         /// </summary>
@@ -801,7 +803,7 @@ namespace HeaplessUtility
             {
                 return false;
             }
-            
+
             IEqualityComparer<T>? comparer = _comparer;
 
             if (comparer == null)
@@ -818,7 +820,7 @@ namespace HeaplessUtility
                         }
 
                         return true;
-                    } while(++head < _source.Length);
+                    } while (++head < _source.Length);
 
                     return false;
                 }
@@ -827,7 +829,7 @@ namespace HeaplessUtility
                 // so cache in a local rather than get EqualityComparer per loop iteration.
                 comparer = EqualityComparer<T>.Default;
             }
-            
+
             do
             {
                 if (!comparer.Equals(expected0, _source[head])
@@ -837,11 +839,11 @@ namespace HeaplessUtility
                 }
 
                 return true;
-            } while(++head < _source.Length);
+            } while (++head < _source.Length);
 
             return false;
         }
-        
-#endregion
+
+        #endregion
     }
 }

@@ -4,101 +4,160 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using HeaplessUtility.Exceptions;
+using HeaplessUtility.IO;
 
 namespace HeaplessUtility
 {
     /// <summary>
     ///     Partially inlined immutable collection of function parameters. 
     /// </summary>
-    public static class ParamsArray
+    public static class TinyVec
     {
         /// <summary>
-        ///     Returns an empty <see cref="ParamsArray{T}"/>.
+        ///     Returns an empty <see cref="TinyVec{T}"/>.
         /// </summary>
         /// <typeparam name="T">The type of the span.</typeparam>
-        /// <returns>An empty <see cref="ParamsArray{T}"/>.</returns>
-        public static ParamsArray<T> Empty<T>() => default;
-        
+        /// <returns>An empty <see cref="TinyVec{T}"/>.</returns>
+        public static TinyVec<T> Empty<T>() => default;
+
         /// <summary>
-        ///     Initializes a new parameter span with one argument.
+        ///     Initializes a new parameter span with one value.
         /// </summary>
-        /// <param name="arg0">The first argument.</param>
-        public static ParamsArray<T> From<T>(in T arg0)
+        /// <param name="arg0">The first value.</param>
+        public static TinyVec<T> From<T>(in T arg0)
         {
             return new(1, arg0, default, default, default);
         }
-        
+
         /// <summary>
-        ///     Initializes a new parameter span with one argument.
+        ///     Initializes a new parameter span with one value.
         /// </summary>
-        /// <param name="arg0">The first argument.</param>
-        /// <param name="arg1">The second argument.</param>
-        public static ParamsArray<T> From<T>(in T arg0, in T arg1)
+        /// <param name="arg0">The first value.</param>
+        /// <param name="arg1">The second value.</param>
+        public static TinyVec<T> From<T>(in T arg0, in T arg1)
         {
             return new(2, arg0, arg1, default, default);
         }
-        
+
         /// <summary>
-        ///     Initializes a new parameter span with one argument.
+        ///     Initializes a new parameter span with one value.
         /// </summary>
-        /// <param name="arg0">The first argument.</param>
-        /// <param name="arg1">The second argument.</param>
-        /// <param name="arg2">The third argument.</param>
-        public static ParamsArray<T> From<T>(in T arg0, in T arg1, in T arg2)
+        /// <param name="arg0">The first value.</param>
+        /// <param name="arg1">The second value.</param>
+        /// <param name="arg2">The third value.</param>
+        public static TinyVec<T> From<T>(in T arg0, in T arg1, in T arg2)
         {
             return new(3, arg0, arg1, arg2, default);
         }
-        
+
         /// <summary>
-        ///     Initializes a new parameter span with one argument.
+        ///     Initializes a new parameter span with one value.
         /// </summary>
-        /// <param name="arg0">The first argument.</param>
-        /// <param name="arg1">The second argument.</param>
-        /// <param name="arg2">The third argument.</param>
-        /// <param name="arg3">The fourth argument.</param>
-        public static ParamsArray<T> From<T>(in T arg0, in T arg1, in T arg2, in T arg3)
+        /// <param name="arg0">The first value.</param>
+        /// <param name="arg1">The second value.</param>
+        /// <param name="arg2">The third value.</param>
+        /// <param name="arg3">The fourth value.</param>
+        public static TinyVec<T> From<T>(in T arg0, in T arg1, in T arg2, in T arg3)
         {
             return new(4, arg0, arg1, arg2, arg3);
         }
 
         /// <summary>
-        ///     Initializes a new parameter span with a sequence of arguments.
+        ///     Initializes a new parameter span with a sequence of values.
         /// </summary>
-        /// <param name="arguments">The arguments array.</param>
-        public static ParamsArray<T> From<T>(T[] arguments)
+        /// <param name="values">The values array.</param>
+        public static TinyVec<T> From<T>(T[] values)
         {
-            return new(new ArraySegment<T>(arguments, 0, arguments.Length));
+            return new(new ArraySegment<T>(values, 0, values.Length));
         }
 
         /// <summary>
-        ///     Initializes a new parameter span with a sequence of arguments.
+        ///     Initializes a new parameter span with a sequence of values.
         /// </summary>
-        /// <param name="arguments">The arguments collection.</param>
-        /// <param name="start">The zero-based index of the first argument.</param>
-        public static ParamsArray<T> From<T>(T[] arguments, int start)
+        /// <param name="values">The values collection.</param>
+        /// <param name="start">The zero-based index of the first value.</param>
+        public static TinyVec<T> From<T>(T[] values, int start)
         {
-            return new(new ArraySegment<T>(arguments, start, arguments.Length - start));
+            return new(new ArraySegment<T>(values, start, values.Length - start));
         }
 
         /// <summary>
-        ///     Initializes a new parameter span with a sequence of arguments.
+        ///     Initializes a new parameter span with a sequence of values.
         /// </summary>
-        /// <param name="arguments">The arguments collection.</param>
-        /// <param name="start">The zero-based index of the first argument.</param>
-        /// <param name="length">The number of arguments form the <paramref name="start"/>.</param>
-        public static ParamsArray<T> From<T>(T[] arguments, int start, int length)
+        /// <param name="values">The values collection.</param>
+        /// <param name="start">The zero-based index of the first value.</param>
+        /// <param name="length">The number of values form the <paramref name="start"/>.</param>
+        public static TinyVec<T> From<T>(T[] values, int start, int length)
         {
-            return new(new ArraySegment<T>(arguments, start, length));
+            return new(new ArraySegment<T>(values, start, length));
+        }
+
+        /// <summary>
+        ///     Initializes a new parameter span with a sequence of values.
+        /// </summary>
+        /// <param name="values">The sequence of values.</param>
+        public static TinyVec<T> From<T, E>(E values)
+            where E : IEnumerable<T>
+        {
+            if (values is T[] array)
+            {
+                // This should never occur.
+                return From(array);
+            }
+            if (values is ArraySegment<T> segment)
+            {
+                return new(segment);
+            }
+            using var en = values.GetEnumerator();
+            if (!en.MoveNext())
+            {
+                return default;
+            }
+            T arg0 = en.Current;
+            if (!en.MoveNext())
+            {
+                return From(arg0);
+            }
+            T arg1 = en.Current;
+            if (!en.MoveNext())
+            {
+                return From(arg0, arg1);
+            }
+            T arg2 = en.Current;
+            if (!en.MoveNext())
+            {
+                return From(arg0, arg1, arg2);
+            }
+            T arg3 = en.Current;
+            if (!en.MoveNext())
+            {
+                return From(arg0, arg1, arg2, arg3);
+            }
+            BufWriter<T> args = new(8)
+            {
+                arg0,
+                arg1,
+                arg2,
+                arg3,
+                en.Current
+            };
+            while (en.MoveNext())
+            {
+                args.Add(en.Current);
+            }
+            var count = args.Count;
+            return new(new ArraySegment<T>(args.ToArray(true), 0, count));
         }
     }
-    
+
     /// <summary>
     ///     A structure representing a immutable sequence of function parameters.
     /// </summary>
     [DebuggerDisplay("{GetDebuggerDisplay(),nq}")]
-    public readonly struct ParamsArray<T>
+    public readonly struct TinyVec<T>
         : IReadOnlyList<T>
     {
         private readonly int _length;
@@ -109,14 +168,14 @@ namespace HeaplessUtility
         private readonly ArraySegment<T> _params;
 
         /// <summary>
-        ///     Initializes a new parameter span with one argument.
+        ///     Initializes a new parameter span with one value.
         /// </summary>
-        /// <param name="length">The number of non default arguments.</param>
-        /// <param name="arg0">The first argument.</param>
-        /// <param name="arg1">The second argument.</param>
-        /// <param name="arg2">The third argument.</param>
-        /// <param name="arg3">The fourth argument.</param>
-        internal ParamsArray(int length, [AllowNull] in T arg0, [AllowNull] in T arg1, [AllowNull] in T arg2, [AllowNull] in T arg3)
+        /// <param name="length">The number of non default values.</param>
+        /// <param name="arg0">The first value.</param>
+        /// <param name="arg1">The second value.</param>
+        /// <param name="arg2">The third value.</param>
+        /// <param name="arg3">The fourth value.</param>
+        internal TinyVec(int length, [AllowNull] in T arg0, [AllowNull] in T arg1, [AllowNull] in T arg2, [AllowNull] in T arg3)
         {
             if ((uint)length > 4)
             {
@@ -135,7 +194,7 @@ namespace HeaplessUtility
         ///     Initializes a new parameter span with a sequence of parameters.
         /// </summary>
         /// <param name="segment">The segment of parameters.</param>
-        internal ParamsArray(in ArraySegment<T> segment)
+        internal TinyVec(in ArraySegment<T> segment)
         {
             _params = segment;
             _length = segment.Count;
@@ -162,11 +221,11 @@ namespace HeaplessUtility
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                if ((uint) index >= _length)
+                if ((uint)index >= _length)
                 {
                     ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.index, index);
                 }
-                
+
                 return index switch
                 {
                     0 => _arg0!,
@@ -177,7 +236,7 @@ namespace HeaplessUtility
                 };
             }
         }
-        
+
         /// <inheritdoc cref="Span{T}.CopyTo"/>
         public void CopyTo(Span<T> destination)
         {
@@ -207,10 +266,10 @@ namespace HeaplessUtility
                 SetBlock(destination);
                 retVal = true;
             }
-            
+
             return retVal;
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void SetBlock(Span<T> destination)
         {
@@ -239,7 +298,7 @@ namespace HeaplessUtility
         }
 
         /// <inheritdoc cref="Object.Equals(Object)" />
-        public bool Equals(in ParamsArray<T> other)
+        public bool Equals(in TinyVec<T> other)
         {
             return this == other;
         }
@@ -247,7 +306,7 @@ namespace HeaplessUtility
         /// <inheritdoc/>
         public override bool Equals(object? obj)
         {
-            return obj is ParamsArray<T> other && Equals(other);
+            return obj is TinyVec<T> other && Equals(other);
         }
 
         /// <inheritdoc/>
@@ -260,7 +319,7 @@ namespace HeaplessUtility
         ///     Returns <see langword="false"/> if left and right point at the same memory and have the same length.  Note that
         ///     this does *not* necessarily check to see if the *contents* are equal.
         /// </summary>
-        public static bool operator ==(ParamsArray<T> left, ParamsArray<T> right)
+        public static bool operator ==(TinyVec<T> left, TinyVec<T> right)
         {
             if (left._length != right._length)
             {
@@ -282,15 +341,15 @@ namespace HeaplessUtility
         ///     Returns <see langword="false"/> if left and right point at the same memory and have the same length.  Note that
         ///     this does *not* check to see if the *contents* are equal.
         /// </summary>
-        public static bool operator !=(ParamsArray<T> left, ParamsArray<T> right) => !(left == right);
+        public static bool operator !=(TinyVec<T> left, TinyVec<T> right) => !(left == right);
 
-        /// <summary>Retrieves the backing span of the <see cref="ParamsArray{T}"/> or allocates a array which is returned as a span.</summary>
+        /// <summary>Retrieves the backing span of the <see cref="TinyVec{T}"/> or allocates a array which is returned as a span.</summary>
         /// <returns>The span containing all items.</returns>
         [Pure]
         public ReadOnlySpan<T> ToSpan() => ToSpan(false);
-        
-        /// <summary>Returns the span representation of the <see cref="ParamsArray{T}"/>.</summary>
-        /// <param name="onlyIfCheap">Whether return an empty span instead of allocating an array, if no span is backing the <see cref="ParamsArray{T}"/>.</param>
+
+        /// <summary>Returns the span representation of the <see cref="TinyVec{T}"/>.</summary>
+        /// <param name="onlyIfCheap">Whether return an empty span instead of allocating an array, if no span is backing the <see cref="TinyVec{T}"/>.</param>
         /// <returns>The span containing all items.</returns>
         [Pure]
         public ReadOnlySpan<T> ToSpan(bool onlyIfCheap)
@@ -299,7 +358,7 @@ namespace HeaplessUtility
             {
                 if (_params.Array != null)
                 {
-                    return new ReadOnlySpan<T>(_params.Array, _params.Offset, _params.Count);
+                    StrBuilder ReadOnlySpan<T>(_params.Array, _params.Offset, _params.Count);
                 }
 
                 return default;
@@ -307,10 +366,10 @@ namespace HeaplessUtility
 
             T[] array = _length switch
             {
-                4 => new[] {_arg0!, _arg1!, _arg2!, _arg3!},
-                3 => new[] {_arg0!, _arg1!, _arg2!},
-                2 => new[] {_arg0!, _arg1!},
-                1 => new[] {_arg0!},
+                4 => new[] { _arg0!, _arg1!, _arg2!, _arg3! },
+                3 => new[] { _arg0!, _arg1!, _arg2! },
+                2 => new[] { _arg0!, _arg1! },
+                1 => new[] { _arg0! },
                 _ => Array.Empty<T>()
             };
 
@@ -319,7 +378,7 @@ namespace HeaplessUtility
 
         private string GetDebuggerDisplay()
         {
-            ValueStringBuilder vsb = new(stackalloc char[256]);
+            StrBuilder vsb = new(stackalloc char[256]);
             vsb.Append("Length = ");
             vsb.Append(Length.ToString());
             vsb.Append(", Params = {");
@@ -330,7 +389,7 @@ namespace HeaplessUtility
                 vsb.Append(this[i]!.ToString());
                 vsb.Append(", ");
             }
-            
+
             if (!IsEmpty)
             {
                 vsb.Append(this[last]!.ToString());
@@ -351,21 +410,21 @@ namespace HeaplessUtility
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        /// <summary>Enumerates the elements of a <see cref="ParamsArray{T}"/>.</summary>
+        /// <summary>Enumerates the elements of a <see cref="TinyVec{T}"/>.</summary>
         public struct Enumerator : IEnumerator<T>
         {
-            private readonly ParamsArray<T> _array;
+            private readonly TinyVec<T> _array;
             private int _index;
- 
+
             /// <summary>Initialize the enumerator.</summary>
-            /// <param name="paramsArray">The span to enumerate.</param>
+            /// <param name="TinyVec">The span to enumerate.</param>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            internal Enumerator(in ParamsArray<T> paramsArray)
+            internal Enumerator(in TinyVec<T> TinyVec)
             {
-                _array = paramsArray;
+                _array = TinyVec;
                 _index = -1;
             }
- 
+
             /// <summary>Advances the enumerator to the next element of the span.</summary>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
@@ -377,10 +436,10 @@ namespace HeaplessUtility
                     _index = index;
                     return true;
                 }
- 
+
                 return false;
             }
- 
+
             /// <summary>Gets the element at the current position of the enumerator.</summary>
             public T Current
             {
@@ -389,7 +448,7 @@ namespace HeaplessUtility
             }
 
             object? IEnumerator.Current => Current;
-            
+
             /// <summary>Resets the enumerator to the initial state.</summary>
             public void Reset()
             {

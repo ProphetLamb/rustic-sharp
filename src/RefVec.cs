@@ -1,71 +1,50 @@
 ﻿using System;
 using System.Buffers;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
-using HeaplessUtility.DebuggerViews;
 using HeaplessUtility.Exceptions;
 
-namespace HeaplessUtility.Pool
+namespace HeaplessUtility
 {
     /// <summary>
     ///     Represents a strongly typed list of object that can be accessed by ref. Provides a similar interface as <see cref="List{T}"/>. 
     /// </summary>
     /// <typeparam name="T">The type of items of the list.</typeparam>
     [DebuggerDisplay("{GetDebuggerDisplay(),nq}")]
-    [DebuggerTypeProxy(typeof(IReadOnlyCollectionDebugView<>))]
-    public class RefList<T> :
-        IList<T>,
-        ICollection,
-        IReadOnlyList<T>,
-        IDisposable
+    public ref struct RefVec<T>
     {
-        private T[]? _storage;
+        private T[]? _arrayToReturnToPool;
+        private Span<T> _storage;
         private int _count;
-        private bool _isHeapBound;
-
-        /// <summary>
-        ///     Initializes a new list.
-        /// </summary>
-        public RefList()
-        {
-            
-        }
 
         /// <summary>
         ///     Initializes a new list with a initial buffer.
         /// </summary>
         /// <param name="initialBuffer">The initial buffer.</param>
-        public RefList(T[] initialBuffer)
+        public RefVec(Span<T> initialBuffer)
         {
+            _arrayToReturnToPool = null;
             _storage = initialBuffer;
             _count = 0;
-            _isHeapBound = false;
         }
-        
+
         /// <summary>
         ///     Initializes a new list with a specified minimum initial capacity.
         /// </summary>
         /// <param name="initialMinimumCapacity">The minimum initial capacity.</param>
-        public RefList(int initialMinimumCapacity)
+        public RefVec(int initialMinimumCapacity)
         {
-            _storage = ArrayPool<T>.Shared.Rent(initialMinimumCapacity);
+            _arrayToReturnToPool = ArrayPool<T>.Shared.Rent(initialMinimumCapacity);
+            _storage = _arrayToReturnToPool;
             _count = 0;
-            _isHeapBound = false;
         }
-        
+
         /// <inheritdoc cref="List{T}.Capacity"/>
-        public int Capacity
-        {
-            get
-            {
-                ThrowHelper.ThrowIfObjectNotInitialized(_storage == null);
-                return _storage.Length;
-            }
-        }
+        public int Capacity => _storage.Length;
 
         /// <inheritdoc cref="List{T}.Count"/>
         public int Count
@@ -74,69 +53,25 @@ namespace HeaplessUtility.Pool
             set
             {
                 Debug.Assert(value >= 0);
-                Debug.Assert(_storage == null || value <= _storage.Length);
+                Debug.Assert(value <= _storage.Length);
                 _count = value;
-            }
-        }
-
-        /// <inheritdoc/>
-        bool ICollection.IsSynchronized => false;
-
-        /// <inheritdoc/>
-        object ICollection.SyncRoot => null!;
-
-        /// <inheritdoc/>
-        bool ICollection<T>.IsReadOnly => false;
-
-        /// <summary>
-        ///     Specifies whether the list is bound to the shared array-pool or not.
-        /// </summary>
-        /// <remarks>
-        ///     If changed to false, releases the array from the pool.
-        /// <br/>
-        ///     If changed to true, draws the array from the pool on the next resize.
-        /// </remarks>
-        public bool IsPoolBound
-        {
-            get => !_isHeapBound;
-            set
-            {
-                if (!(_isHeapBound || value || _storage == null))
-                {
-                    T[] storage = new T[Math.Max(16, (uint) _count)];
-                    Array.Copy(_storage, 0, storage, 0, _count);
-                    ArrayPool<T>.Shared.Return(_storage);
-                    _storage = storage;
-                }
-
-                _isHeapBound = value;
             }
         }
 
         /// <inheritdoc cref="Span{T}.IsEmpty"/>
         public bool IsEmpty => 0 >= (uint)_count;
 
-        /// <summary>
-        ///     Returns the underlying storage of the list.
-        /// </summary>
-        internal Span<T> RawStorage => _storage;
-
         /// <inheritdoc cref="List{T}.this"/>
         public ref T this[int index]
         {
+            [Pure]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                ThrowHelper.ThrowIfObjectNotInitialized(_storage == null);
                 Debug.Assert(index < _count);
                 return ref _storage[index];
             }
         }
-
-        T IList<T>.this[int index] { get => this[index]; set => this[index] = value; }
-        
-        /// <inheritdoc/>
-        T IReadOnlyList<T>.this[int index] => this[index];
 
         /// <summary>
         ///     Gets or sets the element at the specified <paramref name="index"/>.
@@ -144,14 +79,15 @@ namespace HeaplessUtility.Pool
         /// <param name="index">The index of the element to get or set.</param>
         public ref T this[Index index]
         {
+            [Pure]
             get
             {
                 int offset = index.GetOffset(_count);
-                if ((uint)offset >= (uint)_count)
+                if ((uint)offset >= _count)
                 {
                     ThrowHelper.ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument.index);
                 }
-                return ref _storage![offset];
+                return ref _storage[offset];
             }
         }
 
@@ -161,6 +97,7 @@ namespace HeaplessUtility.Pool
         /// <param name="range">The range of elements to get or set.</param>
         public ReadOnlySpan<T> this[Range range]
         {
+            [Pure]
             get
             {
                 (int start, int length) = range.GetOffsetAndLength(_count);
@@ -168,7 +105,7 @@ namespace HeaplessUtility.Pool
                 {
                     ThrowHelper.ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument.range);
                 }
-                return new ReadOnlySpan<T>(_storage, start, length);
+                return _storage.Slice(start, length);
             }
             set
             {
@@ -181,7 +118,7 @@ namespace HeaplessUtility.Pool
                 {
                     ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.value, "The length of the span is not equal to the lenght of the range.");
                 }
-                value.CopyTo(_storage.AsSpan(start, length));
+                value.CopyTo(_storage.Slice(start, length));
             }
         }
 
@@ -196,7 +133,7 @@ namespace HeaplessUtility.Pool
             Debug.Assert(capacity >= 0);
 
             // If the caller has a bug and calls this with negative capacity, make sure to call Grow to throw an exception.
-            if (_storage == null || (uint)capacity > (uint)_storage.Length)
+            if ((uint)capacity > (uint)_storage.Length)
             {
                 Grow(capacity - _count);
             }
@@ -204,41 +141,39 @@ namespace HeaplessUtility.Pool
             return Capacity;
         }
 
-#if NET50_OR_GREATER || NETCOREAPP3_1
         /// <summary>
         ///     Get a pinnable reference to the list.
+        ///     Does not ensure there is a null T after <see cref="Count" />
         ///     This overload is pattern matched in the C# 7.3+ compiler so you can omit
         ///     the explicit method call, and write eg "fixed (T* c = list)"
         /// </summary>
-        public unsafe ref T GetPinnableReference()
+        [Pure]
+        public ref T GetPinnableReference()
         {
-            ref T ret = ref Unsafe.AsRef<T>(null);
-            if (_storage != null && 0 >= (uint)_storage.Length)
-            {
-                ret = ref _storage[0];
-            }
-
-            return ref ret;
+            return ref MemoryMarshal.GetReference(_storage);
         }
-#endif
+
+        /// <summary>
+        ///     Returns the underlying storage of the list.
+        /// </summary>
+        internal Span<T> RawStorage => _storage;
+
         /// <summary>
         ///     Returns a span around the contents of the list.
         /// </summary>
-        [Pure]
         public ReadOnlySpan<T> AsSpan()
         {
-            return new(_storage, 0, _count);
+            return _storage.Slice(0, _count);
         }
-        
+
         /// <summary>
         ///     Returns a span around a portion of the contents of the list.
         /// </summary>
         /// <param name="start">The zero-based index of the first element.</param>
         /// <returns>The span representing the content.</returns>
-        [Pure]
         public ReadOnlySpan<T> AsSpan(int start)
         {
-            return new(_storage, start, _count - start);
+            return _storage.Slice(start, _count - start);
         }
 
         /// <summary>
@@ -247,19 +182,18 @@ namespace HeaplessUtility.Pool
         /// <param name="start">The zero-based index of the first element.</param>
         /// <param name="length">The number of elements from the <paramref name="start"/>.</param>
         /// <returns></returns>
-        [Pure]
         public ReadOnlySpan<T> AsSpan(int start, int length)
         {
-            return new(_storage, start, length);
+            return _storage.Slice(start, length);
         }
 
         /// <inheritdoc cref="List{T}.Add"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Add(T value)
+        public void Add(in T value)
         {
             int pos = _count;
 
-            if (_storage != null && (uint)pos < (uint)_storage.Length)
+            if ((uint)pos < (uint)_storage.Length)
             {
                 _storage[pos] = value;
                 _count = pos + 1;
@@ -269,21 +203,21 @@ namespace HeaplessUtility.Pool
                 GrowAndAppend(value);
             }
         }
-        
+
         /// <inheritdoc cref="List{T}.AddRange"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddRange(ReadOnlySpan<T> value)
         {
             int pos = _count;
-            if (_storage == null || pos > _storage.Length - value.Length)
+            if (pos > _storage.Length - value.Length)
             {
                 Grow(value.Length);
             }
-            
-            value.CopyTo(_storage.AsSpan(_count));
+
+            value.CopyTo(_storage.Slice(_count));
             _count += value.Length;
         }
-    
+
         /// <summary>
         ///     Appends a span to the list, and return the handle.
         /// </summary>
@@ -293,54 +227,51 @@ namespace HeaplessUtility.Pool
         public Span<T> AppendSpan(int length)
         {
             int origPos = _count;
-            if (_storage == null || origPos > _storage.Length - length)
+            if (origPos > _storage.Length - length)
             {
                 Grow(length);
             }
 
             _count = origPos + length;
-            return _storage.AsSpan(origPos, length);
+            return _storage.Slice(origPos, length);
         }
 
         /// <inheritdoc cref="List{T}.BinarySearch(T)"/>
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int BinarySearch(in T item)
         {
-            if (_storage == null)
-            {
-                return -1;
-            }
-            return Array.BinarySearch(_storage, item, Comparer<T>.Default);
+            return _storage.BinarySearch(item, Comparer<T>.Default);
         }
 
         /// <inheritdoc cref="List{T}.BinarySearch(T, IComparer{T})"/>
         [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int BinarySearch(in T item, IComparer<T> comparer)
         {
-            if (_storage == null)
-            {
-                return -1;
-            }
-            return Array.BinarySearch(_storage, item, comparer);
+            return _storage.BinarySearch(item, comparer);
         }
 
         /// <inheritdoc cref="List{T}.BinarySearch(int, int, T, IComparer{T})"/>
         [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int BinarySearch(int index, int count, in T item, IComparer<T> comparer)
         {
-            if (_storage == null)
-            {
-                return -1;
-            }
-            return Array.BinarySearch(_storage, index, count, item, comparer);
+            return _storage.Slice(index, count).BinarySearch(item, comparer);
         }
 
         /// <inheritdoc cref="List{T}.Clear"/>
         public void Clear()
         {
-            if (_storage != null)
+            if (_arrayToReturnToPool != null)
             {
-                Array.Clear(_storage, 0, _count);
+                Array.Clear(_arrayToReturnToPool, 0, _count);
             }
+            else
+            {
+                _storage.Clear();
+            }
+
             _count = 0;
         }
 
@@ -349,9 +280,6 @@ namespace HeaplessUtility.Pool
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(in T item) => IndexOf(item, null) >= 0;
 
-        /// <inheritdoc/>
-        bool ICollection<T>.Contains(T item) => Contains(item);
-        
         /// <summary>
         ///     Determines whether an element is in the list.
         /// </summary>
@@ -367,20 +295,7 @@ namespace HeaplessUtility.Pool
         {
             _storage.CopyTo(destination);
         }
-        
-        /// <inheritdoc cref="ICollection{T}.CopyTo"/>
-        public void CopyTo(T[] array, int arrayIndex)
-        {
-            if (_storage == null)
-            {
-                return;
-            }
-            Array.Copy(_storage, 0, array, arrayIndex, _count);
-        }
-        
-        /// <inheritdoc/>
-        void ICollection.CopyTo(Array array, int index) => CopyTo((T[])array, index);
-        
+
         /// <inheritdoc cref="IList{T}.IndexOf"/>
         [Pure]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -390,16 +305,11 @@ namespace HeaplessUtility.Pool
         [Pure]
         public int IndexOf(in T item, IEqualityComparer<T>? comparer)
         {
-            if (_storage == null)
-            {
-                return - 1;
-            }
-            
             if (comparer == null)
             {
                 if (typeof(T).IsValueType)
                 {
-                    
+
                     for (int i = 0; i < _count; i++)
                     {
                         if (!EqualityComparer<T>.Default.Equals(item, _storage[i]))
@@ -412,10 +322,10 @@ namespace HeaplessUtility.Pool
 
                     return -1;
                 }
-                
+
                 comparer = EqualityComparer<T>.Default;
             }
-            
+
             for (int i = 0; i < _count; i++)
             {
                 if (!comparer.Equals(item, _storage[i]))
@@ -430,22 +340,20 @@ namespace HeaplessUtility.Pool
         }
 
         /// <inheritdoc cref="List{T}.Insert"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Insert(int index, in T value)
         {
-            if (_storage == null || _count > _storage.Length - 1)
+            if (_count > _storage.Length - 1)
             {
                 Grow(1);
             }
 
-            T[] storage = _storage!;
-            Array.Copy(storage, index, storage, index + 1, _count - index);
-            storage[index] = value;
+            int remaining = _count - index;
+            _storage.Slice(index, remaining).CopyTo(_storage.Slice(index + 1));
+            _storage[index] = value;
             _count += 1;
         }
 
-        /// <inheritdoc />
-        void IList<T>.Insert(int index, T item) => Insert(index, item);
-        
         /// <inheritdoc cref="List{T}.InsertRange"/>
         public void InsertRange(int index, ReadOnlySpan<T> span)
         {
@@ -464,17 +372,17 @@ namespace HeaplessUtility.Pool
                 return;
             }
 
-            if (_storage == null || _count > _storage.Length - count)
+            if (_count > _storage.Length - count)
             {
                 Grow(count);
             }
 
-            T[] storage = _storage!;
-            Array.Copy(storage, index, storage, index + count, _count - index);
-            span.CopyTo(storage.AsSpan(index));
+            int remaining = _count - index;
+            _storage.Slice(index, remaining).CopyTo(_storage.Slice(index + count));
+            span.CopyTo(_storage.Slice(index));
             _count += count;
         }
-        
+
         /// <inheritdoc cref="List{T}.LastIndexOf(T)"/>
         [Pure]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -484,16 +392,11 @@ namespace HeaplessUtility.Pool
         [Pure]
         public int LastIndexOf(in T item, IEqualityComparer<T>? comparer)
         {
-            if (_storage == null)
-            {
-                return -1;
-            }
-            
             if (comparer == null)
             {
                 if (typeof(T).IsValueType)
                 {
-                    
+
                     for (int i = _count - 1; i >= 0; i--)
                     {
                         if (!EqualityComparer<T>.Default.Equals(item, _storage[i]))
@@ -506,10 +409,10 @@ namespace HeaplessUtility.Pool
 
                     return -1;
                 }
-                
+
                 comparer = EqualityComparer<T>.Default;
             }
-            
+
             for (int i = _count - 1; i >= 0; i--)
             {
                 if (!comparer.Equals(item, _storage[i]))
@@ -526,9 +429,6 @@ namespace HeaplessUtility.Pool
         /// <inheritdoc cref="List{T}.Remove"/>
         public bool Remove(in T item) => Remove(item, null);
 
-        /// <inheritdoc/>
-        bool ICollection<T>.Remove(T item) => Remove(item, null);
-
         /// <inheritdoc cref="List{T}.Remove"/>
         public bool Remove(in T item, IEqualityComparer<T>? comparer)
         {
@@ -542,40 +442,39 @@ namespace HeaplessUtility.Pool
             return false;
         }
 
-        /// <inheritdoc />
-        int IList<T>.IndexOf(T item) => IndexOf(item);
-
         /// <inheritdoc cref="List{T}.RemoveAt"/>
         public void RemoveAt(int index)
         {
-            ThrowHelper.ThrowIfObjectNotInitialized(_storage == null);
             int remaining = _count - index - 1;
-            Array.Copy(_storage, index + 1, _storage, index, remaining);
+            _storage.Slice(index + 1, remaining).CopyTo(_storage.Slice(index));
             _storage[--_count] = default!;
         }
 
         /// <inheritdoc cref="List{T}.RemoveRange"/>
         public void RemoveRange(int index, int count)
         {
-            ThrowHelper.ThrowIfObjectNotInitialized(_storage == null);
             int end = _count - count;
             int remaining = end - index;
-            Array.Copy(_storage, index + count, _storage, index, remaining);
-            Array.Clear(_storage, end, count);
+            _storage.Slice(index + count, remaining).CopyTo(_storage.Slice(index));
+
+            if (_arrayToReturnToPool != null)
+            {
+                Array.Clear(_arrayToReturnToPool, end, count);
+            }
+            else
+            {
+                _storage.Slice(end).Clear();
+            }
+
             _count = end;
         }
 
         /// <inheritdoc cref="List{T}.Reverse()"/>
-        public void Reverse()
-        {
-            ThrowHelper.ThrowIfObjectNotInitialized(_storage == null);
-            Array.Reverse(_storage, 0, _count);
-        }
+        public void Reverse() => _storage.Slice(0, _count).Reverse();
 
         /// <inheritdoc cref="List{T}.Reverse(int, int)"/>
         public void Reverse(int start, int count)
         {
-            ThrowHelper.ThrowIfObjectNotInitialized(_storage == null);
             if ((uint)start >= (uint)_count)
             {
                 ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.start, start);
@@ -588,25 +487,25 @@ namespace HeaplessUtility.Pool
             {
                 ThrowHelper.ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument.value);
             }
-            Array.Reverse(_storage, start, count);
+            _storage.Slice(start, count).Reverse();
         }
 
         /// <inheritdoc cref="List{T}.Sort()"/>
         public void Sort()
         {
-            _storage.AsSpan(0, _count).Sort();
+            _storage.Slice(0, _count).Sort();
         }
 
         /// <inheritdoc cref="List{T}.Sort(Comparison{T})"/>
         public void Sort(Comparison<T> comparison)
         {
-            _storage.AsSpan(0, _count).Sort(comparison);
+            _storage.Slice(0, _count).Sort(comparison);
         }
 
         /// <inheritdoc cref="List{T}.Sort(IComparer{T})"/>
         public void Sort(IComparer<T> comparer)
         {
-            _storage.AsSpan(0, _count).Sort(comparer);
+            _storage.Slice(0, _count).Sort(comparer);
         }
 
         /// <inheritdoc cref="List{T}.Sort(int, int, IComparer{T})"/>
@@ -624,29 +523,23 @@ namespace HeaplessUtility.Pool
             {
                 ThrowHelper.ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument.value);
             }
-            _storage.AsSpan(start, count).Sort(comparer);
+            _storage.Slice(start, count).Sort(comparer);
         }
-        
+
         /// <inheritdoc cref="Span{T}.ToArray"/>
         public T[] ToArray()
         {
-            if (_storage != null)
-            {
-                T[] array = new T[_count];
-                Array.Copy(_storage, 0, array, 0, _count);
-                return array;
-            }
-
-            return Array.Empty<T>();
+            T[] array = new T[_count];
+            _storage.Slice(0, _count).CopyTo(array.AsSpan());
+            return array;
         }
-        
+
         /// <summary>
-        /// Creates a <see cref="List{T}"/> from a <see cref="ValueList{T}"/>.
+        /// Creates a <see cref="List{T}"/> from a <see cref="RefVec{T}"/>.
         /// </summary>
         /// <returns>A <see cref="List{T}"/> that contains elements form the input sequence.</returns>
         public List<T> ToList()
         {
-            ThrowHelper.ThrowIfObjectNotInitialized(_storage == null);
             List<T> list = new(_count);
             for (int i = 0; i < _count; i++)
             {
@@ -655,14 +548,13 @@ namespace HeaplessUtility.Pool
 
             return list;
         }
-        
+
         /// <inheritdoc cref="IDisposable.Dispose"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Dispose()
         {
-            T[]? toReturn = _storage;
-            _storage = null;
-            _count = 0;
+            T[]? toReturn = _arrayToReturnToPool;
+            this = default; // for safety, to avoid using pooled array if this instance is erroneously appended to again
             if (toReturn != null)
             {
                 ArrayPool<T>.Shared.Return(toReturn);
@@ -670,7 +562,7 @@ namespace HeaplessUtility.Pool
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void GrowAndAppend(T value)
+        private void GrowAndAppend(in T value)
         {
             Grow(1);
             Add(value);
@@ -688,73 +580,64 @@ namespace HeaplessUtility.Pool
         private void Grow(int additionalCapacityBeyondPos)
         {
             Debug.Assert(additionalCapacityBeyondPos > 0);
+            Debug.Assert(_count > _storage.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
 
-            if (!_isHeapBound)
+            // Make sure to let Rent throw an exception if the caller has a bug and the desired capacity is negative
+            T[] poolArray = ArrayPool<T>.Shared.Rent((int)Math.Max((uint)(_count + additionalCapacityBeyondPos), (uint)_storage.Length * 2));
+
+            _storage.Slice(0, _count).CopyTo(poolArray);
+
+            T[]? toReturn = _arrayToReturnToPool;
+            _storage = _arrayToReturnToPool = poolArray;
+            if (toReturn != null)
             {
-                if (_storage != null)
-                {
-                    Debug.Assert(_count > _storage.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
-
-                    // Make sure to let Rent throw an exception if the caller has a bug and the desired capacity is negative
-                    T[] poolArray = ArrayPool<T>.Shared.Rent((int)Math.Max((uint)(_count + additionalCapacityBeyondPos), (uint)_storage.Length * 2));
-            
-                    Array.Copy(_storage, 0, poolArray, 0, _count);
-
-                    T[]? toReturn = _storage;
-                    _storage = _storage = poolArray;
-                    if (toReturn != null)
-                    {
-                        ArrayPool<T>.Shared.Return(toReturn);
-                    }
-                }
-                else
-                {
-                    _storage = ArrayPool<T>.Shared.Rent(additionalCapacityBeyondPos);
-                }
-            }
-            else
-            {
-                if (_storage != null)
-                {
-                    T[] storage = new T[(int)Math.Max((uint)(_count + additionalCapacityBeyondPos), (uint)_storage.Length * 2)];
-                    Array.Copy(_storage, 0, storage, 0, _count);
-                    _storage = storage;
-                }
-                else
-                {
-                    _storage = new T[Math.Max(16, (uint)additionalCapacityBeyondPos)];
-                }
+                ArrayPool<T>.Shared.Return(toReturn);
             }
         }
 
         private string GetDebuggerDisplay()
         {
-            if (_storage == null || _count == 0)
-                return "Count = 0";
+            if (Count == 0)
+                return "Length = 0, Values = []";
             StringBuilder sb = new(256);
-            sb.Append("Count = ").Append(_count);
+            sb.Append("Length = ").Append(_count);
+            sb.Append(", Values = [");
+            if (Count < 10)
+            {
+                int last = _count - 1;
+                for (int i = 0; i < last; i++)
+                {
+                    sb.Append(_storage[i]);
+                    sb.Append(", ");
+                }
+
+                if (Count > 0)
+                {
+                    sb.Append(_storage[last]);
+                }
+            }
+            else
+            {
+                sb.Append("...");
+            }
+            sb.Append(']');
             return sb.ToString();
         }
-        
+
         /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
-        [Pure]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Enumerator GetEnumerator() => new(this);
 
-        IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-        /// <summary>Enumerates the elements of a <see cref="RefList{T}"/>.</summary>
-        public struct Enumerator : IEnumerator<T>
+        /// <summary>Enumerates the elements of a <see cref="RefVec{T}"/>.</summary>
+        public ref struct Enumerator
         {
-            private readonly RefList<T> _list;
+            private readonly RefVec<T> _list;
             private int _index;
-            
+
             /// <summary>Initialize the enumerator.</summary>
             /// <param name="list">The list to enumerate.</param>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public Enumerator(RefList<T> list)
+            public Enumerator(RefVec<T> list)
             {
                 _list = list;
                 _index = -1;
@@ -780,10 +663,6 @@ namespace HeaplessUtility.Pool
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get => ref _list[_index];
             }
-
-            T IEnumerator<T>.Current => Current;
-
-            object? IEnumerator.Current => Current;
 
             /// <summary>Resets the enumerator to the initial state.</summary>
             public void Reset()

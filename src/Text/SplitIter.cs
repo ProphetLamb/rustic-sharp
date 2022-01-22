@@ -4,28 +4,28 @@ using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using HeaplessUtility.Exceptions;
 
-namespace HeaplessUtility
+namespace HeaplessUtility.Text
 {
     /// <summary>
     ///     Iterates a span in segments determined by separators.
     /// </summary>
     /// <typeparam name="T">The type of an element of the span.</typeparam>
-    public ref struct SpanSplitIterator<T>
+    public ref struct SplitIter<T>
     {
         private readonly ReadOnlySpan<T> _source;
-        private readonly ParamsSpan<T> _separators;
+        private readonly TinySpan<T> _separators;
         private readonly SplitOptions _options;
         private readonly IEqualityComparer<T>? _comparer;
         private int _index;
         private int _segmentLength;
 
-        internal SpanSplitIterator(ReadOnlySpan<T> values, in ParamsSpan<T> separators, SplitOptions options, IEqualityComparer<T>? comparer)
+        internal SplitIter(ReadOnlySpan<T> values, in TinySpan<T> separators, SplitOptions options, IEqualityComparer<T>? comparer)
         {
             if (separators.Length == 0)
             {
                 ThrowHelper.ThrowArgumentException_CollectionEmpty(ExceptionArgument.separators);
             }
-            
+
             _source = values;
             _separators = separators;
             _options = options;
@@ -39,6 +39,7 @@ namespace HeaplessUtility
         /// </summary>
         public ReadOnlySpan<T> Current
         {
+            [Pure]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _source.Slice(_index, _segmentLength);
         }
@@ -54,18 +55,18 @@ namespace HeaplessUtility
         public int SegmentLength => _segmentLength;
 
         /// <summary>
-        ///     Returns a new <see cref="SpanSplitIterator{T}"/> enumerator with the same input in the initial state.
+        ///     Returns a new <see cref="SplitIter{T}"/> enumerator with the same input in the initial state.
         /// </summary>
         [Pure]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public SpanSplitIterator<T> GetEnumerator()
+        public SplitIter<T> GetEnumerator()
         {
             if ((_index == 0) & (_segmentLength == 0))
             {
                 return this;
             }
 
-            return new SpanSplitIterator<T>(_source, _separators, _options, _comparer);
+            return new SplitIter<T>(_source, _separators, _options, _comparer);
         }
 
         /// <summary>
@@ -93,7 +94,7 @@ namespace HeaplessUtility
                     do
                     {
                         T current = _source[position];
-                        for(int i = 0; i < _separators.Length; i++)
+                        for (int i = 0; i < _separators.Length; i++)
                         {
                             // ValueType: Devirtualize with EqualityComparer<TValue>.Default intrinsic
                             if (!EqualityComparer<T>.Default.Equals(_separators[i], current))
@@ -104,7 +105,7 @@ namespace HeaplessUtility
                             consumeNext = false;
                             break;
                         }
-                    } while(consumeNext & (++position < _source.Length));
+                    } while (consumeNext & (++position < _source.Length));
 
                     _segmentLength = position - _index;
                     return EnsureOptionsAllowMoveNext(position);
@@ -118,7 +119,7 @@ namespace HeaplessUtility
             do
             {
                 T current = _source[position];
-                for(int i = 0; i < _separators.Length; i++)
+                for (int i = 0; i < _separators.Length; i++)
                 {
                     if (!comparer.Equals(_separators[i], current))
                     {
@@ -128,7 +129,7 @@ namespace HeaplessUtility
                     consumeNext = false;
                     break;
                 }
-            } while(consumeNext & (++position < _source.Length));
+            } while (consumeNext & (++position < _source.Length));
 
             _segmentLength = position - _index;
             return EnsureOptionsAllowMoveNext(position);

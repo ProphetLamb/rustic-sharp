@@ -1,9 +1,9 @@
 ﻿using System;
 
-namespace HeaplessUtility
+namespace HeaplessUtility.Text
 {
     /// <summary>
-    ///     Defines how the results of the <see cref="SpanSplitIterator{T}"/> are transformed.
+    ///     Defines how the results of the <see cref="SplitIter{T}"/> are transformed.
     /// </summary>
     [Flags]
     public enum SplitOptions : byte

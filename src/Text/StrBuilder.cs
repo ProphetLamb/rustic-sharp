@@ -1,47 +1,48 @@
 ﻿using System;
 using System.Buffers;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using HeaplessUtility.Exceptions;
 
-namespace HeaplessUtility
+namespace HeaplessUtility.Text
 {
-    // Source: https://source.dot.net/System.Private.CoreLib/ValueStringBuilder.cs.html
-    
+    // Source: https://source.dot.net/System.Private.CoreLib/StrBuilder.cs.html
+
     /// <summary>
     ///     This class represents a mutable string. Initially allocated in the stack, resorts to the <see cref="ArrayPool{T}.Shared"/> when growing.
     /// </summary>
     [DebuggerDisplay("{GetDebuggerDisplay(),nq}")]
-    public ref struct ValueStringBuilder
+    public ref struct StrBuilder
     {
         private char[]? _arrayToReturnToPool;
         private Span<char> _chars;
         private int _pos;
-        
+
         /// <summary>
-        ///     Initializes a new <see cref="ValueStringBuilder"/> with the specified buffer.
+        ///     Initializes a new <see cref="StrBuilder"/> with the specified buffer.
         /// </summary>
         /// <param name="initialBuffer">The stack-buffer used to build the string.</param>
-        public ValueStringBuilder(Span<char> initialBuffer)
+        public StrBuilder(Span<char> initialBuffer)
         {
             _arrayToReturnToPool = null;
             _chars = initialBuffer;
             _pos = 0;
         }
-        
+
         /// <summary>
-        ///     Initializes a new <see cref="ValueStringBuilder"/> with a array from the <see cref="ArrayPool{T}.Shared"/> with the specific size.
+        ///     Initializes a new <see cref="StrBuilder"/> with a array from the <see cref="ArrayPool{T}.Shared"/> with the specific size.
         /// </summary>
         /// <param name="initialCapacity">The minimum capacity of the pool-array.</param>
-        public ValueStringBuilder(int initialCapacity)
+        public StrBuilder(int initialCapacity)
         {
             _arrayToReturnToPool = ArrayPool<char>.Shared.Rent(initialCapacity);
             _chars = _arrayToReturnToPool;
             _pos = 0;
         }
-        
+
         /// <summary>
         ///     The length of the string.
         /// </summary>
@@ -55,12 +56,12 @@ namespace HeaplessUtility
                 _pos = value;
             }
         }
-        
+
         /// <summary>
         ///     The current capacity of the builder.
         /// </summary>
         public int Capacity => _chars.Length;
-        
+
         /// <summary>
         ///     Ensures that the builder has at least the given capacity.
         /// </summary>
@@ -71,7 +72,7 @@ namespace HeaplessUtility
             Debug.Assert(capacity >= 0);
 
             // If the caller has a bug and calls this with negative capacity, make sure to call Grow to throw an exception.
-            if ((uint) capacity > (uint) _chars.Length)
+            if ((uint)capacity > (uint)_chars.Length)
             {
                 Grow(capacity - _pos);
             }
@@ -83,6 +84,7 @@ namespace HeaplessUtility
         ///     This overload is pattern matched in the C# 7.3+ compiler so you can omit
         ///     the explicit method call, and write eg "fixed (char* c = builder)"
         /// </summary>
+        [Pure]
         public ref char GetPinnableReference()
         {
             return ref MemoryMarshal.GetReference(_chars);
@@ -102,13 +104,15 @@ namespace HeaplessUtility
 
             return ref MemoryMarshal.GetReference(_chars);
         }
-        
+
         /// <summary>
         ///     Gets the char at the given index.
         /// </summary>
         /// <param name="index">The zero-based index of the element.</param>
         public ref char this[int index]
         {
+            [Pure]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 if ((uint)index >= (uint)_pos)
@@ -118,7 +122,7 @@ namespace HeaplessUtility
                 return ref _chars[index];
             }
         }
-        
+
         /// <summary>
         ///     Creates the string from the builder and disposes the instance.
         /// </summary>
@@ -159,7 +163,7 @@ namespace HeaplessUtility
 
             return _chars.Slice(0, _pos);
         }
-        
+
         /// <summary>
         ///     Returns the span representing the current string. 
         /// </summary>
@@ -186,7 +190,7 @@ namespace HeaplessUtility
         {
             return _chars.Slice(start, length);
         }
-        
+
         /// <inheritdoc cref="Span{T}.TryCopyTo"/>
         public bool TryCopyTo(Span<char> destination, out int charsWritten)
         {
@@ -220,7 +224,7 @@ namespace HeaplessUtility
             _chars.Slice(index, count).Fill(value);
             _pos += count;
         }
-        
+
         /// <summary>
         ///     Inserts a character at the <paramref name="index"/>.
         /// </summary>
@@ -236,7 +240,7 @@ namespace HeaplessUtility
             _chars[index] = value;
             _pos += 1;
         }
-        
+
         /// <summary>
         ///     Inserts a string at the <paramref name="index"/>.
         /// </summary>
@@ -261,7 +265,7 @@ namespace HeaplessUtility
                 .CopyTo(_chars.Slice(index));
             _pos += count;
         }
-        
+
         /// <summary>
         ///     Appends the character to the end of the builder.
         /// </summary>
@@ -270,7 +274,7 @@ namespace HeaplessUtility
         public void Append(char value)
         {
             int pos = _pos;
-            if ((uint) pos < (uint) _chars.Length)
+            if ((uint)pos < (uint)_chars.Length)
             {
                 _chars[pos] = value;
                 _pos = pos + 1;
@@ -280,7 +284,7 @@ namespace HeaplessUtility
                 GrowAndAppend(value);
             }
         }
-        
+
         /// <summary>
         ///     Appends the string to the end of the builder.
         /// </summary>
@@ -292,7 +296,7 @@ namespace HeaplessUtility
                 return;
 
             int pos = _pos;
-            if (value!.Length == 1 && (uint) pos < (uint) _chars.Length) // very common case, e.g. appending strings from NumberFormatInfo like separators, percent symbols, etc.
+            if (value!.Length == 1 && (uint)pos < (uint)_chars.Length) // very common case, e.g. appending strings from NumberFormatInfo like separators, percent symbols, etc.
             {
                 _chars[pos] = value[0];
                 _pos = pos + 1;
@@ -332,7 +336,7 @@ namespace HeaplessUtility
                 dst[i] = value;
             _pos += count;
         }
-        
+
         /// <summary>
         ///     Appends a unmanaged char-array to the builder 
         /// </summary>
@@ -340,7 +344,7 @@ namespace HeaplessUtility
         /// <param name="length">The number of characters after the <paramref name="value"/> pointer.</param>
         public unsafe void Append(char* value, int length)
         {
-            if (value == (char*) 0 || length == 0)
+            if (value == (char*)0 || length == 0)
                 return;
             int pos = _pos;
             if (pos > _chars.Length - length)
@@ -351,7 +355,7 @@ namespace HeaplessUtility
                 dst[i] = *value++;
             _pos += length;
         }
-        
+
         /// <summary>
         ///     Appends a span to the builder.
         /// </summary>
@@ -365,7 +369,7 @@ namespace HeaplessUtility
             value.CopyTo(_chars.Slice(_pos));
             _pos += value.Length;
         }
-        
+
         /// <summary>
         ///     Appends a mutable span of a specific length to the builder.
         /// </summary>
@@ -404,7 +408,7 @@ namespace HeaplessUtility
             Debug.Assert(_pos > _chars.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
 
             // Make sure to let Rent throw an exception if the caller has a bug and the desired capacity is negative
-            char[]? poolArray = ArrayPool<char>.Shared.Rent((int) Math.Max((uint) (_pos + additionalCapacityBeyondPos), (uint) _chars.Length * 2));
+            char[]? poolArray = ArrayPool<char>.Shared.Rent((int)Math.Max((uint)(_pos + additionalCapacityBeyondPos), (uint)_chars.Length * 2));
 
             _chars.Slice(0, _pos).CopyTo(poolArray);
 
