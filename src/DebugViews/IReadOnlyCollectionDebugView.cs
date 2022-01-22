@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 
-namespace HeaplessUtility.DebuggerViews
+namespace HeaplessUtility.DebugViews
 {
     internal class IReadOnlyCollectionDebugView<T>
     {
@@ -14,12 +14,6 @@ namespace HeaplessUtility.DebuggerViews
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public T[] Items
-        {
-            get
-            {
-                return _collection.ToArray();
-            }
-        }
+        public T[] Items => _collection.ToArray();
     }
 }
