@@ -48,5 +48,22 @@ namespace HeaplessUtility.Tests.Text
             var probe = Dummy.Split('.', StringSplitOptions.RemoveEmptyEntries).ToArray();
             Assert.AreEqual(probe, arr);
         }
+        [Test]
+        public void IterIncludeSeparatorsTest()
+        {
+            var arr = Dummy.AsSpan().Split(' ', SplitOptions.IncludeSeparator).ToArray();
+            var probe = Dummy.Split(' ').ToArray();
+            InsertSeperators(probe);
+            Assert.AreEqual(probe, arr);
+        }
+
+        private void InsertSeperators(string[] array)
+        {
+            int last = array.Length - 1;
+            for (int i = 0; i < last; i += 1)
+            {
+                array[i] += " ";
+            }
+        }
     }
 }

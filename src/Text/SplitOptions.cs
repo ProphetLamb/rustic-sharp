@@ -13,6 +13,9 @@ namespace HeaplessUtility.Text
 
         /// <summary>Do not return zero-length segments. Instead return the next result, if any.</summary>
         RemoveEmptyEntries = 1 << 0,
+        
+        /// <summary>Include the seperator at the end of the resulting segment, if not at the end.</summary>
+        IncludeSeparator = 1 << 1,
 
         /// <summary>All options.</summary>
         /// <remarks><c>RemoveEmptyEntries | SkipLeadingSegment | SkipTailingSegment</c></remarks>

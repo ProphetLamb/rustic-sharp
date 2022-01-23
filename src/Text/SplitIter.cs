@@ -55,6 +55,8 @@ namespace HeaplessUtility.Text
         /// </summary>
         public int SegmentLength => _segmentLength;
 
+        public bool IncludesSeparator => (_options & SplitOptions.IncludeSeparator) != 0 && _index + _segmentLength < _source.Length;
+
         /// <summary>
         ///     Returns a new <see cref="SplitIter{T}"/> enumerator with the same input in the initial state.
         /// </summary>
@@ -97,7 +99,13 @@ namespace HeaplessUtility.Text
         private int SkipCurrent()
         {
             var pos = _index + _segmentLength;
-            return pos + (pos == 0 ? 0 : 1);
+
+            if ((_options & SplitOptions.IncludeSeparator) == 0 && pos != 0)
+            {
+                pos += 1;
+            }
+
+            return pos;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -139,6 +147,11 @@ namespace HeaplessUtility.Text
             var len = end - start;
             _index = start;
             _segmentLength = len;
+
+            if ((_options & SplitOptions.IncludeSeparator) != 0 && end != _source.Length)
+            {
+                _segmentLength += 1;
+            }
 
             if ((_options & SplitOptions.RemoveEmptyEntries) != 0 && len == 0)
             {
