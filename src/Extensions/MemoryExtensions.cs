@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using HeaplessUtility.Exceptions;
 using HeaplessUtility.Helpers;
+using HeaplessUtility.Text;
 
 namespace HeaplessUtility
 {
@@ -17,36 +19,11 @@ namespace HeaplessUtility
         /// </summary>
         /// <param name="span">The span span.</param>
         /// <param name="separator">The separator by which to split the <paramref name="span"/>.</param>
-        /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
-        /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
-        public static SplitIter<T> Split<T>(this ReadOnlySpan<T> span, in T separator)
-        {
-            return new(span, TinySpan.From(separator), SplitOptions.None, null);
-        }
-
-        /// <summary>
-        ///     Splits the <paramref name="span"/> span at the positions defined by the <paramref name="separator"/>.
-        /// </summary>
-        /// <param name="span">The span span.</param>
-        /// <param name="separator">The separator by which to split the <paramref name="span"/>.</param>
-        /// <param name="options">The options defining how to return the segments.</param>
-        /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
-        /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
-        public static SplitIter<T> Split<T>(this ReadOnlySpan<T> span, in T separator, SplitOptions options)
-        {
-            return new(span, TinySpan.From(separator), options, null);
-        }
-
-        /// <summary>
-        ///     Splits the <paramref name="span"/> span at the positions defined by the <paramref name="separator"/>.
-        /// </summary>
-        /// <param name="span">The span span.</param>
-        /// <param name="separator">The separator by which to split the <paramref name="span"/>.</param>
         /// <param name="options">The options defining how to return the segments.</param>
         /// <param name="comparer">The comparer used to determine whether two objects are equal.</param>
         /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
         /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
-        public static SplitIter<T> Split<T>(this ReadOnlySpan<T> span, in T separator, SplitOptions options, IEqualityComparer<T> comparer)
+        public static SplitIter<T> Split<T>(this ReadOnlySpan<T> span, in T separator, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
         {
             return new(span, TinySpan.From(separator), options, comparer);
         }
@@ -57,65 +34,46 @@ namespace HeaplessUtility
         /// <param name="span">The span span.</param>
         /// <param name="separator0">The fist separator by which to split the <paramref name="span"/>.</param>
         /// <param name="separator1">The second separator by which to split the <paramref name="span"/>.</param>
-        /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
-        /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
-        public static SplitIter<T> Split<T>(this ReadOnlySpan<T> span, in T separator0, in T separator1)
-        {
-            return new(span, TinySpan.From(separator0, separator1), SplitOptions.None, null);
-        }
-
-        /// <summary>
-        ///     Splits the <paramref name="span"/> span at the positions defined by the separators.
-        /// </summary>
-        /// <param name="span">The span span.</param>
-        /// <param name="separator0">The fist separator by which to split the <paramref name="span"/>.</param>
-        /// <param name="separator1">The second separator by which to split the <paramref name="span"/>.</param>
-        /// <param name="options">The options defining how to return the segments.</param>
-        /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
-        /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
-        public static SplitIter<T> Split<T>(this ReadOnlySpan<T> span, in T separator0, in T separator1, SplitOptions options)
-        {
-            return new(span, TinySpan.From(separator0, separator1), options, null);
-        }
-
-        /// <summary>
-        ///     Splits the <paramref name="span"/> span at the positions defined by the separators.
-        /// </summary>
-        /// <param name="span">The span span.</param>
-        /// <param name="separator0">The fist separator by which to split the <paramref name="span"/>.</param>
-        /// <param name="separator1">The second separator by which to split the <paramref name="span"/>.</param>
         /// <param name="options">The options defining how to return the segments.</param>
         /// <param name="comparer">The comparer used to determine whether two objects are equal.</param>
         /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
         /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
-        public static SplitIter<T> Split<T>(this ReadOnlySpan<T> span, in T separator0, in T separator1, SplitOptions options, IEqualityComparer<T> comparer)
+        public static SplitIter<T> Split<T>(this ReadOnlySpan<T> span, in T separator0, in T separator1, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
         {
             return new(span, TinySpan.From(separator0, separator1), options, comparer);
         }
 
         /// <summary>
-        ///     Splits the <paramref name="span"/> span at the positions defined by the <paramref name="separators"/>.
+        ///     Splits the <paramref name="span"/> span at the positions defined by the separators.
         /// </summary>
         /// <param name="span">The span span.</param>
-        /// <param name="separators">The separators by which to split the <paramref name="span"/>.</param>
+        /// <param name="separator0">The fist separator by which to split the <paramref name="span"/>.</param>
+        /// <param name="separator1">The second separator by which to split the <paramref name="span"/>.</param>
+        /// <param name="separator2">The third separator by which to split the <paramref name="span"/>.</param>
+        /// <param name="options">The options defining how to return the segments.</param>
+        /// <param name="comparer">The comparer used to determine whether two objects are equal.</param>
         /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
         /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
-        public static SplitIter<T> Split<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separators)
+        public static SplitIter<T> Split<T>(this ReadOnlySpan<T> span, in T separator0, in T separator1, in T separator2, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
         {
-            return new(span, TinySpan.From(separators), SplitOptions.None, null);
+            return new(span, TinySpan.From(separator0, separator1, separator2), options, comparer);
         }
 
         /// <summary>
-        ///     Splits the <paramref name="span"/> span at the positions defined by the <paramref name="separators"/>.
+        ///     Splits the <paramref name="span"/> span at the positions defined by the separators.
         /// </summary>
         /// <param name="span">The span span.</param>
-        /// <param name="separators">The separators by which to split the <paramref name="span"/>.</param>
+        /// <param name="separator0">The fist separator by which to split the <paramref name="span"/>.</param>
+        /// <param name="separator1">The second separator by which to split the <paramref name="span"/>.</param>
+        /// <param name="separator2">The third separator by which to split the <paramref name="span"/>.</param>
+        /// <param name="separator3">The third separator by which to split the <paramref name="span"/>.</param>
         /// <param name="options">The options defining how to return the segments.</param>
+        /// <param name="comparer">The comparer used to determine whether two objects are equal.</param>
         /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
         /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
-        public static SplitIter<T> Split<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separators, SplitOptions options)
+        public static SplitIter<T> Split<T>(this ReadOnlySpan<T> span, in T separator0, in T separator1, in T separator2, in T separator3, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
         {
-            return new(span, TinySpan.From(separators), options, null);
+            return new(span, TinySpan.From(separator0, separator1, separator2, separator3), options, comparer);
         }
 
         /// <summary>
@@ -127,9 +85,9 @@ namespace HeaplessUtility
         /// <param name="comparer">The comparer used to determine whether two objects are equal.</param>
         /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
         /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
-        public static SplitIter<T> Split<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separators, SplitOptions options, IEqualityComparer<T> comparer)
+        public static SplitIter<T> Split<T>(this ReadOnlySpan<T> span, TinySpan<T> separators, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
         {
-            return new(span, TinySpan.From(separators), options, comparer);
+            return new(span, separators, options, comparer);
         }
 
         /// <summary>
@@ -150,53 +108,14 @@ namespace HeaplessUtility
         /// <param name="span">The span span.</param>
         /// <param name="separator">The separator by which to split the <paramref name="span"/>.</param>
         /// <param name="options">The options defining how to return the segments.</param>
-        /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
-        /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
-        public static SplitIter<T> Split<T>(this Span<T> span, in T separator, SplitOptions options)
-        {
-            return new(span, TinySpan.From(separator), options, null);
-        }
-
-        /// <summary>
-        ///     Splits the <paramref name="span"/> span at the positions defined by the <paramref name="separator"/>.
-        /// </summary>
-        /// <param name="span">The span span.</param>
-        /// <param name="separator">The separator by which to split the <paramref name="span"/>.</param>
-        /// <param name="options">The options defining how to return the segments.</param>
         /// <param name="comparer">The comparer used to determine whether two objects are equal.</param>
         /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
         /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
-        public static SplitIter<T> Split<T>(this Span<T> span, in T separator, SplitOptions options, IEqualityComparer<T> comparer)
+        public static SplitIter<T> Split<T>(this Span<T> span, in T separator, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
         {
             return new(span, TinySpan.From(separator), options, comparer);
         }
 
-        /// <summary>
-        ///     Splits the <paramref name="span"/> span at the positions defined by the separators.
-        /// </summary>
-        /// <param name="span">The span span.</param>
-        /// <param name="separator0">The fist separator by which to split the <paramref name="span"/>.</param>
-        /// <param name="separator1">The second separator by which to split the <paramref name="span"/>.</param>
-        /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
-        /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
-        public static SplitIter<T> Split<T>(this Span<T> span, in T separator0, in T separator1)
-        {
-            return new(span, TinySpan.From(separator0, separator1), SplitOptions.None, null);
-        }
-
-        /// <summary>
-        ///     Splits the <paramref name="span"/> span at the positions defined by the separators.
-        /// </summary>
-        /// <param name="span">The span span.</param>
-        /// <param name="separator0">The fist separator by which to split the <paramref name="span"/>.</param>
-        /// <param name="separator1">The second separator by which to split the <paramref name="span"/>.</param>
-        /// <param name="options">The options defining how to return the segments.</param>
-        /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
-        /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
-        public static SplitIter<T> Split<T>(this Span<T> span, in T separator0, in T separator1, SplitOptions options)
-        {
-            return new(span, TinySpan.From(separator0, separator1), options, null);
-        }
 
         /// <summary>
         ///     Splits the <paramref name="span"/> span at the positions defined by the separators.
@@ -208,7 +127,7 @@ namespace HeaplessUtility
         /// <param name="comparer">The comparer used to determine whether two objects are equal.</param>
         /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
         /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
-        public static SplitIter<T> Split<T>(this Span<T> span, in T separator0, in T separator1, SplitOptions options, IEqualityComparer<T> comparer)
+        public static SplitIter<T> Split<T>(this Span<T> span, in T separator0, in T separator1, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
         {
             return new(span, TinySpan.From(separator0, separator1), options, comparer);
         }
@@ -218,41 +137,16 @@ namespace HeaplessUtility
         /// </summary>
         /// <param name="span">The span span.</param>
         /// <param name="separators">The separators by which to split the <paramref name="span"/>.</param>
-        /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
-        /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
-        public static SplitIter<T> Split<T>(this Span<T> span, ReadOnlySpan<T> separators)
-        {
-            return new(span, TinySpan.From(separators), SplitOptions.None, null);
-        }
-
-        /// <summary>
-        ///     Splits the <paramref name="span"/> span at the positions defined by the <paramref name="separators"/>.
-        /// </summary>
-        /// <param name="span">The span span.</param>
-        /// <param name="separators">The separators by which to split the <paramref name="span"/>.</param>
-        /// <param name="options">The options defining how to return the segments.</param>
-        /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
-        /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
-        public static SplitIter<T> Split<T>(this Span<T> span, ReadOnlySpan<T> separators, SplitOptions options)
-        {
-            return new(span, TinySpan.From(separators), options, null);
-        }
-
-        /// <summary>
-        ///     Splits the <paramref name="span"/> span at the positions defined by the <paramref name="separators"/>.
-        /// </summary>
-        /// <param name="span">The span span.</param>
-        /// <param name="separators">The separators by which to split the <paramref name="span"/>.</param>
         /// <param name="options">The options defining how to return the segments.</param>
         /// <param name="comparer">The comparer used to determine whether two objects are equal.</param>
         /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
         /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
-        public static SplitIter<T> Split<T>(this Span<T> span, ReadOnlySpan<T> separators, SplitOptions options, IEqualityComparer<T> comparer)
+        public static SplitIter<T> Split<T>(this Span<T> span, TinySpan<T> separators, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
         {
-            return new(span, TinySpan.From(separators), options, comparer);
+            return new(span, separators, options, comparer);
         }
 
-        #endregion
+        #endregion Split
 
         /// <summary>
         ///     Determines whether two sequences are equal by comparing the elements.
@@ -319,9 +213,10 @@ namespace HeaplessUtility
             }
             if (span.Length > 1)
             {
-                SpanSortHelper<T>.Sort(span, comparison);
+                SpanSortHelper<T>.Sort(span, comparison!);
             }
         }
+
 #endif
 
         /// <summary>

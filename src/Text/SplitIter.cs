@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using HeaplessUtility.Exceptions;
+using HeaplessUtility.IO;
 
 namespace HeaplessUtility.Text
 {
@@ -61,11 +62,6 @@ namespace HeaplessUtility.Text
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SplitIter<T> GetEnumerator()
         {
-            if ((_index == 0) & (_segmentLength == 0))
-            {
-                return this;
-            }
-
             return new SplitIter<T>(_source, _separators, _options, _comparer);
         }
 
@@ -76,88 +72,79 @@ namespace HeaplessUtility.Text
         public bool MoveNext()
         {
             // Moves index to after the previous separator & zeros length
-            SkipCurrent();
-
-            if (_index == _source.Length)
+            int position = SkipCurrent();
+            if (position >= _source.Length)
             {
                 return false;
             }
 
-            int position = _index;
-            bool consumeNext = true;
             IEqualityComparer<T>? comparer = _comparer;
-
             if (comparer == null)
             {
                 if (typeof(T).IsValueType)
                 {
-                    do
-                    {
-                        T current = _source[position];
-                        for (int i = 0; i < _separators.Length; i++)
-                        {
-                            // ValueType: Devirtualize with EqualityComparer<TValue>.Default intrinsic
-                            if (!EqualityComparer<T>.Default.Equals(_separators[i], current))
-                            {
-                                continue;
-                            }
-
-                            consumeNext = false;
-                            break;
-                        }
-                    } while (consumeNext & (++position < _source.Length));
-
-                    _segmentLength = position - _index;
-                    return EnsureOptionsAllowMoveNext(position);
+                    return EnsureMoveNext(position, MoveNextValueType(position));
                 }
 
                 // Object type: Shared Generic, EqualityComparer<TValue>.Default won't devirtualize (https://github.com/dotnet/runtime/issues/10050),
                 // so cache in a local rather than get EqualityComparer per loop iteration.
                 comparer = EqualityComparer<T>.Default;
             }
-
-            do
-            {
-                T current = _source[position];
-                for (int i = 0; i < _separators.Length; i++)
-                {
-                    if (!comparer.Equals(_separators[i], current))
-                    {
-                        continue;
-                    }
-
-                    consumeNext = false;
-                    break;
-                }
-            } while (consumeNext & (++position < _source.Length));
-
-            _segmentLength = position - _index;
-            return EnsureOptionsAllowMoveNext(position);
+            return EnsureMoveNext(position, MoveNextComparer(position, comparer));
         }
 
-        private bool EnsureOptionsAllowMoveNext(int position)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int SkipCurrent()
         {
-            bool success;
+            var pos = _index + _segmentLength;
+            return pos + (pos == 0 ? 0 : 1);
+        }
 
-            if ((_options & SplitOptions.RemoveEmptyEntries) == 0 | _segmentLength != 0 // RemoveEmpty & length == 0 => MoveNext
-                || (_options & SplitOptions.SkipLeadingSegment) == 0 | _index != 0) // SkipLeading & _index == 0 => MoveNext
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int MoveNextValueType(int pos)
+        {
+            var len = _source.Length;
+            for (; pos < len; pos += 1)
             {
-                if ((_options & SplitOptions.SkipTailingSegment) == 0 | position != _source.Length) // SkipTailing & at end => false
+                for (int seg = 0; seg < _separators.Length; seg += 1)
                 {
-                    success = true; // None of the above => true
-                }
-                else
-                {
-                    SkipCurrent(); // Moves index to end & zeros length
-                    success = false;
+                    if (EqualityComparer<T>.Default.Equals(_separators[seg], _source[pos]))
+                    {
+                        return pos;
+                    }
                 }
             }
-            else
-            {
-                success = MoveNext();
-            }
+            return len;
+        }
 
-            return success;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int MoveNextComparer(int pos, IEqualityComparer<T> comparer)
+        {
+            var len = _source.Length;
+            for (; pos < len; pos += 1)
+            {
+                for (int seg = 0; seg < _separators.Length; seg += 1)
+                {
+                    if (comparer.Equals(_separators[seg], _source[pos]))
+                    {
+                        return pos;
+                    }
+                }
+            }
+            return len;
+        }
+
+        private bool EnsureMoveNext(int start, int end)
+        {
+            var len = end - start;
+            _index = start;
+            _segmentLength = len;
+
+            if ((_options & SplitOptions.RemoveEmptyEntries) != 0 && len == 0)
+            {
+                return MoveNext();
+            }
+            return true;
         }
 
         /// <summary>
@@ -175,13 +162,6 @@ namespace HeaplessUtility.Text
         public void Dispose()
         {
             this = default;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void SkipCurrent()
-        {
-            _index += _segmentLength;
-            _segmentLength = 0;
         }
     }
 }
