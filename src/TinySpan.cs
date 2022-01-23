@@ -6,13 +6,14 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using System.Text;
+
 using HeaplessUtility.Exceptions;
 using HeaplessUtility.IO;
 
 namespace HeaplessUtility
 {
     /// <summary>
-    ///     Partially inlined immutable collection of function parameters. 
+    ///     Partially inlined immutable collection of function parameters.
     /// </summary>
     public static class TinySpan
     {
@@ -76,7 +77,16 @@ namespace HeaplessUtility
 
         /// <summary>
         ///     Initializes a new parameter span with a sequence of values.
-        ///     Does not allocate or deep copy.
+        /// </summary>
+        /// <param name="values">The values collection.</param>
+        public static TinySpan<T> From<T>(in Span<T> values)
+        {
+            return new((ReadOnlySpan<T>)values);
+        }
+
+        /// <summary>
+        ///     Initializes a new parameter span with a sequence of values.
+        ///     Does not allocate or copy.
         /// </summary>
         /// <param name="values">The values collection.</param>
         /// <param name="start">The zero-based index of the first value.</param>
@@ -87,7 +97,7 @@ namespace HeaplessUtility
 
         /// <summary>
         ///     Initializes a new parameter span with a sequence of values.
-        ///     Does not allocate or deep copy.
+        ///     Does not allocate or copy.
         /// </summary>
         /// <param name="values">The values collection.</param>
         /// <param name="start">The zero-based index of the first value.</param>
@@ -99,7 +109,7 @@ namespace HeaplessUtility
 
         /// <summary>
         ///     Initializes a new parameter span with a sequence of values.
-        ///     Does not allocate or deep copy.
+        ///     Does not allocate or copy.
         /// </summary>
         /// <param name="values">The sequence of values.</param>
         /// <remarks>
@@ -115,7 +125,7 @@ namespace HeaplessUtility
 
         /// <summary>
         ///     Initializes a new parameter span with a sequence of values.
-        ///     Does not allocate or deep copy.
+        ///     Does not allocate or copy.
         /// </summary>
         /// <param name="values">The sequence of values.</param>
         /// <remarks>
@@ -131,7 +141,7 @@ namespace HeaplessUtility
 
         /// <summary>
         ///     Initializes a new parameter span with a sequence of values.
-        ///     Does not allocate or deep copy.
+        ///     Does not allocate or copy.
         /// </summary>
         /// <param name="values">The sequence of values.</param>
         /// <remarks>
@@ -147,7 +157,7 @@ namespace HeaplessUtility
 
         /// <summary>
         ///     Initializes a new parameter span with a sequence of values.
-        ///     Does not allocate or deep copy.
+        ///     Does not allocate or copy.
         /// </summary>
         /// <param name="values">The sequence of values.</param>
         /// <remarks>
@@ -163,22 +173,10 @@ namespace HeaplessUtility
 
         /// <summary>
         ///     Initializes a new parameter span with a sequence of values.
-        ///     Does not allocate or deep copy.
+        ///     Performs a shallow-copy of the sequence of values.
         /// </summary>
         /// <param name="values">The sequence of values.</param>
-        /// <remarks>
-        ///     If <paramref name="values"/> if of the type [I] Array, [II] (ReadOnly-)Memory, or [III] ArraySegment,
-        ///     then <see cref="TinySpan{T}"/> uses the allocated memory of <paramref name="values"/>.
-        /// <br/>
-        ///     If a deep copy is desired use <see cref="Copy"/>.
-        /// </remarks>
-        public static TinySpan<T> From<T, E>(E values)
-            where E : IEnumerable<T>
-        {
-            return CopyCore<T, E>(values);
-        }
-
-        private static TinySpan<T> CopyCore<T, E>(E values)
+        public static TinySpan<T> Copy<T, E>(E values)
             where E : IEnumerable<T>
         {
             using var en = values.GetEnumerator();
@@ -301,8 +299,10 @@ namespace HeaplessUtility
             }
         }
 
+#pragma warning disable CS0809
+
         /// <inheritdoc cref="Object.Equals(Object)" />
-        [Obsolete]
+        [Obsolete("Not appicable to a ref struct.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         public override bool Equals(object? obj)
         {
@@ -311,13 +311,15 @@ namespace HeaplessUtility
         }
 
         /// <inheritdoc cref="Object.GetHashCode" />
-        [Obsolete]
+        [Obsolete("Not appicable to a ref struct.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         public override int GetHashCode()
         {
             ThrowHelper.ThrowNotSupportedException();
             return default!; // unreachable.
         }
+
+#pragma warning restore CS0809
 
         /// <inheritdoc cref="Span{T}.CopyTo"/>
         public void CopyTo(Span<T> destination)
@@ -364,15 +366,18 @@ namespace HeaplessUtility
                     destination[index++] = _arg2!;
                     destination[index] = _arg3!;
                     break;
+
                 case 3:
                     destination[index++] = _arg0!;
                     destination[index++] = _arg1!;
                     destination[index] = _arg2!;
                     break;
+
                 case 2:
                     destination[index++] = _arg0!;
                     destination[index] = _arg1!;
                     break;
+
                 case 1:
                     destination[index] = _arg0!;
                     break;
@@ -433,6 +438,30 @@ namespace HeaplessUtility
             return new ReadOnlySpan<T>(array!, 0, _length);
         }
 
+        /// <summary>
+        ///     Initializes a new span from the value.
+        /// </summary>
+        /// <param name="self">The value.</param>
+        public static implicit operator TinySpan<T>(in T self) => TinySpan.From(self);
+
+        /// <summary>
+        ///     Initializes a new span from the sequence.
+        /// </summary>
+        /// <param name="self">The sequence of values.</param>
+        public static implicit operator TinySpan<T>(in ReadOnlySpan<T> self) => TinySpan.From(self);
+
+        /// <summary>
+        ///     Initializes a new span from the sequence.
+        /// </summary>
+        /// <param name="self">The sequence of values.</param>
+        public static implicit operator TinySpan<T>(in Span<T> self) => TinySpan.From(self);
+
+        /// <summary>
+        ///     Initializes a new span from the sequence.
+        /// </summary>
+        /// <param name="self">The sequence of values.</param>
+        public static implicit operator TinySpan<T>(in T[] self) => TinySpan.From(self);
+
         private string GetDebuggerDisplay()
         {
             StringBuilder sb = new();
@@ -466,6 +495,7 @@ namespace HeaplessUtility
         {
             /// <summary>The span being enumerated.</summary>
             private readonly TinySpan<T> _span;
+
             /// <summary>The next index to yield.</summary>
             private int _index;
 

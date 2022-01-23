@@ -4,15 +4,16 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
-using System.Linq;
 using System.Runtime.CompilerServices;
+
 using HeaplessUtility.Exceptions;
 using HeaplessUtility.IO;
+using HeaplessUtility.Text;
 
 namespace HeaplessUtility
 {
     /// <summary>
-    ///     Partially inlined immutable collection of function parameters. 
+    ///     Partially inlined immutable collection of function parameters.
     /// </summary>
     public static class TinyVec
     {
@@ -69,6 +70,15 @@ namespace HeaplessUtility
         ///     Initializes a new parameter span with a sequence of values.
         /// </summary>
         /// <param name="values">The values array.</param>
+        public static TinyVec<T> From<T>(in ArraySegment<T> values)
+        {
+            return new(values);
+        }
+
+        /// <summary>
+        ///     Initializes a new parameter span with a sequence of values.
+        /// </summary>
+        /// <param name="values">The values array.</param>
         public static TinyVec<T> From<T>(T[] values)
         {
             return new(new ArraySegment<T>(values, 0, values.Length));
@@ -97,9 +107,10 @@ namespace HeaplessUtility
 
         /// <summary>
         ///     Initializes a new parameter span with a sequence of values.
+        ///     Performs a deep copy.
         /// </summary>
         /// <param name="values">The sequence of values.</param>
-        public static TinyVec<T> From<T, E>(E values)
+        public static TinyVec<T> Copy<T, E>(E values)
             where E : IEnumerable<T>
         {
             if (values is T[] array)
@@ -209,7 +220,7 @@ namespace HeaplessUtility
         /// <summary>The number of items in the params span.</summary>
         public int Length => _length;
 
-        /// <inheritdoc/> 
+        /// <inheritdoc/>
         int IReadOnlyCollection<T>.Count => _length;
 
         /// <summary>Returns true if Length is 0.</summary>
@@ -282,15 +293,18 @@ namespace HeaplessUtility
                     destination[index++] = _arg2!;
                     destination[index] = _arg3!;
                     break;
+
                 case 3:
                     destination[index++] = _arg0!;
                     destination[index++] = _arg1!;
                     destination[index] = _arg2!;
                     break;
+
                 case 2:
                     destination[index++] = _arg0!;
                     destination[index] = _arg1!;
                     break;
+
                 case 1:
                     destination[index] = _arg0!;
                     break;
@@ -358,7 +372,7 @@ namespace HeaplessUtility
             {
                 if (_params.Array != null)
                 {
-                    StrBuilder ReadOnlySpan<T>(_params.Array, _params.Offset, _params.Count);
+                    return new ReadOnlySpan<T>(_params.Array, _params.Offset, _params.Count);
                 }
 
                 return default;
@@ -375,6 +389,24 @@ namespace HeaplessUtility
 
             return new ReadOnlySpan<T>(array, 0, _length);
         }
+
+        /// <summary>
+        ///     Initializes a new span from the value.
+        /// </summary>
+        /// <param name="self">The value.</param>
+        public static implicit operator TinyVec<T>(in T self) => TinyVec.From(self);
+
+        /// <summary>
+        ///     Initializes a new span from the sequence.
+        /// </summary>
+        /// <param name="self">The sequence of values.</param>
+        public static implicit operator TinyVec<T>(in T[] self) => TinyVec.From(self);
+
+        /// <summary>
+        ///     Initializes a new span from the sequence.
+        /// </summary>
+        /// <param name="self">The sequence of values.</param>
+        public static implicit operator TinyVec<T>(in ArraySegment<T> self) => TinyVec.From(self);
 
         private string GetDebuggerDisplay()
         {
