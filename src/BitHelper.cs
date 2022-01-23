@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace HeaplessUtility
 {
+    [CLSCompliant(false)]
     public ref struct BitHelper
     {
         private static ReadOnlySpan<ulong> DigitCountTable => new ulong[32]

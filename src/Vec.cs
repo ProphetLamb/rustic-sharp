@@ -333,6 +333,7 @@ namespace HeaplessUtility
         /// <inheritdoc cref="List{T}.Contains"/>
         [Pure]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [CLSCompliant(false)]
         public bool Contains(in T item) => IndexOf(item, null) >= 0;
 
         /// <inheritdoc/>
@@ -370,6 +371,7 @@ namespace HeaplessUtility
         /// <inheritdoc cref="IList{T}.IndexOf"/>
         [Pure]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [CLSCompliant(false)]
         public int IndexOf(in T item) => IndexOf(item, null);
 
         /// <inheritdoc />
@@ -418,6 +420,7 @@ namespace HeaplessUtility
         }
 
         /// <inheritdoc cref="List{T}.Insert"/>
+        [CLSCompliant(false)]
         public void Insert(int index, in T value)
         {
             if (Storage == null || _count > Storage.Length - 1)
@@ -511,6 +514,7 @@ namespace HeaplessUtility
         }
 
         /// <inheritdoc cref="List{T}.Remove"/>
+        [CLSCompliant(false)]
         public bool Remove(in T item) => Remove(item, null);
 
         /// <inheritdoc/>

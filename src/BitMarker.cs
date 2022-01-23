@@ -9,6 +9,7 @@ namespace HeaplessUtility
     /// <summary>
     ///     Enables unaligned marking of bits in a memory area.
     /// </summary>
+    [CLSCompliant(false)]
     public readonly ref struct BitMarker
     {
         private const int IntSize = sizeof(int) * 8;
@@ -18,12 +19,12 @@ namespace HeaplessUtility
             0, 9, 1, 10, 13, 21, 2, 29, 11, 14, 16, 18, 22, 25, 3, 30,
             8, 12, 20, 28, 15, 17, 24, 7, 19, 27, 23, 6, 26, 5, 4, 31
         };
-        private static ReadOnlySpan<int> MultiplyDeBruijnBitPosition2 => new[] 
+        private static ReadOnlySpan<int> MultiplyDeBruijnBitPosition2 => new[]
         {
-            0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8, 
+            0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8,
             31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
         };
-        
+
         private readonly Span<int> _span;
 
         /// <summary>
@@ -34,7 +35,7 @@ namespace HeaplessUtility
         {
             _span = span;
         }
-        
+
         /// <summary>Sets the bit at the index to one.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Mark(int bitIndex)
@@ -45,7 +46,7 @@ namespace HeaplessUtility
                 _span[bitArrayIndex] |= (1 << (int)FastMod2((uint)bitIndex, IntSize));
             }
         }
-        
+
         /// <summary>Sets the bit at the index to zero.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Unmark(int bitIndex)
@@ -56,7 +57,7 @@ namespace HeaplessUtility
                 _span[bitArrayIndex] &= ~(1 << (int)FastMod2((uint)bitIndex, IntSize));
             }
         }
-        
+
         /// <summary>Sets the bit at the index to the least significant bit if the value.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Set(int bitIndex, int value)
@@ -69,7 +70,7 @@ namespace HeaplessUtility
                 _span[bitArrayIndex] = (_span[bitArrayIndex] & mask) | (value * ~mask);
             }
         }
-        
+
         /// <summary>Returns approximate reciprocal of the divisor: ceil(2**64 / divisor).</summary>
         /// <remarks>This should only be used on 64-bit.</remarks>
         [Pure]
@@ -107,7 +108,7 @@ namespace HeaplessUtility
             Debug.Assert((divisor & 1) == 0, "The divisor has to be a multiple of 2.");
             return value & (divisor - 1);
         }
-        
+
         /// <summary>Performs a mod operation on a 64bit unsigned integer where the divisor is a multiple of 2.</summary>
         /// <remarks>This should only be used on 64-bit.</remarks>
         [Pure]
@@ -118,7 +119,7 @@ namespace HeaplessUtility
             Debug.Assert((divisor & 1) == 0, "The divisor has to be a multiple of 2.");
             return value & (divisor - 1);
         }
-        
+
         /// <summary>Performs a base 2 logarithm operation on an integer using a LUT.</summary>
         [Pure]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -142,7 +143,7 @@ namespace HeaplessUtility
             {
                 return Log2((uint)value);
             }
-            
+
             return 32 + Log2((uint)value);
         }
 
@@ -166,7 +167,7 @@ namespace HeaplessUtility
             {
                 return Log2Floor((uint)value);
             }
-            
+
             return 32 + Log2Floor(hi);
         }
     }

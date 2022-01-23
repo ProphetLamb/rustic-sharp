@@ -342,6 +342,7 @@ namespace HeaplessUtility.Text
         /// </summary>
         /// <param name="value">The pointer to the first character to append.</param>
         /// <param name="length">The number of characters after the <paramref name="value"/> pointer.</param>
+        [CLSCompliant(false)]
         public unsafe void Append(char* value, int length)
         {
             if (value == (char*)0 || length == 0)
