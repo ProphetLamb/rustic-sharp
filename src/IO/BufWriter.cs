@@ -14,42 +14,19 @@ namespace HeaplessUtility.IO
     /// <summary>
     ///     Reusable <see cref="IBufferWriter{T}"/> intended for use as a thread-static singleton.
     /// </summary>
-    /// <typeparam name="T">The type of the items.</typeparam>
-    /// <remarks>
-    ///     Usage:
-    /// <code>
-    ///     var obj = [...]
-    /// <br/>
-    ///     BufWriter&lt;byte&gt; writer = new();
-    /// <br/>
-    ///     Serializer.Serialize(writer, obj);
-    /// <br/>
-    ///     DoWork(writer.ToSpan(out byte[] poolArray));
-    /// <br/>
-    ///     ArrayPool&lt;byte&gt;.Return(poolArray);
-    /// </code>
-    ///  - or -
-    /// <code>
-    ///     var obj = [...]
-    /// <br/>
-    ///     BufWriter&lt;byte&gt; writer = new();
-    /// <br/>
-    ///     Serializer.Serialize(writer, obj);
-    /// <br/>
-    ///     return writer.ToArray(true);
-    /// </code>
-    /// </remarks>
     [DebuggerDisplay("Count: {Count}")]
     [DebuggerTypeProxy(typeof(PoolBufWriterDebuggerView<>))]
-    public sealed class BufWriter<T> :
+    public class BufWriter<T> :
         IBufferWriter<T>,
         IList<T>,
         ICollection,
         IReadOnlyList<T>,
         IDisposable
     {
-        private T[]? _buffer;
-        private readonly int _minimumCapacity;
+        /// <summary>
+        /// The internal storage.
+        /// </summary>
+        protected T[]? Buffer;
         private int _index;
 
         /// <summary>
@@ -57,8 +34,7 @@ namespace HeaplessUtility.IO
         /// </summary>
         public BufWriter()
         {
-            _buffer = null;
-            _minimumCapacity = 16;
+            Buffer = null;
             _index = 0;
         }
 
@@ -73,15 +49,14 @@ namespace HeaplessUtility.IO
                 ThrowHelper.ThrowArgumentOutOfRangeException_LessEqualZero(ExceptionArgument.initialCapacity);
             }
 
-            _buffer = null;
-            _minimumCapacity = initialCapacity;
+            Buffer = new T[initialCapacity];
             _index = 0;
         }
 
         /// <summary>
         ///     Returns the underlying storage of the list.
         /// </summary>
-        internal Span<T> RawStorage => _buffer;
+        internal Span<T> RawStorage => Buffer;
 
         /// <inheritdoc cref="List{T}.Count" />
         public int Count => _index;
@@ -98,11 +73,7 @@ namespace HeaplessUtility.IO
         /// <summary>
         ///     The current capacity of the writer.
         /// </summary>
-        public int Capacity
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _buffer != null ? _buffer.Length : -1;
-        }
+        public int Capacity => Buffer is null ? 0 : Buffer.Length;
 
         /// <inheritdoc cref="IList{T}.this"/>
         public ref T this[int index]
@@ -111,7 +82,7 @@ namespace HeaplessUtility.IO
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                if (_buffer == null)
+                if (Buffer == null)
                 {
                     ThrowHelper.ThrowInvalidOperationException_ObjectNotInitialized();
                 }
@@ -121,7 +92,7 @@ namespace HeaplessUtility.IO
                     ThrowHelper.ThrowArgumentOutOfRangeException_OverEqualsMax(ExceptionArgument.index, index, _index);
                 }
 
-                return ref _buffer[index];
+                return ref Buffer![index];
             }
         }
 
@@ -157,7 +128,7 @@ namespace HeaplessUtility.IO
             }
 
             Debug.Assert(Capacity > _index);
-            return _buffer.AsMemory(_index);
+            return Buffer.AsMemory(_index);
         }
 
         /// <inheritdoc />
@@ -169,26 +140,26 @@ namespace HeaplessUtility.IO
             }
 
             Debug.Assert(Capacity > _index);
-            return _buffer.AsSpan(_index);
+            return Buffer.AsSpan(_index);
         }
 
         /// <inheritdoc />
         public void Add(T item)
         {
-            if (_index >= Capacity - 1)
+            if (_index >= Capacity)
             {
                 Grow(1);
             }
 
-            _buffer![_index++] = item;
+            Buffer![_index++] = item;
         }
 
         /// <inheritdoc />
         public void Clear()
         {
-            if (_buffer != null)
+            if (Buffer != null)
             {
-                Array.Clear(_buffer, 0, _index);
+                Array.Clear(Buffer, 0, _index);
             }
 
             _index = 0;
@@ -204,9 +175,9 @@ namespace HeaplessUtility.IO
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int IndexOf(T item)
         {
-            if (_buffer != null)
+            if (Buffer != null)
             {
-                Array.IndexOf(_buffer, item, 0, _index);
+                Array.IndexOf(Buffer, item, 0, _index);
             }
 
             return -1;
@@ -224,11 +195,11 @@ namespace HeaplessUtility.IO
 
             if (remaining != 0)
             {
-                Array.Copy(_buffer!, index, _buffer!, index + 1, remaining);
+                Array.Copy(Buffer!, index, Buffer!, index + 1, remaining);
             }
             else
             {
-                _buffer![_index] = item;
+                Buffer![_index] = item;
             }
 
             _index += 1;
@@ -237,16 +208,16 @@ namespace HeaplessUtility.IO
         /// <inheritdoc />
         public void RemoveAt(int index)
         {
-            ThrowHelper.ThrowIfObjectDisposed(_buffer == null);
+            ThrowHelper.ThrowIfObjectDisposed(Buffer == null);
 
             int remaining = _index - index - 1;
 
             if (remaining != 0)
             {
-                Array.Copy(_buffer, index + 1, _buffer, index, remaining);
+                Array.Copy(Buffer!, index + 1, Buffer!, index, remaining);
             }
 
-            _buffer![--_index] = default!;
+            Buffer![--_index] = default!;
         }
 
         /// <inheritdoc />
@@ -278,9 +249,9 @@ namespace HeaplessUtility.IO
                 ThrowHelper.ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument.array);
             }
 
-            if (_buffer != null)
+            if (Buffer != null)
             {
-                Array.Copy(_buffer!, 0, array, arrayIndex, _index);
+                Array.Copy(Buffer!, 0, array, arrayIndex, _index);
             }
         }
 
@@ -290,55 +261,35 @@ namespace HeaplessUtility.IO
         /// <summary>
         /// Returns the <see cref="Span{T}"/> representing the written / requested to portion of the buffer.
         /// </summary>
-        /// <param name="leased">
-        ///     The reference to the pool-array, to be returned to the pool when no longer needed.
-        /// <br/>
-        /// <code>
-        ///     ArrayPool&lt;T&gt;.Shared.Return(leased);
-        /// </code>
-        /// </param>
-        /// <returns>The <see cref="Span{T}"/> representing the written / requested to portion of the buffer.</returns>
-        /// <remarks>
-        ///     Resets the object, but does not return the pool-array.
-        /// </remarks>
+        /// <param name="array">The internal array</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Span<T> ToSpan(out T[] leased)
+        public Span<T> ToSpan(out T[] array)
         {
-            ThrowHelper.ThrowIfObjectNotInitialized(_buffer == null);
+            ThrowHelper.ThrowIfObjectNotInitialized(Buffer == null);
 
-            leased = _buffer;
-            _buffer = null; // Ensure that reset doesn't return the buffer.
+            array = Buffer!;
+            Buffer = null; // Ensure that reset doesn't return the buffer.
 
             Reset();
 
-            return new Span<T>(leased, 0, _index);
+            return new Span<T>(array, 0, _index);
         }
 
         /// <summary>
         /// Returns the <see cref="Memory{T}"/> representing the written / requested to portion of the buffer.
         /// </summary>
-        /// <param name="leased">
-        ///     The reference to the pool-array, to be returned to the pool when no longer needed.
-        /// <br/>
-        /// <code>
-        ///     ArrayPool&lt;T&gt;.Shared.Return(leased);
-        /// </code>
-        /// </param>
-        /// <returns>The <see cref="Memory{T}"/> representing the written / requested to portion of the buffer.</returns>
-        /// <remarks>
-        ///     Resets the object, but does not return the pool-array.
-        /// </remarks>
+        /// <param name="array">The internal array</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Memory<T> ToMemory(out T[] leased)
+        public Memory<T> ToMemory(out T[] array)
         {
-            ThrowHelper.ThrowIfObjectNotInitialized(_buffer == null);
+            ThrowHelper.ThrowIfObjectNotInitialized(Buffer == null);
 
-            leased = _buffer;
-            _buffer = null; // Ensure that reset doesn't return the buffer.
+            array = Buffer!;
+            Buffer = null; // Ensure that reset doesn't return the buffer.
 
             Reset();
 
-            return new Memory<T>(leased, 0, _index);
+            return new Memory<T>(array, 0, _index);
         }
 
         /// <summary>
@@ -361,10 +312,10 @@ namespace HeaplessUtility.IO
         /// </remarks>
         public T[] ToArray(bool dispose)
         {
-            ThrowHelper.ThrowIfObjectNotInitialized(_buffer == null);
+            ThrowHelper.ThrowIfObjectNotInitialized(Buffer == null);
 
             T[] array = new T[_index];
-            _buffer.AsSpan(0, _index).CopyTo(array);
+            Buffer.AsSpan(0, _index).CopyTo(array);
 
             if (dispose)
             {
@@ -379,35 +330,24 @@ namespace HeaplessUtility.IO
         }
 
         /// <summary>Resets the writer to the initial state and returns the buffer to the array-pool.</summary>
-        public void Reset()
+        public virtual void Reset()
         {
             ThrowHelper.ThrowIfObjectDisposed(_index == -1);
 
-            T[]? poolArray = _buffer;
             _index = 0;
-            _buffer = null;
-
-            if (poolArray != null)
-            {
-                ArrayPool<T>.Shared.Return(poolArray);
-            }
+            Buffer = null;
         }
 
         /// <inheritdoc />
         public void Dispose()
         {
+            Reset();
             _index = -1;
-
-            if (_buffer != null)
-            {
-                ArrayPool<T>.Shared.Return(_buffer);
-                _buffer = null;
-            }
         }
 
         /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
         [Pure]
-        public VecIter<T> GetEnumerator() => new(_buffer, 0, _index);
+        public VecIter<T> GetEnumerator() => new(Buffer, 0, _index);
 
         /// <inheritdoc />
         IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
@@ -416,21 +356,21 @@ namespace HeaplessUtility.IO
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void Grow(int additionalCapacityBeyondPos)
+        protected virtual void Grow(int additionalCapacityBeyondPos)
         {
             Debug.Assert(additionalCapacityBeyondPos > 0);
 
-            if (_buffer != null)
+            if (Buffer != null)
             {
-                Debug.Assert(_index > _buffer.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
-                T[] temp = new T[Math.Max(_index + additionalCapacityBeyondPos, _buffer.Length * 2)];
-                _buffer.AsSpan(0, _index).CopyTo(temp);
-                _buffer = temp;
+                Debug.Assert(_index > Buffer.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
+                T[] temp = new T[Math.Max(_index + additionalCapacityBeyondPos, Buffer.Length * 2)];
+                Buffer.AsSpan(0, _index).CopyTo(temp);
+                Buffer = temp;
             }
             else
             {
                 ThrowHelper.ThrowIfObjectDisposed(_index == -1);
-                _buffer = new T[Math.Max(additionalCapacityBeyondPos, _minimumCapacity)];
+                Buffer = new T[Math.Max(additionalCapacityBeyondPos, 16)];
             }
         }
 

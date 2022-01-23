@@ -53,11 +53,11 @@ namespace HeaplessUtility.IO
         ///     Gets the span of the <see cref="BufWriter{T}"/> and tries to place it in the cache.
         /// </summary>
         /// <param name="writer">The writer to place in the cache.</param>
-        /// <param name="leased">The reference to the pool-array, to be returned to the pool when no longer needed.</param>
+        /// <param name="array">The internal array.</param>
         /// <returns></returns>
-        public static Span<T> GetSpanAndRelease(BufWriter<T> writer, out T[] leased)
+        public static Span<T> GetSpanAndRelease(BufWriter<T> writer, out T[] array)
         {
-            Span<T> span = writer.ToSpan(out leased);
+            Span<T> span = writer.ToSpan(out array);
             Release(writer);
             return span;
         }

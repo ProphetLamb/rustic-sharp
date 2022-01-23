@@ -4,21 +4,21 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 
-using HeaplessUtility.Pool;
+using HeaplessUtility;
 
 namespace HeaplessUtility
 {
     /// <summary>
-    /// Extensions for <see cref="RefList{T}"/>
+    /// Extensions for <see cref="RefVec{T}"/>
     /// </summary>
-    public static class RefListExtensions
+    public static class RefVecExtensions
     {
         /// <summary>
         /// Determines whether two lists are equal by comparing the elements using IEquatable{T}.Equals(T).
         /// </summary>
         [Pure]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool SequenceEqual<T>(this RefList<T> list, RefList<T> other)
+        public static bool SequenceEqual<T>(this RefVec<T> list, RefVec<T> other)
             where T : IEquatable<T>
         {
             int count = list.Count;
@@ -26,13 +26,13 @@ namespace HeaplessUtility
                 return false;
             return list.RawStorage.Slice(0, count).SequenceEqual(other.RawStorage.Slice(0, count));
         }
-        
+
         /// <summary>
         /// Determines the relative order of the lists being compared by comparing the elements using IComparable{T}.CompareTo(T).
         /// </summary>
         [Pure]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int SequenceCompareTo<T>(this RefList<T> list, RefList<T> other)
+        public static int SequenceCompareTo<T>(this RefVec<T> list, RefVec<T> other)
             where T : IComparable<T>
         {
             return list.RawStorage.Slice(0, list.Count).SequenceCompareTo(other.RawStorage.Slice(0, other.Count));
@@ -42,7 +42,7 @@ namespace HeaplessUtility
         {
             Debug.Assert(firstLength >= 0);
             Debug.Assert(secondLength >= 0);
- 
+
             int minLength = firstLength;
             if (minLength > secondLength)
                 minLength = secondLength;

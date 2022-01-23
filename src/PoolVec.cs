@@ -6,13 +6,16 @@ using System.Runtime.CompilerServices;
 namespace HeaplessUtility
 {
     /// <summary>
-    ///     Represents a strongly typed list of object that can be accessed by ref. Provides a similar interface as <see cref="List{T}"/>. 
+    ///     Represents a strongly typed list of object that can be accessed by ref. Provides a similar interface as <see cref="System.Collections.Generic.List{T}"/>.
     ///     The list allocated from a <see cref="ArrayPool{T}"/>.
     /// </summary>
     /// <typeparam name="T">The type of items of the list.</typeparam>
     public class PoolVec<T>
         : Vec<T>, IDisposable
     {
+        /// <summary>
+        ///     The pool from which to rent and to wich to return the internal storage.
+        /// </summary>
         protected ArrayPool<T> Pool;
 
         /// <summary>
@@ -41,12 +44,15 @@ namespace HeaplessUtility
         /// <param name="initialMinimumCapacity">The minimum initial capacity.</param>
         /// <param name="pool">The pool from which to allocate.</param>
         public PoolVec(int initialMinimumCapacity, ArrayPool<T>? pool = null)
-            : this()
         {
             Pool = pool ?? ArrayPool<T>.Shared;
             Storage = Pool.Rent(initialMinimumCapacity);
         }
-
+        
+        /// <summary>
+        /// Grows the list to have at least additional capacity beyond pos.
+        /// </summary>
+        /// <param name="additionalCapacityBeyondPos">Additional capacity beyond pos.</param>
         protected override void Grow(int additionalCapacityBeyondPos)
         {
             Debug.Assert(additionalCapacityBeyondPos > 0);
@@ -73,11 +79,19 @@ namespace HeaplessUtility
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Dispose()
         {
-            var temp = Storage;
-            Storage = null;
-            if (temp is not null)
+            Dispose(true);
+        }
+        
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
             {
-                Pool.Return(temp);
+                var temp = Storage;
+                Storage = null;
+                if (temp is not null)
+                {
+                    Pool.Return(temp);
+                }
             }
         }
     }

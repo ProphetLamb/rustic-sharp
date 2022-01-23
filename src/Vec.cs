@@ -6,13 +6,14 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using System.Text;
-using HeaplessUtility.DebuggerViews;
+
+using HeaplessUtility.DebugViews;
 using HeaplessUtility.Exceptions;
 
 namespace HeaplessUtility
 {
     /// <summary>
-    ///     Represents a strongly typed list of object that can be accessed by ref. Provides a similar interface as <see cref="List{T}"/>. 
+    ///     Represents a strongly typed list of object that can be accessed by ref. Provides a similar interface as <see cref="List{T}"/>.
     /// </summary>
     /// <typeparam name="T">The type of items of the list.</typeparam>
     [DebuggerDisplay("{GetDebuggerDisplay(),nq}")]
@@ -22,7 +23,11 @@ namespace HeaplessUtility
         ICollection,
         IReadOnlyList<T>
     {
+        /// <summary>
+        /// The internal storage.
+        /// </summary>
         protected T[]? Storage;
+
         private int _count;
 
         /// <summary>
@@ -30,7 +35,6 @@ namespace HeaplessUtility
         /// </summary>
         public Vec()
         {
-
         }
 
         /// <summary>
@@ -160,7 +164,7 @@ namespace HeaplessUtility
         }
 
         /// <summary>
-        ///     Ensures that the list has a minimum capacity. 
+        ///     Ensures that the list has a minimum capacity.
         /// </summary>
         /// <param name="capacity">The minimum capacity.</param>
         /// <returns>The new capacity.</returns>
@@ -179,6 +183,7 @@ namespace HeaplessUtility
         }
 
 #if NET50_OR_GREATER || NETCOREAPP3_1
+
         /// <summary>
         ///     Get a pinnable reference to the list.
         ///     This overload is pattern matched in the C# 7.3+ compiler so you can omit
@@ -188,14 +193,16 @@ namespace HeaplessUtility
         public unsafe ref T GetPinnableReference()
         {
             ref T ret = ref Unsafe.AsRef<T>(null);
-            if (_storage != null && 0 >= (uint)_storage.Length)
+            if (Storage != null && 0 >= (uint)Storage.Length)
             {
-                ret = ref _storage[0];
+                ret = ref Storage[0];
             }
 
             return ref ret;
         }
+
 #endif
+
         /// <summary>
         ///     Returns a span around the contents of the list.
         /// </summary>
@@ -217,7 +224,7 @@ namespace HeaplessUtility
         }
 
         /// <summary>
-        ///     Returns a span around a portion of the contents of the list. 
+        ///     Returns a span around a portion of the contents of the list.
         /// </summary>
         /// <param name="start">The zero-based index of the first element.</param>
         /// <param name="length">The number of elements from the <paramref name="start"/>.</param>
@@ -381,7 +388,6 @@ namespace HeaplessUtility
             {
                 if (typeof(T).IsValueType)
                 {
-
                     for (int i = 0; i < _count; i++)
                     {
                         if (!EqualityComparer<T>.Default.Equals(item, Storage[i]))
@@ -475,7 +481,6 @@ namespace HeaplessUtility
             {
                 if (typeof(T).IsValueType)
                 {
-
                     for (int i = _count - 1; i >= 0; i--)
                     {
                         if (!EqualityComparer<T>.Default.Equals(item, Storage[i]))
