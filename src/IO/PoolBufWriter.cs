@@ -17,7 +17,7 @@ namespace HeaplessUtility.IO
     /// <code>
     ///     var obj = [...]
     /// <br/>
-    ///     BufWriter&lt;byte&gt; writer = new();
+    ///     PoolBufWriter&lt;byte&gt; writer = new();
     /// <br/>
     ///     Serializer.Serialize(writer, obj);
     /// <br/>
@@ -29,11 +29,11 @@ namespace HeaplessUtility.IO
     /// <code>
     ///     var obj = [...]
     /// <br/>
-    ///     BufWriter&lt;byte&gt; writer = new();
+    ///     PoolBufWriter&lt;byte&gt; writer = new();
     /// <br/>
     ///     Serializer.Serialize(writer, obj);
     /// <br/>
-    ///     return writer.ToArray(true);
+    ///     return writer.ToArray(dispose: true);
     /// </code>
     /// </remarks>
     public class PoolBufWriter<T> : BufWriter<T>
