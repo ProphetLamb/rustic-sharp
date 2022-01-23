@@ -175,6 +175,6 @@ namespace HeaplessUtility
         /// </summary>
         /// <param name="segment">The iterator.</param>
         /// <returns></returns>
-        public static explicit operator ArraySegment<T>(VecIter<T> segment) => segment.Array != null ? new(segment.Array, segment.Offset, segment.Count) : default;
+        public static implicit operator ArraySegment<T>(VecIter<T> segment) => segment.Array != null ? new(segment.Array, segment.Offset, segment.Count) : default;
     }
 }

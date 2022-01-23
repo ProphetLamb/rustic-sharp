@@ -160,7 +160,7 @@ namespace HeaplessUtility
                 args.Add(en.Current);
             }
             var count = args.Count;
-            return new(new ArraySegment<T>(args.ToArray(true), 0, count));
+            return new(args.ToSegment());
         }
     }
 

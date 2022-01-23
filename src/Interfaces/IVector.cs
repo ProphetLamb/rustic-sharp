@@ -91,7 +91,7 @@ namespace HeaplessUtility.Interfaces
         /// Ensures that the collection can contain at least <paramref name="additionalCapacity"/> more elements.
         /// </summary>
         /// <param name="additionalCapacity">The number of additional elements the collection must be able to contain.</param>
-        /// <returns>The capacity of the collection.</returns>
+        /// <returns>The new capacity of the collection.</returns>
         int Reserve(int additionalCapacity);
 
         /// <inheritdoc cref="List{T}.AddRange"/>
