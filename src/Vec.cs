@@ -9,6 +9,7 @@ using System.Text;
 
 using HeaplessUtility.DebugViews;
 using HeaplessUtility.Exceptions;
+using HeaplessUtility.Interfaces;
 
 namespace HeaplessUtility
 {
@@ -18,10 +19,7 @@ namespace HeaplessUtility
     /// <typeparam name="T">The type of items of the list.</typeparam>
     [DebuggerDisplay("{GetDebuggerDisplay(),nq}")]
     [DebuggerTypeProxy(typeof(IReadOnlyCollectionDebugView<>))]
-    public class Vec<T> :
-        IList<T>,
-        ICollection,
-        IReadOnlyList<T>
+    public class Vec<T> : IVector<T>
     {
         /// <summary>
         /// The internal storage.
@@ -80,6 +78,9 @@ namespace HeaplessUtility
         }
 
         /// <inheritdoc/>
+        public int Length => Count;
+
+        /// <inheritdoc/>
         bool ICollection.IsSynchronized => false;
 
         /// <inheritdoc/>
@@ -90,6 +91,9 @@ namespace HeaplessUtility
 
         /// <inheritdoc cref="Span{T}.IsEmpty"/>
         public bool IsEmpty => 0 >= (uint)_count;
+
+        /// <inheritdoc/>
+        public bool IsDefault => Storage is null;
 
         /// <summary>
         ///     Returns the underlying storage of the list.
@@ -108,6 +112,8 @@ namespace HeaplessUtility
                 return ref Storage[index];
             }
         }
+
+        ref readonly T IReadOnlyVector<T>.this[int index] => ref this[index];
 
         T IList<T>.this[int index] { get => this[index]; set => this[index] = value; }
 
@@ -132,6 +138,8 @@ namespace HeaplessUtility
                 return ref Storage![offset];
             }
         }
+
+        ref readonly T IReadOnlyVector<T>.this[Index index] => ref this[index];
 
         /// <summary>
         ///     Gets a span of elements of elements from the specified <paramref name="range"/>.

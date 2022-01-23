@@ -259,7 +259,8 @@ namespace HeaplessUtility.IO
         void ICollection.CopyTo(Array array, int index) => CopyTo((T[])array, index);
 
         /// <summary>
-        /// Returns the <see cref="Span{T}"/> representing the written / requested to portion of the buffer.
+        /// Returns the <see cref="Span{T}"/> representing the written / requested portion of the buffer.
+        /// <see cref="Reset"/>s the buffer.
         /// </summary>
         /// <param name="array">The internal array</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -268,15 +269,16 @@ namespace HeaplessUtility.IO
             ThrowHelper.ThrowIfObjectNotInitialized(Buffer == null);
 
             array = Buffer!;
-            Buffer = null; // Ensure that reset doesn't return the buffer.
+            Span<T> span = new(array, 0, _index);
 
             Reset();
 
-            return new Span<T>(array, 0, _index);
+            return span;
         }
 
         /// <summary>
-        /// Returns the <see cref="Memory{T}"/> representing the written / requested to portion of the buffer.
+        /// Returns the <see cref="Memory{T}"/> representing the written / requested portion of the buffer.
+        /// <see cref="Reset"/>s the buffer.
         /// </summary>
         /// <param name="array">The internal array</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -285,11 +287,28 @@ namespace HeaplessUtility.IO
             ThrowHelper.ThrowIfObjectNotInitialized(Buffer == null);
 
             array = Buffer!;
-            Buffer = null; // Ensure that reset doesn't return the buffer.
+            Memory<T> mem = new(array, 0, _index);
 
             Reset();
 
-            return new Memory<T>(array, 0, _index);
+            return mem;
+        }
+
+        /// <summary>
+        /// Returns the <see cref="ArraySegment{T}"/> representing the written / requested portion of the buffer.
+        /// <see cref="Reset"/>s the buffer.
+        /// </summary>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ArraySegment<T> ToSegment()
+        {
+            ThrowHelper.ThrowIfObjectNotInitialized(Buffer == null);
+
+            ArraySegment<T> segment = new(Buffer!, 0, _index);
+
+            Reset();
+
+            return segment;
         }
 
         /// <summary>
