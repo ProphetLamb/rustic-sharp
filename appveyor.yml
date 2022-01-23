@@ -31,7 +31,6 @@ build_script:
 after_build:
   - dotnet pack "src/" --no-build --version-suffix %LABEL% -o artifacts
   - dotnet pack "tests/" --no-build --version-suffix %LABEL% -o artifacts
-  - dotnet publish "src/" --no-build --version-suffix %LABEL% -o artifacts\publish
 
 test_script:
   - dotnet test "tests/" --no-build --no-restore --test-adapter-path:. --logger:"Appveyor;LogFilePath=./tests/overage.opencover.xml" /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
