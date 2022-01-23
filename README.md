@@ -2,20 +2,22 @@
 
 This package mainly contains the list and buffer implementations
 
-| Definition            | Desciption                                                                      |
-| --------------------- | ------------------------------------------------------------------------------- |
-| `ref struct RefVec`   | Temporary array allocating from `ArrayPool<T>.Default`.                         |
-| `class Vec`           | `System.Collections.Generic.List`-like implementation allowing by-`ref` access. |
-| `class PoolVec`       | `Vec` implementation allocating from a `ArrayPool<T>` instance.                 |
-| `class BufWriter`     | `IBufferWriter` similar to `Vec`.                                               |
-| `class PoolBufWriter` | `IBufferWriter` similar to `PoolVec`.                                           |
+| Definition            | Desciption                                                                          |
+| --------------------- | ----------------------------------------------------------------------------------- |
+| `ref struct RefVec`   | Temporary array allocating from `ArrayPool<T>.Default`.                             |
+| `class Vec`           | `System.Collections.Generic.List`-like implementation allowing by-`ref` access.     |
+| `class PoolVec`       | `Vec` implementation allocating from a `ArrayPool<T>` instance.                     |
+| `class BufWriter`     | `IBufferWriter` similar to `Vec`.                                                   |
+| `class PoolBufWriter` | `IBufferWriter` similar to `PoolVec`.                                               |
+| `struct TinyVec`      | Read-only list with a inline capacity of 4. Also see `readonly ref struct TinySpan` |
 
 that aim to optimize memory management, by
 
 - returning `struct`s by-`ref` or -`readonly ref` on access, 
-- and optimizing for temporary array usage by providing implementations allowing allocation from a `ArrayPool<T>`.
+- optimizing for temporary array usage by providing implementations allowing allocation from a `ArrayPool<T>`,
+- and inlining tiny arrays.
 
-In addition to that `HeaplessUtility` provides the non-allocating helpers for parsing
+In addition to that `HeaplessUtility` provides the following non-allocating helpers for parsing text and more
 
 | Definition              | Description                                                                                                                                                                                |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
