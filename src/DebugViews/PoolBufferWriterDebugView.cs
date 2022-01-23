@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
+
 using HeaplessUtility.Exceptions;
-using HeaplessUtility.Pool;
+using HeaplessUtility.IO;
 
 namespace HeaplessUtility.DebuggerViews
 {

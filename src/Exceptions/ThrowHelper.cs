@@ -21,58 +21,44 @@ namespace HeaplessUtility.Exceptions
             return name!;
         }
         
-#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1 || NET5_0
         [DoesNotReturn]
-#endif
         public static void ThrowNotSupportedException()
         {
             throw new NotSupportedException();
         }
 
-#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [DoesNotReturn]
-#endif
         public static void ThrowInvalidOperationException_ObjectDisposed()
         {
             throw new InvalidOperationException("The operation cannot be performed on an object is disposed.");
         }
         
-#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [DoesNotReturn]
-#endif
         public static void ThrowInvalidOperationException_ObjectNotInitialized()
         {
             throw new InvalidOperationException("The operation cannot be performed before the object is initialized.");
         }
 
-#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [DoesNotReturn]
-#endif
         public static void ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument argument, int index)
         {
             throw new ArgumentOutOfRangeException(GetArgumentName(argument), $"The index {index} is outside of the range of the array.");
         }
 
-#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [DoesNotReturn]
-#endif
         public static void ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument argument)
         {
             throw new ArgumentException("The array has insufficient capacity.", GetArgumentName(argument));
         }
 
-#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [DoesNotReturn]
-#endif
         public static void ThrowArgumentException_CollectionEmpty(ExceptionArgument argument)
         {
             throw new ArgumentException("The collection cannot be empty.", GetArgumentName(argument));
         }
 
         public static void ThrowIfObjectDisposed(
-#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
             [DoesNotReturnIf(true)]
-#endif
             bool disposed)
         {
             if (disposed)
@@ -82,9 +68,7 @@ namespace HeaplessUtility.Exceptions
         }
 
         public static void ThrowIfObjectNotInitialized(
-#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1 || NET5_0
             [DoesNotReturnIf(true)]
-#endif
             bool notInitialized)
         {
             if (notInitialized)
@@ -93,57 +77,43 @@ namespace HeaplessUtility.Exceptions
             }
         }
 
-#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [DoesNotReturn]
-#endif
         public static void ThrowArgumentOutOfRangeException_LessEqualZero(ExceptionArgument argument)
         {
             throw new ArgumentOutOfRangeException(GetArgumentName(argument), "The value cannot be less then or equal to zero.");
         }
 
-#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [DoesNotReturn]
-#endif
         public static void ThrowArgumentOutOfRangeException_LessZero(ExceptionArgument argument)
         {
             throw new ArgumentOutOfRangeException(GetArgumentName(argument), "The value cannot be less then zero.");
         }
 
-#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [DoesNotReturn]
-#endif
         public static void ThrowArgumentOutOfRangeException_OverEqualsMax(ExceptionArgument argument, object? value, object? maximum)
         {
             throw new ArgumentOutOfRangeException(GetArgumentName(argument), $"The value {value} cannot be greater then or equal to the maximum {maximum}.");
         }
 
-#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [DoesNotReturn]
-#endif
         public static void ThrowArgumentOutOfRangeException_UnderMin(ExceptionArgument argument, object? value, object? minimum)
         {
             throw new ArgumentOutOfRangeException(GetArgumentName(argument), $"The value {value} cannot be less then the minimum {minimum}.");
         }
 
-#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [DoesNotReturn]
-#endif
         public static void ThrowArgumentException_BadComparer(object comparer)
         {
             throw new ArgumentException($"Bad comparer {comparer}");
         }
 
-#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [DoesNotReturn]
-#endif
         public static void ThrowInvalidOperationException(string message, Exception exception)
         {
             throw new InvalidOperationException(message, exception);
         }
 
-#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [DoesNotReturn]
-#endif
         public static void ThrowArgumentNullException(ExceptionArgument argument)
         {
             throw new ArgumentNullException(GetArgumentName(argument), "The value cannot be null or default.");
@@ -154,25 +124,19 @@ namespace HeaplessUtility.Exceptions
             throw new ArgumentOutOfRangeException(GetArgumentName(argument), message);
         }
 
-#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [DoesNotReturn]
-#endif
         public static void ThrowArgumentException_UnsupportedObjectType(ExceptionArgument argument)
         {
             throw new ArgumentException("The type of the object is not supported.", GetArgumentName(argument));
         }
 
-#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [DoesNotReturn]
-#endif
         public static void ThrowArgumentException_ArraysLengthNotEquals(ExceptionArgument argument)
         {
             throw new ArgumentException("The length of the array is not equal to the length of the reference array.", GetArgumentName(argument));
         }
 
-#if NETSTANDARD2_1 || NET5_0 || NETCOREAPP3_1
         [DoesNotReturn]
-#endif
         public static void ThrowInvalidOperationException_EnumeratorInvalidCollectionVersion()
         {
             throw new InvalidOperationException("The enumerator is for a different version of the collection.");
