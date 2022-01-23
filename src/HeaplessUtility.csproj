@@ -25,7 +25,7 @@
     <RepositoryType>git</RepositoryType>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageTags>C#</PackageTags>
-    <Version>0.2.1</Version>
+    <Version>0.3.0</Version>
   </PropertyGroup>
 
   <ItemGroup Condition="!$(DefineConstants.Contains('NET5_0_OR_GREATER'))">
