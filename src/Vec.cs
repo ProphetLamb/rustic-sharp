@@ -1,13 +1,12 @@
-﻿using System;
-using System.Buffers;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using System.Text;
 using HeaplessUtility.Common;
-using HeaplessUtility.DebugViews;
 
 namespace HeaplessUtility
 {
@@ -235,16 +234,10 @@ namespace HeaplessUtility
             return Storage.AsSpan(origPos, length);
         }
 
-        /// <inheritdoc cref="List{T}.BinarySearch(int, int, T, IComparer{T})"/>
-        [Pure]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int BinarySearch(int index, int count, in T item, IComparer<T> comparer)
+        /// <inheritdoc />
+        public int BinarySearch<C>(int start, int count, in T item, [AllowNull] in C comparer) where C : IComparer<T>
         {
-            if (Storage == null)
-            {
-                return -1;
-            }
-            return Array.BinarySearch(Storage, index, count, item, comparer);
+            start.ValidateArgRange(start >= 0);
         }
 
         /// <inheritdoc cref="List{T}.Clear"/>
@@ -300,12 +293,10 @@ namespace HeaplessUtility
         /// <inheritdoc />
         void ICollection.CopyTo(Array array, int index) => CopyTo((T[])array, index);
 
-        /// <inheritdoc />
-        int IList<T>.IndexOf(T item) => this.IndexOf(item);
-
         /// <inheritdoc cref="IList{T}.IndexOf"/>
         [Pure]
-        public int IndexOf(int start, int count, in T item, IEqualityComparer<T>? comparer)
+        public int IndexOf<E>(int start, int count, in T item, in E comparer)
+            where E : IEqualityComparer<T>
         {
             start.ValidateArg(start >= 0);
             count.ValidateArg(count >= 0);
@@ -317,7 +308,7 @@ namespace HeaplessUtility
             }
 
             int end = start + count;
-            if (comparer == null)
+            if (comparer is null)
             {
                 if (typeof(T).IsValueType)
                 {
@@ -333,22 +324,38 @@ namespace HeaplessUtility
 
                     return -1;
                 }
-
-                comparer = EqualityComparer<T>.Default;
-            }
-
-            for (int i = start; i < end; i++)
-            {
-                if (!comparer.Equals(item, Storage[i]))
+                else
                 {
-                    continue;
-                }
+                    var defaultCmp = EqualityComparer<T>.Default;
+                    for (int i = start; i < end; i++)
+                    {
+                        if (!defaultCmp.Equals(item, Storage[i]))
+                        {
+                            continue;
+                        }
 
-                return i;
+                        return i;
+                    }
+                }
+            }
+            else
+            {
+                for (int i = start; i < end; i++)
+                {
+                    if (!comparer.Equals(item, Storage[i]))
+                    {
+                        continue;
+                    }
+
+                    return i;
+                }
             }
 
             return -1;
         }
+
+        /// <inheritdoc />
+        int IList<T>.IndexOf(T item) => this.IndexOf(item);
 
         /// <inheritdoc cref="List{T}.Insert"/>
         [CLSCompliant(false)]
@@ -390,9 +397,11 @@ namespace HeaplessUtility
             span.CopyTo(storage.AsSpan(index));
             Length += count;
         }
+
         /// <inheritdoc cref="List{T}.LastIndexOf(T)"/>
         [Pure]
-        public int LastIndexOf(int start, int count, in T item, IEqualityComparer<T>? comparer = null)
+        public int LastIndexOf<E>(int start, int count, in T item, [AllowNull] in E comparer)
+            where E : IEqualityComparer<T>
         {
             start.ValidateArg(start >= 0);
             count.ValidateArg(count >= 0);
@@ -420,18 +429,31 @@ namespace HeaplessUtility
 
                     return -1;
                 }
-
-                comparer = EqualityComparer<T>.Default;
-            }
-
-            for (int i = end - 1; i >= start; i--)
-            {
-                if (!comparer.Equals(item, Storage[i]))
+                else
                 {
-                    continue;
-                }
+                    var defaultCmp = EqualityComparer<T>.Default;
+                    for (int i = end - 1; i >= start; i--)
+                    {
+                        if (!defaultCmp.Equals(item, Storage[i]))
+                        {
+                            continue;
+                        }
 
-                return i;
+                        return i;
+                    }
+                }
+            }
+            else
+            {
+                for (int i = end - 1; i >= start; i--)
+                {
+                    if (!comparer.Equals(item, Storage[i]))
+                    {
+                        continue;
+                    }
+
+                    return i;
+                }
             }
 
             return -1;
@@ -482,7 +504,8 @@ namespace HeaplessUtility
         }
 
         /// <inheritdoc  />
-        public void Sort(int start, int count, IComparer<T>? comparer = null)
+        public void Sort<C>(int start, int count, [AllowNull] in C comparer)
+            where C : IComparer<T>
         {
             start.ValidateArg(start >= 0);
             count.ValidateArg(count >= 0);
