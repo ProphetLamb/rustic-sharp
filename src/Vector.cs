@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -60,15 +61,18 @@ namespace HeaplessUtility
 
         /// <inheritdoc cref="IList{T}.IndexOf"/>
         [Pure]
-        int IndexOf(int start, int count, in T item, IEqualityComparer<T>? comparer = null);
+        int IndexOf<E>(int start, int count, in T item, [AllowNull] in E comparer)
+            where E : IEqualityComparer<T>;
 
         /// <inheritdoc cref="List{T}.LastIndexOf(T)"/>
         [Pure]
-        int LastIndexOf(int start, int count, in T item, IEqualityComparer<T>? comparer = null);
+        int LastIndexOf<E>(int start, int count, in T item, [AllowNull] in E comparer)
+            where E : IEqualityComparer<T>;
 
         /// <inheritdoc cref="List{T}.BinarySearch(int, int, T, IComparer{T})"/>
         [Pure]
-        int BinarySearch(int start, int count, in T item, IComparer<T> comparer);
+        int BinarySearch<C>(int start, int count, in T item, [AllowNull] in C comparer)
+            where C : IComparer<T>;
 
         /// <inheritdoc cref="Span{T}.TryCopyTo"/>
         bool TryCopyTo(Span<T> destination);
@@ -107,7 +111,8 @@ namespace HeaplessUtility
         void RemoveRange(int start, int count);
 
         /// <inheritdoc cref="List{T}.Sort(int, int, IComparer{T})"/>
-        void Sort(int start, int count, IComparer<T>? comparer = null);
+        void Sort<C>(int start, int count, [AllowNull] in C comparer)
+            where C : IComparer<T>;
 
         /// <inheritdoc cref="List{T}.Reverse(int, int)"/>
         void Reverse(int start, int count);
@@ -284,7 +289,7 @@ namespace HeaplessUtility
         /// </remarks>
         public static void SwapRemove<T>(this IVector<T> self, int index)
         {
-            index.ValidateArg(index >= 0 && index < self.Length);
+            index.ValidateArgRange(index >= 0 && index < self.Length);
             int last = self.Length - 1;
             self[index] = self[last];
             self.RemoveAt(last); // Should not copy when removing the last element.
