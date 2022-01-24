@@ -5,7 +5,7 @@ using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
-using HeaplessUtility.Exceptions;
+using HeaplessUtility.Common;
 
 namespace HeaplessUtility.Text
 {
@@ -115,10 +115,7 @@ namespace HeaplessUtility.Text
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                if ((uint)index >= (uint)_pos)
-                {
-                    ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.index, index);
-                }
+                index.ValidateArg(index >= 0 && index < Length);
                 return ref _chars[index];
             }
         }

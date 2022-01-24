@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
-using HeaplessUtility.Exceptions;
+using HeaplessUtility.Common;
 
 namespace HeaplessUtility
 {
@@ -27,30 +27,10 @@ namespace HeaplessUtility
         /// <param name="count">The number of elements to iterate.</param>
         public VecIter(T[]? array, int offset, int count)
         {
-            if (offset < 0)
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException_LessZero(ExceptionArgument.startIndex);
-            }
-
-            if (count < 0)
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException_LessZero(ExceptionArgument.count);
-            }
-
-            if (array != null)
-            {
-                if (array.Length - offset > count)
-                {
-                    ThrowHelper.ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument.array);
-                }
-            }
-            else
-            {
-                if (offset != 0 || count != 0)
-                {
-                    ThrowHelper.ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument.array);
-                }
-            }
+            offset.ValidateArg(offset >= 0);
+            count.ValidateArg(count >= 0);
+            int arrayLength = array is null ? 0 : array.Length;
+            count.ValidateArg(count <= arrayLength - offset);
 
             _array = array;
             _offset = offset;
@@ -71,7 +51,9 @@ namespace HeaplessUtility
         object? IEnumerator.Current => Current;
 
         /// <inheritdoc/>
-        public int Count => _count;
+        public int Length => _count;
+
+        int IReadOnlyCollection<T>.Count => Length;
 
         /// <summary>
         ///     The current position of the enumerator.
@@ -92,10 +74,7 @@ namespace HeaplessUtility
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                if ((uint)index >= (uint)_count)
-                {
-                    ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.index, index);
-                }
+                index.ValidateArg(index >= 0 && index < Length);
 
                 return ref _array![_offset + index];
             }
@@ -107,10 +86,7 @@ namespace HeaplessUtility
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                if ((uint)index >= (uint)_count)
-                {
-                    ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.index, index);
-                }
+                index.ValidateArg(index >= 0 && index < Length);
 
                 return _array![_offset + index];
             }
@@ -175,6 +151,6 @@ namespace HeaplessUtility
         /// </summary>
         /// <param name="segment">The iterator.</param>
         /// <returns></returns>
-        public static implicit operator ArraySegment<T>(VecIter<T> segment) => segment.Array != null ? new(segment.Array, segment.Offset, segment.Count) : default;
+        public static implicit operator ArraySegment<T>(VecIter<T> segment) => segment.Array != null ? new(segment.Array, segment.Offset, segment.Length) : default;
     }
 }

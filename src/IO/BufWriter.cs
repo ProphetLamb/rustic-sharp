@@ -6,8 +6,8 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
+using HeaplessUtility.Common;
 using HeaplessUtility.DebuggerViews;
-using HeaplessUtility.Exceptions;
 
 namespace HeaplessUtility.IO
 {
@@ -18,9 +18,7 @@ namespace HeaplessUtility.IO
     [DebuggerTypeProxy(typeof(PoolBufWriterDebuggerView<>))]
     public class BufWriter<T> :
         IBufferWriter<T>,
-        IList<T>,
-        ICollection,
-        IReadOnlyList<T>,
+        IVector<T>,
         IDisposable
     {
         /// <summary>
@@ -44,12 +42,11 @@ namespace HeaplessUtility.IO
         /// <param name="initialCapacity">The minimum capacity of the writer.</param>
         public BufWriter(int initialCapacity)
         {
-            if (initialCapacity <= 0)
+            initialCapacity.ValidateArg(initialCapacity >= 0);
+            if (initialCapacity != 0)
             {
-                ThrowHelper.ThrowArgumentOutOfRangeException_LessEqualZero(ExceptionArgument.initialCapacity);
+                Buffer = new T[initialCapacity];
             }
-
-            Buffer = new T[initialCapacity];
             _index = 0;
         }
 
@@ -59,7 +56,19 @@ namespace HeaplessUtility.IO
         internal Span<T> RawStorage => Buffer;
 
         /// <inheritdoc cref="List{T}.Count" />
-        public int Count => _index;
+        public int Length
+        {
+            [Pure]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _index;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            internal set
+            {
+                Debug.Assert(value >= 0);
+                Debug.Assert(value < Capacity);
+                _index = value;
+            }
+        }
 
         /// <inheritdoc />
         bool ICollection.IsSynchronized => false;
@@ -70,34 +79,42 @@ namespace HeaplessUtility.IO
         /// <inheritdoc />
         bool ICollection<T>.IsReadOnly => false;
 
-        /// <summary>
-        ///     The current capacity of the writer.
-        /// </summary>
+        /// <inheritdoc />
         public int Capacity => Buffer is null ? 0 : Buffer.Length;
 
-        /// <inheritdoc cref="IList{T}.this"/>
+        /// <inheritdoc />
+        public bool IsEmpty => 0u >= (uint)Length;
+
+        /// <inheritdoc />
+        public bool IsDefault => Buffer is null;
+
+        /// <inheritdoc />
+        public int Count => Length;
+
+
+        /// <inheritdoc />
         public ref T this[int index]
         {
             [Pure]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                if (Buffer == null)
-                {
-                    ThrowHelper.ThrowInvalidOperationException_ObjectNotInitialized();
-                }
-
-                if ((uint)index >= (uint)_index)
-                {
-                    ThrowHelper.ThrowArgumentOutOfRangeException_OverEqualsMax(ExceptionArgument.index, index, _index);
-                }
-
-                return ref Buffer![index];
+                index.ValidateArg(index >= 0 && index < Length);
+                this.ValidateArg(Buffer is not null);
+                return ref Buffer[index];
             }
         }
 
-        /// <inheritdoc />
         T IReadOnlyList<T>.this[int index] => this[index];
+
+        ref readonly T IReadOnlyVector<T>.this[int index] => ref this[index];
+
+        /// <inheritdoc />
+        public ref T this[Index index] => ref this[index.GetOffset(Length)];
+
+        ref readonly T IReadOnlyVector<T>.this[Index index] => ref this[index];
+
+        /// <inheritdoc />
 
         /// <inheritdoc />
         T IList<T>.this[int index] { get => this[index]; set => this[index] = value; }
@@ -106,16 +123,8 @@ namespace HeaplessUtility.IO
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Advance(int count)
         {
-            if (count < 0)
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException_LessZero(ExceptionArgument.count);
-            }
-
-            if (_index > Capacity - count)
-            {
-                ThrowInvalidOperationException_AdvancedTooFar(Capacity);
-            }
-
+            count.ValidateArg(count >= 0);
+            count.ValidateArg(Length <= Capacity - count);
             _index += count;
         }
 
@@ -175,7 +184,7 @@ namespace HeaplessUtility.IO
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int IndexOf(T item)
         {
-            if (Buffer != null)
+            if (Buffer is not null)
             {
                 Array.IndexOf(Buffer, item, 0, _index);
             }
@@ -208,7 +217,7 @@ namespace HeaplessUtility.IO
         /// <inheritdoc />
         public void RemoveAt(int index)
         {
-            ThrowHelper.ThrowIfObjectDisposed(Buffer == null);
+            this.ValidateArg(Buffer is not null);
 
             int remaining = _index - index - 1;
 
@@ -237,19 +246,11 @@ namespace HeaplessUtility.IO
         /// <inheritdoc />
         public void CopyTo(T[] array, int arrayIndex)
         {
-            ThrowHelper.ThrowIfObjectDisposed(_index == -1);
+            arrayIndex.ValidateArg(arrayIndex >= 0);
+            array.ValidateArg(array.Length - arrayIndex >= Length);
+            this.ValidateArg(Length != -1);
 
-            if (arrayIndex < 0)
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException_LessZero(ExceptionArgument.arrayIndex);
-            }
-
-            if (array.Length - arrayIndex < Count)
-            {
-                ThrowHelper.ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument.array);
-            }
-
-            if (Buffer != null)
+            if (Buffer is not null)
             {
                 Array.Copy(Buffer!, 0, array, arrayIndex, _index);
             }
@@ -266,9 +267,9 @@ namespace HeaplessUtility.IO
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Span<T> ToSpan(out T[] array)
         {
-            ThrowHelper.ThrowIfObjectNotInitialized(Buffer == null);
+            this.ValidateArg(Buffer is not null);
 
-            array = Buffer!;
+            array = Buffer;
             Span<T> span = new(array, 0, _index);
 
             Reset();
@@ -284,9 +285,9 @@ namespace HeaplessUtility.IO
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Memory<T> ToMemory(out T[] array)
         {
-            ThrowHelper.ThrowIfObjectNotInitialized(Buffer == null);
+            this.ValidateArg(Buffer is not null);
 
-            array = Buffer!;
+            array = Buffer;
             Memory<T> mem = new(array, 0, _index);
 
             Reset();
@@ -302,7 +303,7 @@ namespace HeaplessUtility.IO
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ArraySegment<T> ToSegment()
         {
-            ThrowHelper.ThrowIfObjectNotInitialized(Buffer == null);
+            this.ValidateArg(Buffer is not null);
 
             ArraySegment<T> segment = new(Buffer!, 0, _index);
 
@@ -331,7 +332,7 @@ namespace HeaplessUtility.IO
         /// </remarks>
         public T[] ToArray(bool dispose)
         {
-            ThrowHelper.ThrowIfObjectNotInitialized(Buffer == null);
+            this.ValidateArg(Buffer is not null);
 
             T[] array = new T[_index];
             Buffer.AsSpan(0, _index).CopyTo(array);
@@ -351,7 +352,7 @@ namespace HeaplessUtility.IO
         /// <summary>Resets the writer to the initial state and returns the buffer to the array-pool.</summary>
         public virtual void Reset()
         {
-            ThrowHelper.ThrowIfObjectDisposed(_index == -1);
+            this.ValidateArg(Buffer is not null);
 
             _index = 0;
             Buffer = null;
@@ -388,15 +389,209 @@ namespace HeaplessUtility.IO
             }
             else
             {
-                ThrowHelper.ThrowIfObjectDisposed(_index == -1);
+                this.ValidateArg(Length != -1);
                 Buffer = new T[Math.Max(additionalCapacityBeyondPos, 16)];
             }
         }
 
-        [DoesNotReturn]
-        private static void ThrowInvalidOperationException_AdvancedTooFar(int capacity)
+        /// <inheritdoc />
+        public int Reserve(int additionalCapacity)
         {
-            throw new InvalidOperationException($"Cannot advance the buffer because the index would exceed the maximum capacity ({capacity}) of the buffer.");
+            if (Length >= Capacity - additionalCapacity)
+            {
+                Grow(additionalCapacity);
+            }
+            return Capacity;
+        }
+
+        /// <inheritdoc />
+        public void InsertRange(int index, ReadOnlySpan<T> values)
+        {
+            index.ValidateArg(index >= 0);
+            index.ValidateArg(index <= Length);
+
+            int count = values.Length;
+            if (count == 0)
+            {
+                return;
+            }
+
+            if (Buffer is null || Length > Capacity - count)
+            {
+                Grow(count);
+            }
+
+            T[] storage = Buffer!;
+            Array.Copy(storage, index, storage, index + count, Length - index);
+            values.CopyTo(storage.AsSpan(index));
+            Length += count;
+        }
+
+        /// <inheritdoc />
+        public void RemoveRange(int start, int count)
+        {
+            start.ValidateArg(start >= 0);
+            count.ValidateArg(count >= 0);
+            count.ValidateArg(start <= Count - count);
+            this.ValidateArg(Buffer is not null);
+
+            int end = Length - count;
+            int remaining = end - start;
+            Array.Copy(Buffer, start + count, Buffer, start, remaining);
+            Array.Clear(Buffer, end, count);
+            Length = end;
+        }
+
+        /// <inheritdoc />
+        public void Sort(int start, int count, IComparer<T>? comparer = null)
+        {
+            start.ValidateArg(start >= 0);
+            count.ValidateArg(count >= 0);
+            count.ValidateArg(start <= Length - count);
+            if (count != 0)
+            {
+                this.ValidateArg(Buffer is not null);
+                if (comparer is null)
+                {
+                    Buffer.AsSpan(start, count).Sort();
+                }
+                else
+                {
+                    Buffer.AsSpan(start, count).Sort(comparer);
+                }
+            }
+        }
+
+        /// <inheritdoc />
+        public void Reverse(int start, int count)
+        {
+            start.ValidateArg(start >= 0);
+            count.ValidateArg(count >= 0);
+            count.ValidateArg(start <= Length - count);
+            if (count != 0)
+            {
+                this.ValidateArg(Buffer is not null);
+                Array.Reverse(Buffer, start, count);
+            }
+        }
+
+        /// <inheritdoc />
+        public ReadOnlySpan<T> AsSpan(int start, int count)
+        {
+            return new(Buffer, start, count);
+        }
+
+        /// <inheritdoc />
+        public int IndexOf(int start, int count, in T item, IEqualityComparer<T>? comparer = null)
+        {
+            start.ValidateArg(start >= 0);
+            count.ValidateArg(count >= 0);
+            count.ValidateArg(start <= Length - count);
+
+            if (Buffer is null)
+            {
+                return -1;
+            }
+
+            int end = start + count;
+            if (comparer == null)
+            {
+                if (typeof(T).IsValueType)
+                {
+                    for (int i = start; i < end; i++)
+                    {
+                        if (!EqualityComparer<T>.Default.Equals(item, Buffer[i]))
+                        {
+                            continue;
+                        }
+
+                        return i;
+                    }
+
+                    return -1;
+                }
+
+                comparer = EqualityComparer<T>.Default;
+            }
+
+            for (int i = start; i < end; i++)
+            {
+                if (!comparer.Equals(item, Buffer[i]))
+                {
+                    continue;
+                }
+
+                return i;
+            }
+
+            return -1;
+        }
+
+        /// <inheritdoc />
+        public int LastIndexOf(int start, int count, in T item, IEqualityComparer<T>? comparer = null)
+        {
+            start.ValidateArg(start >= 0);
+            count.ValidateArg(count >= 0);
+            count.ValidateArg(start < Length - count);
+
+            if (Buffer == null)
+            {
+                return -1;
+            }
+
+            int end = start + count;
+            if (comparer == null)
+            {
+                if (typeof(T).IsValueType)
+                {
+                    for (int i = end - 1; i >= start; i--)
+                    {
+                        if (!EqualityComparer<T>.Default.Equals(item, Buffer[i]))
+                        {
+                            continue;
+                        }
+
+                        return i;
+                    }
+
+                    return -1;
+                }
+
+                comparer = EqualityComparer<T>.Default;
+            }
+
+            for (int i = end - 1; i >= start; i--)
+            {
+                if (!comparer.Equals(item, Buffer[i]))
+                {
+                    continue;
+                }
+
+                return i;
+            }
+
+            return -1;
+        }
+
+        /// <inheritdoc />
+        public int BinarySearch(int start, int count, in T item, IComparer<T> comparer)
+        {
+            if (Buffer == null)
+            {
+                return -1;
+            }
+            return Array.BinarySearch(Buffer, start, count, item, comparer);
+        }
+
+        /// <inheritdoc />
+        public bool TryCopyTo(Span<T> destination)
+        {
+            if (IsEmpty)
+            {
+                return true;
+            }
+
+            return Buffer.AsSpan().TryCopyTo(destination);
         }
     }
 }

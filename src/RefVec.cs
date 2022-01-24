@@ -6,7 +6,7 @@ using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
-using HeaplessUtility.Exceptions;
+using HeaplessUtility.Common;
 
 namespace HeaplessUtility
 {
@@ -19,7 +19,7 @@ namespace HeaplessUtility
     {
         private T[]? _arrayToReturnToPool;
         private Span<T> _storage;
-        private int _count;
+        private int _pos;
 
         /// <summary>
         ///     Initializes a new list with a initial buffer.
@@ -29,7 +29,7 @@ namespace HeaplessUtility
         {
             _arrayToReturnToPool = null;
             _storage = initialBuffer;
-            _count = 0;
+            _pos = 0;
         }
 
         /// <summary>
@@ -40,26 +40,29 @@ namespace HeaplessUtility
         {
             _arrayToReturnToPool = ArrayPool<T>.Shared.Rent(initialMinimumCapacity);
             _storage = _arrayToReturnToPool;
-            _count = 0;
+            _pos = 0;
         }
 
         /// <inheritdoc cref="List{T}.Capacity"/>
         public int Capacity => _storage.Length;
 
         /// <inheritdoc cref="List{T}.Count"/>
-        public int Count
+        public int Length
         {
-            get => _count;
+            get => _pos;
             set
             {
                 Debug.Assert(value >= 0);
                 Debug.Assert(value <= _storage.Length);
-                _count = value;
+                _pos = value;
             }
         }
 
+        /// <inheritdoc cref="List{T}.Count"/>
+        public int Count => _pos;
+
         /// <inheritdoc cref="Span{T}.IsEmpty"/>
-        public bool IsEmpty => 0 >= (uint)_count;
+        public bool IsEmpty => 0 >= (uint)_pos;
 
         /// <inheritdoc cref="List{T}.this"/>
         public ref T this[int index]
@@ -68,7 +71,7 @@ namespace HeaplessUtility
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                Debug.Assert(index < _count);
+                Debug.Assert(index < _pos);
                 return ref _storage[index];
             }
         }
@@ -82,11 +85,8 @@ namespace HeaplessUtility
             [Pure]
             get
             {
-                int offset = index.GetOffset(_count);
-                if ((uint)offset >= _count)
-                {
-                    ThrowHelper.ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument.index);
-                }
+                int offset = index.GetOffset(_pos);
+                index.ValidateArg(offset >= 0 && offset < Length);
                 return ref _storage[offset];
             }
         }
@@ -100,24 +100,19 @@ namespace HeaplessUtility
             [Pure]
             get
             {
-                (int start, int length) = range.GetOffsetAndLength(_count);
-                if (_count - start < length)
-                {
-                    ThrowHelper.ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument.range);
-                }
+                (int start, int length) = range.GetOffsetAndLength(_pos);
+                range.ValidateArg(start >= 0);
+                range.ValidateArg(length >= 0);
+                range.ValidateArg(start <= Length - length);
                 return _storage.Slice(start, length);
             }
             set
             {
-                (int start, int length) = range.GetOffsetAndLength(_count);
-                if (_count - start < length)
-                {
-                    ThrowHelper.ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument.range);
-                }
-                if (value.Length != length)
-                {
-                    ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.value, "The length of the span is not equal to the lenght of the range.");
-                }
+                (int start, int length) = range.GetOffsetAndLength(_pos);
+                range.ValidateArg(start >= 0);
+                range.ValidateArg(length >= 0);
+                range.ValidateArg(start <= Length - length);
+                range.ValidateArg(length == value.Length);
                 value.CopyTo(_storage.Slice(start, length));
             }
         }
@@ -135,7 +130,7 @@ namespace HeaplessUtility
             // If the caller has a bug and calls this with negative capacity, make sure to call Grow to throw an exception.
             if ((uint)capacity > (uint)_storage.Length)
             {
-                Grow(capacity - _count);
+                Grow(capacity - _pos);
             }
 
             return Capacity;
@@ -143,7 +138,7 @@ namespace HeaplessUtility
 
         /// <summary>
         ///     Get a pinnable reference to the list.
-        ///     Does not ensure there is a null T after <see cref="Count" />
+        ///     Does not ensure there is a null T after <see cref="Length" />
         ///     This overload is pattern matched in the C# 7.3+ compiler so you can omit
         ///     the explicit method call, and write eg "fixed (T* c = list)"
         /// </summary>
@@ -163,7 +158,7 @@ namespace HeaplessUtility
         /// </summary>
         public ReadOnlySpan<T> AsSpan()
         {
-            return _storage.Slice(0, _count);
+            return _storage.Slice(0, _pos);
         }
 
         /// <summary>
@@ -173,7 +168,7 @@ namespace HeaplessUtility
         /// <returns>The span representing the content.</returns>
         public ReadOnlySpan<T> AsSpan(int start)
         {
-            return _storage.Slice(start, _count - start);
+            return _storage.Slice(start, _pos - start);
         }
 
         /// <summary>
@@ -191,12 +186,12 @@ namespace HeaplessUtility
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Add(in T value)
         {
-            int pos = _count;
+            int pos = _pos;
 
             if ((uint)pos < (uint)_storage.Length)
             {
                 _storage[pos] = value;
-                _count = pos + 1;
+                _pos = pos + 1;
             }
             else
             {
@@ -204,18 +199,11 @@ namespace HeaplessUtility
             }
         }
 
-        /// <inheritdoc cref="List{T}.AddRange"/>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AddRange(ReadOnlySpan<T> value)
-        {
-            int pos = _count;
-            if (pos > _storage.Length - value.Length)
-            {
-                Grow(value.Length);
-            }
 
-            value.CopyTo(_storage.Slice(_count));
-            _count += value.Length;
+        /// <inheritdoc cref="List{T}.AddRange"/>
+        public void AddRange(ReadOnlySpan<T> values)
+        {
+            InsertRange(Length, values);
         }
 
         /// <summary>
@@ -226,13 +214,13 @@ namespace HeaplessUtility
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Span<T> AppendSpan(int length)
         {
-            int origPos = _count;
+            int origPos = _pos;
             if (origPos > _storage.Length - length)
             {
                 Grow(length);
             }
 
-            _count = origPos + length;
+            _pos = origPos + length;
             return _storage.Slice(origPos, length);
         }
 
@@ -265,14 +253,14 @@ namespace HeaplessUtility
         {
             if (_arrayToReturnToPool != null)
             {
-                Array.Clear(_arrayToReturnToPool, 0, _count);
+                Array.Clear(_arrayToReturnToPool, 0, _pos);
             }
             else
             {
                 _storage.Clear();
             }
 
-            _count = 0;
+            _pos = 0;
         }
 
         /// <inheritdoc cref="List{T}.Contains"/>
@@ -310,7 +298,7 @@ namespace HeaplessUtility
                 if (typeof(T).IsValueType)
                 {
 
-                    for (int i = 0; i < _count; i++)
+                    for (int i = 0; i < _pos; i++)
                     {
                         if (!EqualityComparer<T>.Default.Equals(item, _storage[i]))
                         {
@@ -326,7 +314,7 @@ namespace HeaplessUtility
                 comparer = EqualityComparer<T>.Default;
             }
 
-            for (int i = 0; i < _count; i++)
+            for (int i = 0; i < _pos; i++)
             {
                 if (!comparer.Equals(item, _storage[i]))
                 {
@@ -343,44 +331,37 @@ namespace HeaplessUtility
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Insert(int index, in T value)
         {
-            if (_count > _storage.Length - 1)
+            if (_pos > _storage.Length - 1)
             {
                 Grow(1);
             }
 
-            int remaining = _count - index;
+            int remaining = _pos - index;
             _storage.Slice(index, remaining).CopyTo(_storage.Slice(index + 1));
             _storage[index] = value;
-            _count += 1;
+            _pos += 1;
         }
 
         /// <inheritdoc cref="List{T}.InsertRange"/>
         public void InsertRange(int index, ReadOnlySpan<T> span)
         {
-            if (index < 0)
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException_LessZero(ExceptionArgument.index);
-            }
-            if (index > _count)
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.index, index);
-            }
-
+            index.ValidateArg(index >= 0);
+            index.ValidateArg(index <= Length);
             int count = span.Length;
             if (count == 0)
             {
                 return;
             }
 
-            if (_count > _storage.Length - count)
+            if (_pos > _storage.Length - count)
             {
                 Grow(count);
             }
 
-            int remaining = _count - index;
+            int remaining = _pos - index;
             _storage.Slice(index, remaining).CopyTo(_storage.Slice(index + count));
             span.CopyTo(_storage.Slice(index));
-            _count += count;
+            _pos += count;
         }
 
         /// <inheritdoc cref="List{T}.LastIndexOf(T)"/>
@@ -397,7 +378,7 @@ namespace HeaplessUtility
                 if (typeof(T).IsValueType)
                 {
 
-                    for (int i = _count - 1; i >= 0; i--)
+                    for (int i = _pos - 1; i >= 0; i--)
                     {
                         if (!EqualityComparer<T>.Default.Equals(item, _storage[i]))
                         {
@@ -413,7 +394,7 @@ namespace HeaplessUtility
                 comparer = EqualityComparer<T>.Default;
             }
 
-            for (int i = _count - 1; i >= 0; i--)
+            for (int i = _pos - 1; i >= 0; i--)
             {
                 if (!comparer.Equals(item, _storage[i]))
                 {
@@ -445,17 +426,21 @@ namespace HeaplessUtility
         /// <inheritdoc cref="List{T}.RemoveAt"/>
         public void RemoveAt(int index)
         {
-            int remaining = _count - index - 1;
+            int remaining = _pos - index - 1;
             _storage.Slice(index + 1, remaining).CopyTo(_storage.Slice(index));
-            _storage[--_count] = default!;
+            _storage[--_pos] = default!;
         }
 
         /// <inheritdoc cref="List{T}.RemoveRange"/>
-        public void RemoveRange(int index, int count)
+        public void RemoveRange(int start, int count)
         {
-            int end = _count - count;
-            int remaining = end - index;
-            _storage.Slice(index + count, remaining).CopyTo(_storage.Slice(index));
+            start.ValidateArg(start >= 0);
+            count.ValidateArg(count >= 0);
+            count.ValidateArg(start <= Length - count);
+
+            int end = _pos - count;
+            int remaining = end - start;
+            _storage.Slice(start + count, remaining).CopyTo(_storage.Slice(start));
 
             if (_arrayToReturnToPool != null)
             {
@@ -466,71 +451,53 @@ namespace HeaplessUtility
                 _storage.Slice(end).Clear();
             }
 
-            _count = end;
+            _pos = end;
         }
 
         /// <inheritdoc cref="List{T}.Reverse()"/>
-        public void Reverse() => _storage.Slice(0, _count).Reverse();
+        public void Reverse() => _storage.Slice(0, _pos).Reverse();
 
         /// <inheritdoc cref="List{T}.Reverse(int, int)"/>
         public void Reverse(int start, int count)
         {
-            if ((uint)start >= (uint)_count)
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.start, start);
-            }
-            if (count < 0)
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException_LessZero(ExceptionArgument.count);
-            }
-            if (_count - start < count)
-            {
-                ThrowHelper.ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument.value);
-            }
+            start.ValidateArg(start >= 0);
+            count.ValidateArg(count >= 0);
+            count.ValidateArg(start <= Length - count);
             _storage.Slice(start, count).Reverse();
         }
 
         /// <inheritdoc cref="List{T}.Sort()"/>
         public void Sort()
         {
-            _storage.Slice(0, _count).Sort();
+            _storage.Slice(0, _pos).Sort();
         }
 
         /// <inheritdoc cref="List{T}.Sort(Comparison{T})"/>
         public void Sort(Comparison<T> comparison)
         {
-            _storage.Slice(0, _count).Sort(comparison);
+            _storage.Slice(0, _pos).Sort(comparison);
         }
 
         /// <inheritdoc cref="List{T}.Sort(IComparer{T})"/>
         public void Sort(IComparer<T> comparer)
         {
-            _storage.Slice(0, _count).Sort(comparer);
+            _storage.Slice(0, _pos).Sort(comparer);
         }
 
         /// <inheritdoc cref="List{T}.Sort(int, int, IComparer{T})"/>
         public void Sort(int start, int count, IComparer<T> comparer)
         {
-            if ((uint)start >= (uint)_count)
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.start, start);
-            }
-            if (count < 0)
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException_LessZero(ExceptionArgument.count);
-            }
-            if (_count - start < count)
-            {
-                ThrowHelper.ThrowArgumentException_ArrayCapacityOverMax(ExceptionArgument.value);
-            }
+            start.ValidateArg(start >= 0);
+            count.ValidateArg(count >= 0);
+            count.ValidateArg(start <= Length - count);
             _storage.Slice(start, count).Sort(comparer);
         }
 
         /// <inheritdoc cref="Span{T}.ToArray"/>
         public T[] ToArray()
         {
-            T[] array = new T[_count];
-            _storage.Slice(0, _count).CopyTo(array.AsSpan());
+            T[] array = new T[_pos];
+            _storage.Slice(0, _pos).CopyTo(array.AsSpan());
             return array;
         }
 
@@ -540,8 +507,8 @@ namespace HeaplessUtility
         /// <returns>A <see cref="List{T}"/> that contains elements form the input sequence.</returns>
         public List<T> ToList()
         {
-            List<T> list = new(_count);
-            for (int i = 0; i < _count; i++)
+            List<T> list = new(_pos);
+            for (int i = 0; i < _pos; i++)
             {
                 list.Add(_storage[i]);
             }
@@ -571,7 +538,7 @@ namespace HeaplessUtility
         /// <summary>
         ///     Resize the internal buffer either by doubling current buffer size or
         ///     by adding <paramref name="additionalCapacityBeyondPos" /> to
-        ///     <see cref="_count" /> whichever is greater.
+        ///     <see cref="_pos" /> whichever is greater.
         /// </summary>
         /// <param name="additionalCapacityBeyondPos">
         ///     Number of chars requested beyond current position.
@@ -580,12 +547,12 @@ namespace HeaplessUtility
         private void Grow(int additionalCapacityBeyondPos)
         {
             Debug.Assert(additionalCapacityBeyondPos > 0);
-            Debug.Assert(_count > _storage.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
+            Debug.Assert(_pos > _storage.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
 
             // Make sure to let Rent throw an exception if the caller has a bug and the desired capacity is negative
-            T[] poolArray = ArrayPool<T>.Shared.Rent((int)Math.Max((uint)(_count + additionalCapacityBeyondPos), (uint)_storage.Length * 2));
+            T[] poolArray = ArrayPool<T>.Shared.Rent((int)Math.Max((uint)(_pos + additionalCapacityBeyondPos), (uint)_storage.Length * 2));
 
-            _storage.Slice(0, _count).CopyTo(poolArray);
+            _storage.Slice(0, _pos).CopyTo(poolArray);
 
             T[]? toReturn = _arrayToReturnToPool;
             _storage = _arrayToReturnToPool = poolArray;
@@ -597,21 +564,21 @@ namespace HeaplessUtility
 
         private string GetDebuggerDisplay()
         {
-            if (Count == 0)
+            if (Length == 0)
                 return "Length = 0, Values = []";
             StringBuilder sb = new(256);
-            sb.Append("Length = ").Append(_count);
+            sb.Append("Length = ").Append(_pos);
             sb.Append(", Values = [");
-            if (Count < 10)
+            if (Length < 10)
             {
-                int last = _count - 1;
+                int last = _pos - 1;
                 for (int i = 0; i < last; i++)
                 {
                     sb.Append(_storage[i]);
                     sb.Append(", ");
                 }
 
-                if (Count > 0)
+                if (Length > 0)
                 {
                     sb.Append(_storage[last]);
                 }
@@ -648,7 +615,7 @@ namespace HeaplessUtility
             public bool MoveNext()
             {
                 int index = _index + 1;
-                if ((uint)index < (uint)_list.Count)
+                if ((uint)index < (uint)_list.Length)
                 {
                     _index = index;
                     return true;

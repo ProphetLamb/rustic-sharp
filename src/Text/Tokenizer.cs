@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
-using HeaplessUtility.Exceptions;
+using HeaplessUtility.Common;
 
 namespace HeaplessUtility.Text
 {
@@ -50,10 +50,7 @@ namespace HeaplessUtility.Text
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
-                if ((uint)value >= (uint)_source.Length)
-                {
-                    ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.value, value);
-                }
+                value.ValidateArg(value >= 0 && value < Length);
 
                 if (value >= _index)
                 {
@@ -110,19 +107,16 @@ namespace HeaplessUtility.Text
         /// <returns><see langword="true"/> if the elements could be consumed; otherwise, <see langword="false"/>.</returns>
         public bool Consume(int amount)
         {
-            if (amount < 0)
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException_LessZero(ExceptionArgument.amount);
-            }
+            amount.ValidateArg(amount >= 0);
 
-            if (_index < _source.Length - _tokenLength - amount)
+            if (_index < Length - _tokenLength - amount)
             {
                 _tokenLength += amount;
                 return true;
             }
 
             // Move to end.
-            _tokenLength = _source.Length - _index;
+            _tokenLength = Length - _index;
             return false;
         }
 
@@ -159,20 +153,9 @@ namespace HeaplessUtility.Text
         /// <param name="position">The target position</param>
         public void Advance(int position)
         {
-            if ((uint)position >= (uint)_source.Length)
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.position, position);
-            }
-
-            int head = Head;
-            if (head < position)
-            {
-                _tokenLength = position - head;
-            }
-            else
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException_UnderMin(ExceptionArgument.position, position, head);
-            }
+            position.ValidateArg(position >= 0 && position < Length);
+            position.ValidateArg(position >= Head);
+            _tokenLength = position - Head;
         }
 
         /// <summary>

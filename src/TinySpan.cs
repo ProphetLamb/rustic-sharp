@@ -7,7 +7,7 @@ using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-using HeaplessUtility.Exceptions;
+using HeaplessUtility.Common;
 using HeaplessUtility.IO;
 
 namespace HeaplessUtility
@@ -216,7 +216,7 @@ namespace HeaplessUtility
             {
                 args.Add(en.Current);
             }
-            var count = args.Count;
+            var count = args.Length;
             return new(args.ToSegment());
         }
     }
@@ -244,10 +244,7 @@ namespace HeaplessUtility
         /// <param name="arg3">The fourth value.</param>
         internal TinySpan(int length, [AllowNull] in T arg0, [AllowNull] in T arg1, [AllowNull] in T arg2, [AllowNull] in T arg3)
         {
-            if ((uint)length > 4)
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException_OverEqualsMax(ExceptionArgument.length, length, 5);
-            }
+            length.ValidateArg(length <= 4);
 
             _values = default;
             _length = length;
@@ -283,10 +280,7 @@ namespace HeaplessUtility
         {
             get
             {
-                if ((uint)index >= _length)
-                {
-                    ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.index, index);
-                }
+                index.ValidateArg(index >= 0 && index < Length);
 
                 return index switch
                 {

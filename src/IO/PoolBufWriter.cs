@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-using HeaplessUtility.Exceptions;
+using HeaplessUtility.Common;
 
 namespace HeaplessUtility.IO
 {
@@ -67,14 +67,14 @@ namespace HeaplessUtility.IO
 
             if (Buffer != null)
             {
-                Debug.Assert(Count > Buffer.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
-                T[] temp = _pool.Rent(Math.Max(Count + additionalCapacityBeyondPos, Buffer.Length * 2));
-                Buffer.AsSpan(0, Count).CopyTo(temp);
+                Debug.Assert(Length > Buffer.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
+                T[] temp = _pool.Rent(Math.Max(Length + additionalCapacityBeyondPos, Buffer.Length * 2));
+                Buffer.AsSpan(0, Length).CopyTo(temp);
                 Buffer = temp;
             }
             else
             {
-                ThrowHelper.ThrowIfObjectDisposed(Count == -1);
+                this.ValidateArg(Length != -1);
                 Buffer = _pool.Rent(additionalCapacityBeyondPos);
             }
         }

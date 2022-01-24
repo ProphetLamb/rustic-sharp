@@ -5,8 +5,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
-
-using HeaplessUtility.Exceptions;
+using HeaplessUtility.Common;
 using HeaplessUtility.IO;
 using HeaplessUtility.Text;
 
@@ -159,7 +158,7 @@ namespace HeaplessUtility
             {
                 args.Add(en.Current);
             }
-            var count = args.Count;
+            var count = args.Length;
             return new(args.ToSegment());
         }
     }
@@ -188,10 +187,7 @@ namespace HeaplessUtility
         /// <param name="arg3">The fourth value.</param>
         internal TinyVec(int length, [AllowNull] in T arg0, [AllowNull] in T arg1, [AllowNull] in T arg2, [AllowNull] in T arg3)
         {
-            if ((uint)length > 4)
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException_OverEqualsMax(ExceptionArgument.length, length, 5);
-            }
+            length.ValidateArg(length <= 4);
 
             _params = default;
             _length = length;
@@ -232,11 +228,7 @@ namespace HeaplessUtility
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                if ((uint)index >= _length)
-                {
-                    ThrowHelper.ThrowArgumentOutOfRangeException_ArrayIndexOverMax(ExceptionArgument.index, index);
-                }
-
+                index.ValidateArg(index >= 0 && index < Length);
                 return index switch
                 {
                     0 => _arg0!,
@@ -265,20 +257,18 @@ namespace HeaplessUtility
         /// <inheritdoc cref="Span{T}.TryCopyTo"/>
         public bool TryCopyTo(Span<T> destination)
         {
-            bool retVal = false;
-
             if (_params.Count > 0)
             {
                 _params.AsSpan().TryCopyTo(destination);
-                retVal = true;
+                return true;
             }
             else if ((uint)_length <= (uint)destination.Length)
             {
                 SetBlock(destination);
-                retVal = true;
+                return true;
             }
 
-            return retVal;
+            return false;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

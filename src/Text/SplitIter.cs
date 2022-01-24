@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
-using HeaplessUtility.Exceptions;
+using HeaplessUtility.Common;
 using HeaplessUtility.IO;
 
 namespace HeaplessUtility.Text
@@ -22,11 +22,6 @@ namespace HeaplessUtility.Text
 
         internal SplitIter(ReadOnlySpan<T> values, in TinySpan<T> separators, SplitOptions options, IEqualityComparer<T>? comparer)
         {
-            if (separators.Length == 0)
-            {
-                ThrowHelper.ThrowArgumentException_CollectionEmpty(ExceptionArgument.separators);
-            }
-
             _source = values;
             _separators = separators;
             _options = options;
