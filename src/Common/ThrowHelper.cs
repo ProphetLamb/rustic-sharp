@@ -61,7 +61,7 @@ namespace HeaplessUtility.Common
 
         [DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ValidateArgRange<T>(this T value, [DoesNotReturnIf(false)] bool condition, [CallerArgumentExpression("value")] string name = null!, [CallerArgumentExpression("condition")] string message = null!)
-            where T : notnull, IComparable<T>
+            where T : notnull
         {
             if (!condition)
             {

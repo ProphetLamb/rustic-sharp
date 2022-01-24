@@ -101,18 +101,18 @@ namespace HeaplessUtility
             get
             {
                 (int start, int length) = range.GetOffsetAndLength(_pos);
-                range.ValidateArg(start >= 0);
-                range.ValidateArg(length >= 0);
-                range.ValidateArg(start <= Length - length);
+                range.ValidateArgRange(start >= 0);
+                range.ValidateArgRange(length >= 0);
+                range.ValidateArgRange(start <= Length - length);
                 return _storage.Slice(start, length);
             }
             set
             {
                 (int start, int length) = range.GetOffsetAndLength(_pos);
-                range.ValidateArg(start >= 0);
-                range.ValidateArg(length >= 0);
-                range.ValidateArg(start <= Length - length);
-                range.ValidateArg(length == value.Length);
+                range.ValidateArgRange(start >= 0);
+                range.ValidateArgRange(length >= 0);
+                range.ValidateArgRange(start <= Length - length);
+                range.ValidateArgRange(length == value.Length);
                 value.CopyTo(_storage.Slice(start, length));
             }
         }

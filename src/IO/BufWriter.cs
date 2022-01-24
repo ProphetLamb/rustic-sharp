@@ -7,7 +7,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using HeaplessUtility.Common;
-using HeaplessUtility.DebuggerViews;
 
 namespace HeaplessUtility.IO
 {
