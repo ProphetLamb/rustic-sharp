@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-using HeaplessUtility.Exceptions;
+using HeaplessUtility.Common;
 using HeaplessUtility.IO;
 
 namespace HeaplessUtility.DebuggerViews
@@ -20,19 +20,12 @@ namespace HeaplessUtility.DebuggerViews
         {
             get
             {
-                if (_writerRef.TryGetTarget(out BufWriter<T>? writer))
+                if (_writerRef.TryGetTarget(out BufWriter<T>? writer) && !writer.RawStorage.IsEmpty)
                 {
-                    if (writer.RawStorage != null)
-                    {
-                        var span = writer.RawStorage.Slice(0, writer.Count);
-                        return span.ToArray();
-                    }
-
-                    return Array.Empty<T>();
+                    var span = writer.RawStorage[..writer.Length];
+                    return span.ToArray();
                 }
-
-                ThrowHelper.ThrowInvalidOperationException_ObjectDisposed();
-                return default!; // unreachable
+                return Array.Empty<T>();
             }
         }
     }

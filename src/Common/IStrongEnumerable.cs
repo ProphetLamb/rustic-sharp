@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace HeaplessUtility.Interfaces
+namespace HeaplessUtility.Common
 {
     /// <summary>
     ///     Exposes the strongly-typed enumerator, which supports a simple iteration over a collection of a specified type.

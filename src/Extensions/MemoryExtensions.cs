@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using HeaplessUtility.Exceptions;
+using HeaplessUtility.Common;
 using HeaplessUtility.Helpers;
 using HeaplessUtility.Text;
 
@@ -207,10 +207,7 @@ namespace HeaplessUtility
         /// <typeparam name="T">The type of the elements of the span.</typeparam>
         public static void Sort<T>(this Span<T> span, Comparison<T>? comparison)
         {
-            if (comparison == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.comparison);
-            }
+            comparison.ValidateArgNotNull();
             if (span.Length > 1)
             {
                 SpanSortHelper<T>.Sort(span, comparison!);

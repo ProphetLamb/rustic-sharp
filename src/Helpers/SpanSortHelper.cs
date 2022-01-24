@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using HeaplessUtility.Exceptions;
+using HeaplessUtility.Common;
 
 namespace HeaplessUtility.Helpers
 {
@@ -35,7 +35,7 @@ namespace HeaplessUtility.Helpers
             }
             catch (IndexOutOfRangeException)
             {
-                ThrowHelper.ThrowArgumentException_BadComparer(comparer);
+                ThrowHelper.ThrowArgumentException("Bad comparer.", nameof(comparer));
             }
             catch (Exception e)
             {

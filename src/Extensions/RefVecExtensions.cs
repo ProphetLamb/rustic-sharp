@@ -21,8 +21,8 @@ namespace HeaplessUtility
         public static bool SequenceEqual<T>(this RefVec<T> list, RefVec<T> other)
             where T : IEquatable<T>
         {
-            int count = list.Count;
-            if (count != other.Count)
+            int count = list.Length;
+            if (count != other.Length)
                 return false;
             return list.RawStorage.Slice(0, count).SequenceEqual(other.RawStorage.Slice(0, count));
         }
@@ -35,7 +35,7 @@ namespace HeaplessUtility
         public static int SequenceCompareTo<T>(this RefVec<T> list, RefVec<T> other)
             where T : IComparable<T>
         {
-            return list.RawStorage.Slice(0, list.Count).SequenceCompareTo(other.RawStorage.Slice(0, other.Count));
+            return list.RawStorage.Slice(0, list.Length).SequenceCompareTo(other.RawStorage.Slice(0, other.Length));
         }
 
         internal static int SequenceCompareHelper<T>(ref T first, int firstLength, ref T second, int secondLength, IComparer<T> comparer)
