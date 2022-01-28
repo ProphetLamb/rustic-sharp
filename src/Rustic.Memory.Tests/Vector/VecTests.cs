@@ -11,7 +11,7 @@ using NUnit.Framework;
 using Rustic.Common.Extensions;
 using Rustic.Memory.Vector;
 
-namespace Rustic.Memory.Tests
+namespace Rustic.Memory.Tests.Vector
 {
     [TestFixture]
     public class VecTests
@@ -255,7 +255,12 @@ namespace Rustic.Memory.Tests
         public void TestSort()
         {
             new Vec<User>().Sort();
-            new Vec<User>(SampleData.Users.ToArray()).Sort();
+            Vec<User> list = new();
+            foreach (var user in SampleData.Users)
+            {
+                list.Add(user);
+            }
+            Assert.Throws<InvalidOperationException>(() => list.Sort());
         }
 
         [Test]

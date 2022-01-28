@@ -9,18 +9,19 @@ using FluentAssertions;
 using NUnit.Framework;
 
 using Rustic.Common.Extensions;
+using Rustic.Memory.IO;
 using Rustic.Memory.Vector;
 
 namespace Rustic.Memory.Tests
 {
     [TestFixture]
-    public class RefVecTests
+    public class BufWriterTests
     {
         [Test]
         public void TestAdd()
         {
             List<User> reference = new();
-            RefVec<User> list = new();
+            BufWriter<User> list = new();
 
             list.Add(null);
             reference.Add(null);
@@ -38,7 +39,7 @@ namespace Rustic.Memory.Tests
         public void TestAddRange()
         {
             List<User> reference = new();
-            RefVec<User> list = new();
+            BufWriter<User> list = new();
 
             int increment;
             for (int i = 0; i < 400; i += increment)
@@ -57,7 +58,7 @@ namespace Rustic.Memory.Tests
         public void TestClear()
         {
             List<User> reference = new();
-            RefVec<User> list = new();
+            BufWriter<User> list = new();
 
             reference.Clear();
             list.Clear();
@@ -82,7 +83,7 @@ namespace Rustic.Memory.Tests
         public void TestIndexOf()
         {
             List<User> reference = new();
-            RefVec<User> list = new();
+            BufWriter<User> list = new();
 
             list.AddRange(SampleData.Users);
             reference.AddRange(SampleData.Users);
@@ -100,7 +101,7 @@ namespace Rustic.Memory.Tests
         public void TestInsert()
         {
             List<User> reference = new();
-            RefVec<User> list = new();
+            BufWriter<User> list = new();
 
             for (int i = 0; i < 100; i++)
             {
@@ -110,15 +111,15 @@ namespace Rustic.Memory.Tests
                 list.Insert(index, user);
             }
 
-            Assert.Throws<ArgumentOutOfRangeException>(() => new RefVec<User>().Insert(-1, null));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new RefVec<User>().Insert(1, null));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new BufWriter<User>().Insert(-1, null));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new BufWriter<User>().Insert(1, null));
         }
 
         [Test]
         public void TestInsertRange()
         {
             List<User> reference = new();
-            RefVec<User> list = new();
+            BufWriter<User> list = new();
 
             int increment;
             for (int i = 0; i < 400; i += increment)
@@ -127,21 +128,21 @@ namespace Rustic.Memory.Tests
 
                 User[] users = SampleData.Users.AsSpan(i, increment).ToArray();
                 int index = Randomizer.Seed.Next(0, reference.Count);
-                list.InsertRange(index, users);
                 reference.InsertRange(index, users);
+                list.InsertRange(index, users);
             }
 
             list.ToArray().Should().BeEquivalentTo(reference);
 
-            Assert.Throws<ArgumentOutOfRangeException>(() => new RefVec<User>().InsertRange(-1, Array.Empty<User>()));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new RefVec<User>().InsertRange(1, Array.Empty<User>()));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new BufWriter<User>().InsertRange(-1, Array.Empty<User>()));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new BufWriter<User>().InsertRange(1, Array.Empty<User>()));
         }
 
         [Test]
         public void TestLastIndexOf()
         {
             List<User> reference = new();
-            RefVec<User> list = new();
+            BufWriter<User> list = new();
 
             list.AddRange(SampleData.Users);
             reference.AddRange(SampleData.Users);
@@ -159,7 +160,7 @@ namespace Rustic.Memory.Tests
         public void TestRemove()
         {
             List<User> reference = new();
-            RefVec<User> list = new();
+            BufWriter<User> list = new();
 
             list.AddRange(SampleData.Users);
             reference.AddRange(SampleData.Users);
@@ -170,18 +171,18 @@ namespace Rustic.Memory.Tests
                 list.Remove(user).Should().Be(reference.Remove(user));
             }
 
-            list.ToArray().Should().BeEquivalentTo(reference);
+            list.Should().BeEquivalentTo(reference);
 
             list.Remove(null).Should().Be(reference.Remove(null));
 
-            list.ToArray().Should().BeEquivalentTo(reference);
+            list.Should().BeEquivalentTo(reference);
         }
 
         [Test]
         public void TestRemoveAt()
         {
             List<User> reference = new();
-            RefVec<User> list = new();
+            BufWriter<User> list = new();
 
             list.AddRange(SampleData.Users);
             reference.AddRange(SampleData.Users);
@@ -195,15 +196,15 @@ namespace Rustic.Memory.Tests
 
             list.ToArray().Should().BeEquivalentTo(reference);
 
-            Assert.Throws<ArgumentOutOfRangeException>(() => new RefVec<User>().RemoveAt(-1));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new RefVec<User>().RemoveAt(1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new BufWriter<User>(2).RemoveAt(-1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new BufWriter<User>(2).RemoveAt(1));
         }
 
         [Test]
         public void TestRemoveRange()
         {
             List<User> reference = new();
-            RefVec<User> list = new();
+            BufWriter<User> list = new();
 
             list.AddRange(SampleData.Users);
             reference.AddRange(SampleData.Users);
@@ -218,24 +219,24 @@ namespace Rustic.Memory.Tests
                 reference.RemoveRange(index, increment);
             }
 
-            list.ToArray().Should().BeEquivalentTo(reference);
+            list.Should().BeEquivalentTo(reference);
 
             list.RemoveRange(0, 0);
 
-            list.ToArray().Should().BeEquivalentTo(reference);
+            list.Should().BeEquivalentTo(reference);
 
-            Assert.Throws<ArgumentOutOfRangeException>(() => new RefVec<User>().RemoveRange(-1, 0));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new RefVec<User>().RemoveRange(1, 0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new BufWriter<User>(2).RemoveRange(-1, 0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new BufWriter<User>(2).RemoveRange(1, 0));
 
-            Assert.Throws<ArgumentOutOfRangeException>(() => new RefVec<User>().RemoveRange(0, -1));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new RefVec<User>().RemoveRange(0, 1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new BufWriter<User>(2).RemoveRange(0, -1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new BufWriter<User>(2).RemoveRange(0, 1));
         }
 
         [Test]
         public void TestReverse()
         {
             List<User> reference = new();
-            RefVec<User> list = new();
+            BufWriter<User> list = new();
 
             list.AddRange(SampleData.Users);
             reference.AddRange(SampleData.Users);
@@ -243,26 +244,31 @@ namespace Rustic.Memory.Tests
             list.Reverse();
             reference.Reverse();
 
-            list.ToArray().Should().BeEquivalentTo(reference);
+            list.Should().BeEquivalentTo(reference);
 
             list.Reverse(1, 23);
             reference.Reverse(1, 23);
 
-            list.ToArray().Should().BeEquivalentTo(reference);
+            list.Should().BeEquivalentTo(reference);
         }
 
         [Test]
         public void TestSort()
         {
-            new RefVec<User>().Sort();
-            new RefVec<User>(SampleData.Users.ToArray()).Sort();
+            new BufWriter<User>().Sort();
+            BufWriter<User> list = new();
+            foreach (var user in SampleData.Users)
+            {
+                list.Add(user);
+            }
+            Assert.Throws<InvalidOperationException>(() => list.Sort());
         }
 
         [Test]
         public void TestSortComparer()
         {
             List<User> reference = new();
-            RefVec<User> list = new();
+            BufWriter<User> list = new();
 
             list.AddRange(SampleData.Users);
             reference.AddRange(SampleData.Users);
@@ -270,24 +276,24 @@ namespace Rustic.Memory.Tests
             list.Sort(13, 52, UserComparer.Instance);
             reference.Sort(13, 52, UserComparer.Instance);
 
-            list.ToArray().Should().BeEquivalentTo(reference);
+            list.Should().BeEquivalentTo(reference);
 
             list.Sort(UserComparer.Instance);
             reference.Sort(UserComparer.Instance);
 
-            list.ToArray().Should().BeEquivalentTo(reference);
+            list.Should().BeEquivalentTo(reference);
 
-            Assert.Throws<ArgumentOutOfRangeException>(() => new RefVec<User>().Sort(-1, 0, UserComparer.Instance));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new RefVec<User>().Sort(1, 0, UserComparer.Instance));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new RefVec<User>().Sort(0, -1, UserComparer.Instance));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new RefVec<User>().Sort(0, 1, UserComparer.Instance));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new BufWriter<User>().Sort(-1, 0, UserComparer.Instance));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new BufWriter<User>().Sort(1, 0, UserComparer.Instance));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new BufWriter<User>().Sort(0, -1, UserComparer.Instance));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new BufWriter<User>().Sort(0, 1, UserComparer.Instance));
         }
 
         [Test]
         public void TestSortComparison()
         {
             List<User> reference = new();
-            RefVec<User> list = new();
+            BufWriter<User> list = new();
 
             list.AddRange(SampleData.Users);
             reference.AddRange(SampleData.Users);
@@ -295,7 +301,7 @@ namespace Rustic.Memory.Tests
             list.Sort(UserComparer.Comparison);
             reference.Sort(UserComparer.Comparison);
 
-            list.ToArray().Should().BeEquivalentTo(reference);
+            list.Should().BeEquivalentTo(reference);
         }
     }
 }
