@@ -7,7 +7,7 @@
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}",
+        "${workspaceFolder}/src",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary"
       ],
@@ -19,7 +19,7 @@
       "type": "process",
       "args": [
         "publish",
-        "${workspaceFolder}",
+        "${workspaceFolder}/src",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary"
       ],
@@ -29,7 +29,12 @@
       "label": "watch",
       "command": "dotnet",
       "type": "process",
-      "args": ["watch", "run", "--project", "${workspaceFolder}"],
+      "args": [
+        "watch",
+        "run",
+        "--project",
+        "${workspaceFolder}/src/Rustic.Memory.Tests/Rustic.Memory.Tests.csproj"
+      ],
       "problemMatcher": "$msCompile"
     }
   ]
