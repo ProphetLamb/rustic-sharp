@@ -450,7 +450,7 @@ public readonly struct TinyVec<T>
     /// <summary>Enumerates the elements of a <see cref="TinyVec{T}"/>.</summary>
     public struct Enumerator : IEnumerator<T>
     {
-        private readonly TinyVec<T> _array;
+        private TinyVec<T> _array;
         private int _index;
 
         /// <summary>Initialize the enumerator.</summary>

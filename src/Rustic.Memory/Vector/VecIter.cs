@@ -15,9 +15,9 @@ namespace Rustic.Memory.Vector;
 public struct VecIter<T>
     : IEnumerator<T>, IReadOnlyList<T>
 {
-    private readonly T[]? _array;
-    private readonly int _offset;
-    private readonly int _count;
+    private T[]? _array;
+    private int _offset;
+    private int _count;
     private int _pos;
 
     /// <summary>

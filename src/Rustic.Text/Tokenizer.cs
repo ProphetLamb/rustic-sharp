@@ -24,8 +24,8 @@ namespace Rustic.Text;
 /// </remarks>
 public ref struct Tokenizer<T>
 {
-    private readonly ReadOnlySpan<T> _source;
-    private readonly IEqualityComparer<T>? _comparer;
+    private ReadOnlySpan<T> _source;
+    private IEqualityComparer<T>? _comparer;
     private int _index;
     private int _tokenLength;
 

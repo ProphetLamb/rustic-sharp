@@ -502,7 +502,7 @@ public readonly ref struct TinySpan<T>
     public ref struct Enumerator
     {
         /// <summary>The span being enumerated.</summary>
-        private readonly TinySpan<T> _span;
+        private TinySpan<T> _span;
 
         /// <summary>The next index to yield.</summary>
         private int _index;

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 
 using Rustic.Common;
-using Rustic.Common.Memory;
+using Rustic.Memory.Common;
 
 #pragma warning disable IDE0130
 namespace System;
@@ -86,9 +86,9 @@ public static class MemoryExtensions
     /// <param name="output">The output buffer.</param>
     /// <param name="comparer">The comparer used to compare two elements.</param>
     /// <typeparam name="T">The type of the elements of the sets.</typeparam>
-    /// <typeparam name="TComparer">The type of the comparer.</typeparam>
-    public static void Union<T, TComparer>(in this ReadOnlySpan<T> set, in ReadOnlySpan<T> other, in Span<T> output, in TComparer comparer)
-        where TComparer : IComparer<T>
+    /// <typeparam name="C">The type of the comparer.</typeparam>
+    public static void Union<T, C>(in this ReadOnlySpan<T> set, in ReadOnlySpan<T> other, in Span<T> output, in C comparer)
+        where C : IComparer<T>
     {
         int outI = 0, leftI = 0, rightI = 0;
         while ((leftI < set.Length) & (rightI < other.Length))

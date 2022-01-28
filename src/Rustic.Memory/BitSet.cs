@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 using Rustic.Common;
 
-namespace Rustic.Common;
+namespace Rustic.Memory;
 
 /// <summary>
 ///     Enables unaligned marking of bits in a memory area.

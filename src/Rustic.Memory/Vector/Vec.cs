@@ -622,7 +622,7 @@ public class Vec<T> : IVector<T>
     /// <summary>Enumerates the elements of a <see cref="Vec{T}"/>.</summary>
     public struct Enumerator : IEnumerator<T>
     {
-        private readonly Vec<T> _list;
+        private Vec<T> _list;
         private int _index;
 
         /// <summary>Initialize the enumerator.</summary>
