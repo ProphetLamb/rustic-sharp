@@ -7,9 +7,40 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  <PropertyGroup Label="Assembly Info">
+    <AssemblyName>Rustic.Common</AssemblyName>
+    <AssemblyTitle>Rustic.Common</AssemblyTitle>
+    <AssemblyVersion>0.4.0</AssemblyVersion>
   </PropertyGroup>
+
+  <PropertyGroup Label="Nuget Package Info">
+    <PackageId>Rustic.Common</PackageId>
+    <Title>Rustic.Common</Title>
+    <Authors>ProphetLamb</Authors>
+    <Owners>ProhetLamb</Owners>
+    <Version>0.4.0</Version>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Description>Commonly used collection implementation.</Description>
+    <PackageTags>ArrayPool;Ref;Span;Collections</PackageTags>
+    <Copyright>Copyright (c) ProphetLamb 2022</Copyright>
+    <PackageProjectUrl>https://github.com/ProphetLamb/rustic-sharp</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/ProphetLamb/rustic-sharp.git</RepositoryUrl>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Nuget Pack Options">
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb;.xml</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <DebugType>embedded</DebugType>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <ItemGroup Label="Nuget Pack Source Link">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
+  </ItemGroup>
 
   <ItemGroup Condition="!$(DefineConstants.Contains('NET5_0_OR_GREATER'))">
     <PackageReference Include="System.Memory" Version="4.5.4" />
@@ -17,6 +48,7 @@
 
   <ItemGroup>
     <None Include="..\..\.editorconfig" Link=".editorconfig" />
+    <Compile Include="..\AssemblyInfo.cs" Link="AssemblyInfo.cs" />
   </ItemGroup>
 
 </Project>

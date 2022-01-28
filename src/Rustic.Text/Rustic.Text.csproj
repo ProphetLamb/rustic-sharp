@@ -7,12 +7,44 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  <PropertyGroup Label="Assembly Info">
+    <AssemblyName>Rustic.Text</AssemblyName>
+    <AssemblyTitle>Rustic.Text</AssemblyTitle>
+    <AssemblyVersion>0.4.0</AssemblyVersion>
   </PropertyGroup>
+
+  <PropertyGroup Label="Nuget Package Info">
+    <PackageId>Rustic.Text</PackageId>
+    <Title>Rustic.Text</Title>
+    <Authors>ProphetLamb</Authors>
+    <Owners>ProhetLamb</Owners>
+    <Version>0.4.0</Version>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Description>Commonly used collection implementation.</Description>
+    <PackageTags>ArrayPool;Ref;Span;Collections</PackageTags>
+    <Copyright>Copyright (c) ProphetLamb 2022</Copyright>
+    <PackageProjectUrl>https://github.com/ProphetLamb/rustic-sharp</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/ProphetLamb/rustic-sharp.git</RepositoryUrl>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Nuget Pack Options">
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb;.xml</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <DebugType>embedded</DebugType>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <ItemGroup Label="Nuget Pack Source Link">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
+  </ItemGroup>
 
   <ItemGroup>
     <None Include="..\..\.editorconfig" Link=".editorconfig" />
+    <Compile Include="..\AssemblyInfo.cs" Link="AssemblyInfo.cs" />
   </ItemGroup>
 
   <ItemGroup>
