@@ -13,4 +13,4 @@
 
 ## Minor fixes
 - Remove bogus extension-method overloads.
-- More & better documentation
+- More & better documentation.

@@ -26,16 +26,10 @@ before_build:
 
 build_script:
   - dotnet build "src/" --no-dependencies --version-suffix %LABEL%
-  - dotnet build "tests/" --no-dependencies --version-suffix %LABEL%
-
-after_build:
-  - dotnet pack "src/" --no-build --version-suffix %LABEL% -o artifacts
-  - dotnet pack "tests/" --no-build --version-suffix %LABEL% -o artifacts
 
 test_script:
-  - dotnet test "tests/" --no-build --no-restore --test-adapter-path:. --logger:"Appveyor;LogFilePath=./tests/overage.opencover.xml" /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
-  - codecov -f "tests/coverage.opencover.xml"
+  - dotnet test "src/" --no-build --no-restore --test-adapter-path:. --logger:"Appveyor;LogFilePath=./overage.opencover.xml" /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+  - codecov -f "./coverage.opencover.xml"
 
 artifacts:
-  - path: tests\coverage*.xml
-  - path: artifacts\**\*.*
+  - path: ./coverage*.xml
