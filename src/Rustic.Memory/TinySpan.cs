@@ -11,21 +11,15 @@ using Rustic.Memory.IO;
 
 namespace Rustic.Memory;
 
-/// <summary>
-///     Partially inlined immutable collection of function parameters.
-/// </summary>
+/// <summary>Partially inlined immutable collection of function parameters.</summary>
 public static class TinySpan
 {
-    /// <summary>
-    ///     Returns an empty <see cref="TinySpan{T}"/>.
-    /// </summary>
+    /// <summary>Returns an empty <see cref="TinySpan{T}"/>.</summary>
     /// <typeparam name="T">The type of the span.</typeparam>
     /// <returns>An empty <see cref="TinySpan{T}"/>.</returns>
     public static TinySpan<T> Empty<T>() => default;
 
-    /// <summary>
-    ///     Initializes a new parameter span with one value.
-    /// </summary>
+    /// <summary>Initializes a new parameter span with one value.</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="arg0">The first value.</param>
     public static TinySpan<T> From<T>(in T arg0)
@@ -33,9 +27,7 @@ public static class TinySpan
         return new(1, arg0, default, default, default);
     }
 
-    /// <summary>
-    ///     Initializes a new parameter span with one value.
-    /// </summary>
+    /// <summary>Initializes a new parameter span with one value.</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="arg0">The first value.</param>
     /// <param name="arg1">The second value.</param>
@@ -44,9 +36,7 @@ public static class TinySpan
         return new(2, arg0, arg1, default, default);
     }
 
-    /// <summary>
-    ///     Initializes a new parameter span with one value.
-    /// </summary>
+    /// <summary>Initializes a new parameter span with one value.</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="arg0">The first value.</param>
     /// <param name="arg1">The second value.</param>
@@ -56,9 +46,7 @@ public static class TinySpan
         return new(3, arg0, arg1, arg2, default);
     }
 
-    /// <summary>
-    ///     Initializes a new parameter span with one value.
-    /// </summary>
+    /// <summary>Initializes a new parameter span with one value.</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="arg0">The first value.</param>
     /// <param name="arg1">The second value.</param>
@@ -69,9 +57,7 @@ public static class TinySpan
         return new(4, arg0, arg1, arg2, arg3);
     }
 
-    /// <summary>
-    ///     Initializes a new parameter span with a sequence of values.
-    /// </summary>
+    /// <summary>Initializes a new parameter span with a sequence of values.</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="values">The values collection.</param>
     public static TinySpan<T> From<T>(in ReadOnlySpan<T> values)
@@ -79,9 +65,7 @@ public static class TinySpan
         return new(values);
     }
 
-    /// <summary>
-    ///     Initializes a new parameter span with a sequence of values.
-    /// </summary>
+    /// <summary>Initializes a new parameter span with a sequence of values.</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="values">The values collection.</param>
     public static TinySpan<T> From<T>(in Span<T> values)
@@ -89,10 +73,7 @@ public static class TinySpan
         return new(values);
     }
 
-    /// <summary>
-    ///     Initializes a new parameter span with a sequence of values.
-    ///     Does not allocate or copy.
-    /// </summary>
+    /// <summary>Initializes a new parameter span with a sequence of values. Does not allocate or copy.</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="values">The values collection.</param>
     /// <param name="start">The zero-based index of the first value.</param>
@@ -101,10 +82,7 @@ public static class TinySpan
         return new(new ReadOnlySpan<T>(values, start, values.Length - start));
     }
 
-    /// <summary>
-    ///     Initializes a new parameter span with a sequence of values.
-    ///     Does not allocate or copy.
-    /// </summary>
+    /// <summary>Initializes a new parameter span with a sequence of values. Does not allocate or copy.</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="values">The values collection.</param>
     /// <param name="start">The zero-based index of the first value.</param>
@@ -114,10 +92,7 @@ public static class TinySpan
         return new(new ReadOnlySpan<T>(values, start, length));
     }
 
-    /// <summary>
-    ///     Initializes a new parameter span with a sequence of values.
-    ///     Does not allocate or copy.
-    /// </summary>
+    /// <summary>Initializes a new parameter span with a sequence of values. Does not allocate or copy.</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="values">The sequence of values.</param>
     /// <remarks>
@@ -131,10 +106,7 @@ public static class TinySpan
         return new(new ReadOnlySpan<T>(values, 0, values.Length));
     }
 
-    /// <summary>
-    ///     Initializes a new parameter span with a sequence of values.
-    ///     Does not allocate or copy.
-    /// </summary>
+    /// <summary>Initializes a new parameter span with a sequence of values. Does not allocate or copy.</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="values">The sequence of values.</param>
     /// <remarks>
@@ -148,10 +120,7 @@ public static class TinySpan
         return From(values.Span);
     }
 
-    /// <summary>
-    ///     Initializes a new parameter span with a sequence of values.
-    ///     Does not allocate or copy.
-    /// </summary>
+    /// <summary>Initializes a new parameter span with a sequence of values. Does not allocate or copy.</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="values">The sequence of values.</param>
     /// <remarks>
@@ -165,10 +134,7 @@ public static class TinySpan
         return From(values.Span);
     }
 
-    /// <summary>
-    ///     Initializes a new parameter span with a sequence of values.
-    ///     Does not allocate or copy.
-    /// </summary>
+    /// <summary>Initializes a new parameter span with a sequence of values. Does not allocate or copy.</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="values">The sequence of values.</param>
     /// <remarks>
@@ -182,10 +148,7 @@ public static class TinySpan
         return new(values);
     }
 
-    /// <summary>
-    ///     Initializes a new parameter span with a sequence of values.
-    ///     Performs a shallow-copy of the sequence of values.
-    /// </summary>
+    /// <summary>Initializes a new parameter span with a sequence of values. Performs a shallow-copy of the sequence of values.</summary>
     /// <typeparam name="T"></typeparam>
     /// <typeparam name="E"></typeparam>
     /// <param name="values">The sequence of values.</param>
@@ -234,9 +197,7 @@ public static class TinySpan
     }
 }
 
-/// <summary>
-///     A structure representing a immutable sequence of function parameters.
-/// </summary>
+/// <summary>A structure representing a immutable sequence of function parameters.</summary>
 /// <typeparam name="T"></typeparam>
 [DebuggerDisplay("{GetDebuggerDisplay(),nq}")]
 public readonly ref struct TinySpan<T>
@@ -248,9 +209,7 @@ public readonly ref struct TinySpan<T>
     [AllowNull] private readonly T _arg3;
     private readonly ReadOnlySpan<T> _values;
 
-    /// <summary>
-    ///     Initializes a new parameter span with values.
-    /// </summary>
+    /// <summary>Initializes a new parameter span with values.</summary>
     /// <param name="length">The number of non default values.</param>
     /// <param name="arg0">The first value.</param>
     /// <param name="arg1">The second value.</param>
@@ -268,9 +227,7 @@ public readonly ref struct TinySpan<T>
         _arg3 = arg3;
     }
 
-    /// <summary>
-    ///     Initializes a new parameter span with a sequence of values.
-    /// </summary>
+    /// <summary>Initializes a new parameter span with a sequence of values.</summary>
     /// <param name="values">The values collection.</param>
     internal TinySpan(in ReadOnlySpan<T> values)
     {
@@ -446,27 +403,19 @@ public readonly ref struct TinySpan<T>
         return new ReadOnlySpan<T>(array!, 0, _length);
     }
 
-    /// <summary>
-    ///     Initializes a new span from the value.
-    /// </summary>
+    /// <summary>Initializes a new span from the value.</summary>
     /// <param name="self">The value.</param>
     public static implicit operator TinySpan<T>(in T self) => TinySpan.From(self);
 
-    /// <summary>
-    ///     Initializes a new span from the sequence.
-    /// </summary>
+    /// <summary>Initializes a new span from the sequence.</summary>
     /// <param name="self">The sequence of values.</param>
     public static implicit operator TinySpan<T>(in ReadOnlySpan<T> self) => TinySpan.From(self);
 
-    /// <summary>
-    ///     Initializes a new span from the sequence.
-    /// </summary>
+    /// <summary>Initializes a new span from the sequence.</summary>
     /// <param name="self">The sequence of values.</param>
     public static implicit operator TinySpan<T>(in Span<T> self) => TinySpan.From(self);
 
-    /// <summary>
-    ///     Initializes a new span from the sequence.
-    /// </summary>
+    /// <summary>Initializes a new span from the sequence.</summary>
     /// <param name="self">The sequence of values.</param>
     public static implicit operator TinySpan<T>(in T[] self) => TinySpan.From(self);
 

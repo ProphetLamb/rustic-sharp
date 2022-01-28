@@ -6,9 +6,7 @@ using Rustic.Common;
 
 namespace Rustic.Memory;
 
-/// <summary>
-///     Enables unaligned marking of bits in a memory area.
-/// </summary>
+/// <summary>Enables unaligned marking of bits in a memory area.</summary>
 public readonly ref struct BitSet
 {
     private const int IntSize = sizeof(int) * 8;

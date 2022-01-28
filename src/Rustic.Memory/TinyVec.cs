@@ -12,21 +12,15 @@ using Rustic.Memory.IO;
 
 namespace Rustic.Memory;
 
-/// <summary>
-///     Partially inlined immutable collection of function parameters.
-/// </summary>
+/// <summary>Partially inlined immutable collection of function parameters.</summary>
 public static class TinyVec
 {
-    /// <summary>
-    ///     Returns an empty <see cref="TinyVec{T}"/>.
-    /// </summary>
+    /// <summary>Returns an empty <see cref="TinyVec{T}"/>.</summary>
     /// <typeparam name="T">The type of the span.</typeparam>
     /// <returns>An empty <see cref="TinyVec{T}"/>.</returns>
     public static TinyVec<T> Empty<T>() => default;
 
-    /// <summary>
-    ///     Initializes a new parameter span with one value.
-    /// </summary>
+    /// <summary>Initializes a new parameter span with one value.</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="arg0">The first value.</param>
     public static TinyVec<T> From<T>(in T arg0)
@@ -34,9 +28,7 @@ public static class TinyVec
         return new(1, arg0, default, default, default);
     }
 
-    /// <summary>
-    ///     Initializes a new parameter span with one value.
-    /// </summary>
+    /// <summary>Initializes a new parameter span with one value.</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="arg0">The first value.</param>
     /// <param name="arg1">The second value.</param>
@@ -45,9 +37,7 @@ public static class TinyVec
         return new(2, arg0, arg1, default, default);
     }
 
-    /// <summary>
-    ///     Initializes a new parameter span with one value.
-    /// </summary>
+    /// <summary>Initializes a new parameter span with one value.</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="arg0">The first value.</param>
     /// <param name="arg1">The second value.</param>
@@ -57,9 +47,7 @@ public static class TinyVec
         return new(3, arg0, arg1, arg2, default);
     }
 
-    /// <summary>
-    ///     Initializes a new parameter span with one value.
-    /// </summary>
+    /// <summary>Initializes a new parameter span with one value.</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="arg0">The first value.</param>
     /// <param name="arg1">The second value.</param>
@@ -70,9 +58,7 @@ public static class TinyVec
         return new(4, arg0, arg1, arg2, arg3);
     }
 
-    /// <summary>
-    ///     Initializes a new parameter span with a sequence of values.
-    /// </summary>
+    /// <summary>Initializes a new parameter span with a sequence of values.</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="values">The values array.</param>
     public static TinyVec<T> From<T>(in ArraySegment<T> values)
@@ -80,9 +66,7 @@ public static class TinyVec
         return new(values);
     }
 
-    /// <summary>
-    ///     Initializes a new parameter span with a sequence of values.
-    /// </summary>
+    /// <summary>Initializes a new parameter span with a sequence of values.</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="values">The values array.</param>
     public static TinyVec<T> From<T>(T[] values)
@@ -90,9 +74,7 @@ public static class TinyVec
         return new(new ArraySegment<T>(values, 0, values.Length));
     }
 
-    /// <summary>
-    ///     Initializes a new parameter span with a sequence of values.
-    /// </summary>
+    /// <summary>Initializes a new parameter span with a sequence of values.</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="values">The values collection.</param>
     /// <param name="start">The zero-based index of the first value.</param>
@@ -101,9 +83,7 @@ public static class TinyVec
         return new(new ArraySegment<T>(values, start, values.Length - start));
     }
 
-    /// <summary>
-    ///     Initializes a new parameter span with a sequence of values.
-    /// </summary>
+    /// <summary>Initializes a new parameter span with a sequence of values.</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="values">The values collection.</param>
     /// <param name="start">The zero-based index of the first value.</param>
@@ -113,10 +93,7 @@ public static class TinyVec
         return new(new ArraySegment<T>(values, start, length));
     }
 
-    /// <summary>
-    ///     Initializes a new parameter span with a sequence of values.
-    ///     Performs a deep copy.
-    /// </summary>
+    /// <summary>Initializes a new parameter span with a sequence of values. Performs a shallow copy.</summary>
     /// <typeparam name="T"></typeparam>
     /// <typeparam name="E"></typeparam>
     /// <param name="values">The sequence of values.</param>
@@ -174,9 +151,7 @@ public static class TinyVec
     }
 }
 
-/// <summary>
-///     A structure representing a immutable sequence of function parameters.
-/// </summary>
+/// <summary>A structure representing a immutable sequence of function parameters.</summary>
 /// <typeparam name="T"></typeparam>
 [DebuggerDisplay("{GetDebuggerDisplay(),nq}")]
 public readonly struct TinyVec<T>
@@ -189,9 +164,7 @@ public readonly struct TinyVec<T>
     [AllowNull] private readonly T _arg3;
     private readonly ArraySegment<T> _params;
 
-    /// <summary>
-    ///     Initializes a new parameter span with one value.
-    /// </summary>
+    /// <summary>Initializes a new parameter span with one value.</summary>
     /// <param name="length">The number of non default values.</param>
     /// <param name="arg0">The first value.</param>
     /// <param name="arg1">The second value.</param>
@@ -209,9 +182,7 @@ public readonly struct TinyVec<T>
         _arg3 = arg3;
     }
 
-    /// <summary>
-    ///     Initializes a new parameter span with a sequence of parameters.
-    /// </summary>
+    /// <summary>Initializes a new parameter span with a sequence of parameters.</summary>
     /// <param name="segment">The segment of parameters.</param>
     internal TinyVec(in ArraySegment<T> segment)
     {
@@ -395,21 +366,15 @@ public readonly struct TinyVec<T>
         return new ReadOnlySpan<T>(array, 0, _length);
     }
 
-    /// <summary>
-    ///     Initializes a new span from the value.
-    /// </summary>
+    /// <summary>Initializes a new span from the value.</summary>
     /// <param name="self">The value.</param>
     public static implicit operator TinyVec<T>(in T self) => TinyVec.From(self);
 
-    /// <summary>
-    ///     Initializes a new span from the sequence.
-    /// </summary>
+    /// <summary>Initializes a new span from the sequence.</summary>
     /// <param name="self">The sequence of values.</param>
     public static implicit operator TinyVec<T>(in T[] self) => TinyVec.From(self);
 
-    /// <summary>
-    ///     Initializes a new span from the sequence.
-    /// </summary>
+    /// <summary>Initializes a new span from the sequence.</summary>
     /// <param name="self">The sequence of values.</param>
     public static implicit operator TinyVec<T>(in ArraySegment<T> self) => TinyVec.From(self);
 
