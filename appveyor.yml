@@ -19,16 +19,16 @@ configuration:
   - Debug
 
 before_build:
-  - dotnet restore
+  - dotnet restore "src/"
   - nuget restore
   - choco install opencover.portable
   - choco install codecov
 
 build_script:
-  - dotnet build "src/Rusitc.sln" --no-dependencies --version-suffix %LABEL%
+  - dotnet build "src/" --no-dependencies --version-suffix %LABEL%
 
 test_script:
-  - dotnet test "src/Rusitc.sln" --no-build --no-restore --test-adapter-path:. --logger:"Appveyor;LogFilePath=./overage.opencover.xml" /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+  - dotnet test "src/" --no-build --no-restore --test-adapter-path:. --logger:"Appveyor;LogFilePath=./overage.opencover.xml" /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
   - codecov -f "./coverage.opencover.xml"
 
 artifacts:
