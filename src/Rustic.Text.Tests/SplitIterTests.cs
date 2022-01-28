@@ -24,7 +24,7 @@ namespace Rustic.Text.Tests
         public void IterDoubleTest()
         {
             var arr = Dummy.AsSpan().Split(" .".AsSpan()).ToArray();
-            var probe = Dummy.Split(' ', '.', StringSplitOptions.None).ToArray();
+            var probe = Dummy.Split(' ', '.').ToArray();
             Assert.AreEqual(probe, arr);
         }
 
