@@ -19,10 +19,9 @@ configuration:
   - Debug
 
 before_build:
-  - dotnet restore "src/"
-  - nuget restore
   - choco install opencover.portable
   - choco install codecov
+  - dotnet restore "src/"
 
 build_script:
   - dotnet build "src/" --no-dependencies --version-suffix %LABEL%
