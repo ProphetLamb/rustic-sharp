@@ -196,22 +196,19 @@ public readonly struct TinyVec<T>
         _arg3 = _length > 3 ? segment[i] : default!;
     }
 
-    /// <summary>The number of items in the params span.</summary>
-    public int Length => _length;
-
     /// <inheritdoc/>
-    int IReadOnlyCollection<T>.Count => _length;
+    public int Count => _length;
 
-    /// <summary>Returns true if Count is 0.</summary>
+    /// <inheritdoc cref="IReadOnlyVector{T}.IsEmpty"/>
     public bool IsEmpty => 0 >= (uint)_length;
 
-    /// <inheritdoc cref="IReadOnlyList{T}.this"/>
+    /// <inheritdoc/>
     public T this[int index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
-            index.ValidateArgRange(index >= 0 && index < Length);
+            index.ValidateArgRange(index >= 0 && index < Count);
             return index switch
             {
                 0 => _arg0!,
@@ -223,7 +220,7 @@ public readonly struct TinyVec<T>
         }
     }
 
-    /// <inheritdoc cref="Span{T}.CopyTo"/>
+    /// <inheritdoc/>
     public void CopyTo(Span<T> destination)
     {
         if (_params.Count > 0)
@@ -237,13 +234,12 @@ public readonly struct TinyVec<T>
         }
     }
 
-    /// <inheritdoc cref="Span{T}.TryCopyTo"/>
+    /// <inheritdoc/>
     public bool TryCopyTo(Span<T> destination)
     {
         if (_params.Count > 0)
         {
-            _params.AsSpan().TryCopyTo(destination);
-            return true;
+            return _params.AsSpan().TryCopyTo(destination);
         }
         else if ((uint)_length <= (uint)destination.Length)
         {
@@ -287,7 +283,7 @@ public readonly struct TinyVec<T>
         }
     }
 
-    /// <inheritdoc cref="Object.Equals(Object)" />
+    /// <inheritdoc/>
     public bool Equals(in TinyVec<T> other)
     {
         return this == other;
@@ -346,12 +342,7 @@ public readonly struct TinyVec<T>
     {
         if (onlyIfCheap || IsEmpty || _params.Count > 0)
         {
-            if (_params.Array != null)
-            {
-                return new ReadOnlySpan<T>(_params.Array, _params.Offset, _params.Count);
-            }
-
-            return default;
+            return _params.Array is null ? default : new ReadOnlySpan<T>(_params.Array, _params.Offset, _params.Count);
         }
 
         T[] array = _length switch
@@ -382,7 +373,7 @@ public readonly struct TinyVec<T>
     {
         StrBuilder vsb = new(stackalloc char[256]);
         vsb.Append("Count = ");
-        vsb.Append(Length.ToString(CultureInfo.InvariantCulture));
+        vsb.Append(Count.ToString(CultureInfo.InvariantCulture));
         vsb.Append(", Params = {");
 
         int last = _length - 1;
@@ -433,7 +424,7 @@ public readonly struct TinyVec<T>
         {
             int index = _index + 1;
 
-            if ((uint)index < (uint)_array.Length)
+            if ((uint)index < (uint)_array.Count)
             {
                 _index = index;
                 return true;

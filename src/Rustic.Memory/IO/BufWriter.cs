@@ -66,7 +66,7 @@ public class BufWriter<T> :
         internal set
         {
             Debug.Assert(value >= 0);
-            Debug.Assert(value < Capacity);
+            Debug.Assert(value <= Capacity);
             _index = value;
         }
     }
@@ -113,9 +113,8 @@ public class BufWriter<T> :
     /// <inheritdoc />
     public ref T this[Index index] => ref this[index.GetOffset(Length)];
 
-    ref readonly T IReadOnlyVector<T>.this[Index index] => ref this[index];
-
     /// <inheritdoc />
+    ref readonly T IReadOnlyVector<T>.this[Index index] => ref this[index];
 
     /// <inheritdoc />
     T IList<T>.this[int index] { get => this[index]; set => this[index] = value; }
@@ -156,12 +155,14 @@ public class BufWriter<T> :
     /// <inheritdoc />
     public void Add(T item)
     {
-        if (_index >= Capacity)
+        int pos = _index;
+        if (pos > Capacity - 1)
         {
             Grow(1);
         }
 
-        Buffer![_index++] = item;
+        Buffer![pos] = item;
+        _index = pos + 1;
     }
 
     /// <inheritdoc />
@@ -178,59 +179,57 @@ public class BufWriter<T> :
     /// <inheritdoc />
     bool ICollection<T>.Contains(T item) => this.IndexOf(in item) >= 0;
 
-    /// <inheritdoc cref="IList{T}.IndexOf(T)" />
     int IList<T>.IndexOf(T item) => this.IndexOf(in item);
 
-    /// <inheritdoc cref="IList{T}.Insert(Int32,T)" />
-    public void Insert(int index, T item)
+    /// <inheritdoc />
+    [CLSCompliant(false)]
+    public void Insert(int index, in T item)
     {
-        if (_index >= Capacity - 1)
+        index.ValidateArgRange(index >= 0 && index <= Count);
+
+        int pos = _index;
+        if (pos > Capacity - 1)
         {
             Grow(1);
         }
+        Debug.Assert(Buffer is not null);
 
-        int remaining = _index - index;
+        int remaining = pos - index;
 
         if (remaining != 0)
         {
-            Array.Copy(Buffer!, index, Buffer!, index + 1, remaining);
+            Array.Copy(Buffer, index, Buffer!, index + 1, remaining);
         }
         else
         {
-            Buffer![_index] = item;
+            Buffer![pos] = item;
         }
 
-        _index += 1;
+        _index = pos + 1;
     }
+
+    void IList<T>.Insert(int index, T item) => Insert(index, in item);
 
     /// <inheritdoc />
     public void RemoveAt(int index)
     {
-        this.ValidateArg(Buffer is not null);
+        index.ValidateArgRange(index >= 0 && index < Count);
+        Debug.Assert(Buffer is not null);
 
-        int remaining = _index - index - 1;
+        int pos = _index - 1;
+        int remaining = pos - index;
 
         if (remaining != 0)
         {
             Array.Copy(Buffer!, index + 1, Buffer!, index, remaining);
         }
 
-        Buffer![--_index] = default!;
+        Buffer[pos] = default!;
+        _index = pos;
     }
 
     /// <inheritdoc />
-    public bool Remove(T item)
-    {
-        int index = this.IndexOf(in item);
-
-        if (index >= 0)
-        {
-            RemoveAt(index);
-            return true;
-        }
-
-        return false;
-    }
+    bool ICollection<T>.Remove(T item) => this.Remove(in item);
 
     /// <inheritdoc />
     public void CopyTo(T[] array, int arrayIndex)
@@ -247,9 +246,13 @@ public class BufWriter<T> :
     /// </summary>
     /// <param name="array">The internal array</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Span<T> ToSpan(out T[] array)
+    public Span<T> ToSpan(out T[]? array)
     {
-        this.ValidateArg(Buffer is not null);
+        if (Buffer is null)
+        {
+            array = null;
+            return Span<T>.Empty;
+        }
 
         array = Buffer;
         Span<T> span = new(array, 0, _index);
@@ -265,9 +268,13 @@ public class BufWriter<T> :
     /// </summary>
     /// <param name="array">The internal array</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Memory<T> ToMemory(out T[] array)
+    public Memory<T> ToMemory(out T[]? array)
     {
-        this.ValidateArg(Buffer is not null);
+        if (Buffer is null)
+        {
+            array = null;
+            return Memory<T>.Empty;
+        }
 
         array = Buffer;
         Memory<T> mem = new(array, 0, _index);
@@ -284,7 +291,10 @@ public class BufWriter<T> :
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ArraySegment<T> ToSegment()
     {
-        this.ValidateArg(Buffer is not null);
+        if (Buffer is null)
+        {
+            return ArraySegment<T>.Empty;
+        }
 
         ArraySegment<T> segment = new(Buffer!, 0, _index);
 
@@ -313,7 +323,10 @@ public class BufWriter<T> :
     /// </remarks>
     public T[] ToArray(bool dispose)
     {
-        this.ValidateArg(Buffer is not null);
+        if (Buffer is null)
+        {
+            return Array.Empty<T>();
+        }
 
         T[] array = new T[_index];
         Buffer.AsSpan(0, _index).CopyTo(array);
@@ -333,8 +346,6 @@ public class BufWriter<T> :
     /// <summary>Resets the writer to the initial state and returns the buffer to the array-pool.</summary>
     public virtual void Reset()
     {
-        this.ValidateArg(Buffer is not null);
-
         _index = 0;
         Buffer = null;
     }
@@ -349,7 +360,7 @@ public class BufWriter<T> :
     /// <inheritdoc cref="IDisposable.Dispose" />
     protected virtual void Dispose(bool disposing)
     {
-        if (disposing && Buffer is not null)
+        if (disposing)
         {
             Reset();
         }
@@ -375,7 +386,7 @@ public class BufWriter<T> :
         if (Buffer != null)
         {
             Debug.Assert(_index > Buffer.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
-            T[] temp = new T[Math.Max(_index + additionalCapacityBeyondPos, Buffer.Length * 2)];
+            T[] temp = new T[(_index + additionalCapacityBeyondPos).Max(Buffer.Length * 2)];
             Buffer.AsSpan(0, _index).CopyTo(temp);
             Buffer = temp;
         }
@@ -413,7 +424,8 @@ public class BufWriter<T> :
             Grow(count);
         }
 
-        T[] storage = Buffer!;
+        Debug.Assert(Buffer is not null);
+        T[] storage = Buffer;
         Array.Copy(storage, index, storage, index + count, Length - index);
         values.CopyTo(storage.AsSpan(index));
         Length += count;
@@ -423,13 +435,17 @@ public class BufWriter<T> :
     public void RemoveRange(int start, int count)
     {
         GuardRange(start, count);
-        this.ValidateArg(Buffer is not null);
 
-        int end = Length - count;
-        int remaining = end - start;
-        Array.Copy(Buffer, start + count, Buffer, start, remaining);
-        Array.Clear(Buffer, end, count);
-        Length = end;
+        if (count != 0)
+        {
+            Debug.Assert(Buffer is not null);
+
+            int end = Length - count;
+            int remaining = end - start;
+            Array.Copy(Buffer, start + count, Buffer, start, remaining);
+            Array.Clear(Buffer, end, count);
+            Length = end;
+        }
     }
 
     /// <inheritdoc />
@@ -440,7 +456,7 @@ public class BufWriter<T> :
 
         if (count != 0)
         {
-            this.ValidateArg(Buffer is not null);
+            Debug.Assert(Buffer is not null);
             Buffer.AsSpan(start, count).Sort(comparer);
         }
     }
@@ -452,7 +468,7 @@ public class BufWriter<T> :
 
         if (count != 0)
         {
-            this.ValidateArg(Buffer is not null);
+            Debug.Assert(Buffer is not null);
             Array.Reverse(Buffer, start, count);
         }
     }

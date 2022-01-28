@@ -3,6 +3,8 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
+using Rustic.Common;
+
 namespace Rustic.Memory.Vector;
 
 /// <summary>
@@ -51,7 +53,7 @@ public class PoolVec<T>
         {
             Debug.Assert(Count > Storage.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
 
-            var temp = Pool.Rent((int)Math.Max((uint)(Count + additionalCapacityBeyondPos), (uint)Storage.Length * 2));
+            var temp = Pool.Rent((Count + additionalCapacityBeyondPos).Max(Storage.Length * 2));
             Array.Copy(Storage, 0, temp, 0, Count);
             Storage = temp;
             if (temp is not null)

@@ -333,9 +333,23 @@ public static class VectorTraits
     }
 
     /// <inheritdoc cref="List{T}.Remove"/>
-    public static bool Remove<T>(this IVector<T> self, in T item, IEqualityComparer<T>? comparer)
+    public static bool Remove<T>(this IVector<T> self, in T item)
     {
-        int index = comparer is null ? self.IndexOf(in item) : self.IndexOf(in item, comparer);
+        int index = self.IndexOf(in item);
+        if (index >= 0)
+        {
+            self.RemoveAt(index);
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <inheritdoc cref="List{T}.Remove"/>
+    public static bool Remove<T, E>(this IVector<T> self, in T item, E comparer)
+        where E : IEqualityComparer<T>
+    {
+        int index = self.IndexOf(in item, comparer);
         if (index >= 0)
         {
             self.RemoveAt(index);
@@ -390,7 +404,8 @@ public static class VectorTraits
 
     /// <inheritdoc cref="List{T}.Sort(IComparer{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Sort<T>(this IVector<T> self, IComparer<T> comparer)
+    public static void Sort<T, C>(this IVector<T> self, C comparer)
+        where C : IComparer<T>
     {
         self.Sort(0, self.Count, comparer);
     }

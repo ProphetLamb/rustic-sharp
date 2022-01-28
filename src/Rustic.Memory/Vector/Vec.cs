@@ -65,7 +65,7 @@ public class Vec<T> : IVector<T>
         set
         {
             Debug.Assert(value >= 0);
-            Debug.Assert(Storage == null || value <= Storage.Length);
+            Debug.Assert(Storage == null || value <= Capacity);
             _count = value;
         }
     }
@@ -106,8 +106,10 @@ public class Vec<T> : IVector<T>
         }
     }
 
+    /// <inheritdoc/>
     ref readonly T IReadOnlyVector<T>.this[int index] => ref this[index];
 
+    /// <inheritdoc/>
     T IList<T>.this[int index] { get => this[index]; set => this[index] = value; }
 
     /// <inheritdoc/>
@@ -126,6 +128,7 @@ public class Vec<T> : IVector<T>
         }
     }
 
+    /// <inheritdoc/>
     ref readonly T IReadOnlyVector<T>.this[Index index] => ref this[index];
 
     /// <summary>
@@ -176,22 +179,22 @@ public class Vec<T> : IVector<T>
 
 #if NET5_0_OR_GREATER || NETCOREAPP3_1
 
-        /// <summary>
-        ///     Get a pinnable reference to the list.
-        ///     This overload is pattern matched in the C# 7.3+ compiler so you can omit
-        ///     the explicit method call, and write eg "fixed (T* c = list)"
-        /// </summary>
-        [Pure]
-        public unsafe ref T GetPinnableReference()
+    /// <summary>
+    ///     Get a pinnable reference to the list.
+    ///     This overload is pattern matched in the C# 7.3+ compiler so you can omit
+    ///     the explicit method call, and write eg "fixed (T* c = list)"
+    /// </summary>
+    [Pure]
+    public unsafe ref T GetPinnableReference()
+    {
+        ref T ret = ref Unsafe.AsRef<T>(null);
+        if (Storage != null && 0 >= (uint)Storage.Length)
         {
-            ref T ret = ref Unsafe.AsRef<T>(null);
-            if (Storage != null && 0 >= (uint)Storage.Length)
-            {
-                ret = ref Storage[0];
-            }
-
-            return ref ret;
+            ret = ref Storage[0];
         }
+
+        return ref ret;
+    }
 
 #endif
 
@@ -250,7 +253,7 @@ public class Vec<T> : IVector<T>
     /// <inheritdoc cref="List{T}.Clear"/>
     public void Clear()
     {
-        if (Storage != null)
+        if (Storage is not null)
         {
             Array.Clear(Storage, 0, _count);
         }
@@ -263,12 +266,7 @@ public class Vec<T> : IVector<T>
     /// <inheritdoc />
     public bool TryCopyTo(Span<T> destination)
     {
-        if (IsEmpty)
-        {
-            return true;
-        }
-
-        return Storage.AsSpan().TryCopyTo(destination);
+        return IsEmpty || Storage.AsSpan().TryCopyTo(destination);
     }
 
     /// <inheritdoc />
@@ -319,12 +317,13 @@ public class Vec<T> : IVector<T>
     [CLSCompliant(false)]
     public void Insert(int index, in T value)
     {
-        if (Storage == null || _count > Storage.Length - 1)
+        if (Storage is null || _count > Storage.Length - 1)
         {
             Grow(1);
         }
+        Debug.Assert(Storage is not null);
 
-        T[] storage = Storage!;
+        T[] storage = Storage;
         Array.Copy(storage, index, storage, index + 1, _count - index);
         storage[index] = value;
         Length += 1;
@@ -345,12 +344,13 @@ public class Vec<T> : IVector<T>
             return;
         }
 
-        if (Storage == null || Length > Capacity - count)
+        if (Storage is null || Length > Capacity - count)
         {
             Grow(count);
         }
 
-        T[] storage = Storage!;
+        Debug.Assert(Storage is not null);
+        T[] storage = Storage;
         Array.Copy(storage, index, storage, index + count, _count - index);
         values.CopyTo(storage.AsSpan(index));
         Length += count;
@@ -363,7 +363,7 @@ public class Vec<T> : IVector<T>
     {
         GuardRange(start, count);
 
-        if (Storage == null)
+        if (Storage is null)
         {
             return -1;
         }
@@ -382,12 +382,8 @@ public class Vec<T> : IVector<T>
         return -1;
     }
 
-    /// <inheritdoc cref="List{T}.Remove"/>
-    [CLSCompliant(false)]
-    public bool Remove(in T item) => Remove(item);
-
     /// <inheritdoc/>
-    bool ICollection<T>.Remove(T item) => Remove(item);
+    bool ICollection<T>.Remove(T item) => this.Remove(in item);
 
     /// <inheritdoc cref="List{T}.RemoveAt"/>
     public void RemoveAt(int index)
@@ -402,13 +398,16 @@ public class Vec<T> : IVector<T>
     public void RemoveRange(int start, int count)
     {
         GuardRange(start, count);
-        this.ValidateArg(Storage is not null);
 
-        int end = Length - count;
-        int remaining = end - start;
-        Array.Copy(Storage, start + count, Storage, start, remaining);
-        Array.Clear(Storage, end, count);
-        Length = end;
+        if (count != 0)
+        {
+            Debug.Assert(Storage is not null);
+            int end = Length - count;
+            int remaining = end - start;
+            Array.Copy(Storage, start + count, Storage, start, remaining);
+            Array.Clear(Storage, end, count);
+            Length = end;
+        }
     }
 
     /// <inheritdoc  />
@@ -417,7 +416,7 @@ public class Vec<T> : IVector<T>
         GuardRange(start, count);
         if (count != 0)
         {
-            this.ValidateArg(Storage is not null);
+            Debug.Assert(Storage is not null);
             Array.Reverse(Storage, start, count);
         }
     }
@@ -429,7 +428,7 @@ public class Vec<T> : IVector<T>
         GuardRange(start, count);
         if (count != 0)
         {
-            this.ValidateArg(Storage is not null);
+            Debug.Assert(Storage is not null);
             Storage.AsSpan(start, count).Sort(comparer);
         }
     }
@@ -453,9 +452,13 @@ public class Vec<T> : IVector<T>
     /// <returns>A <see cref="List{T}"/> that contains elements form the input sequence.</returns>
     public List<T> ToList()
     {
-        this.ValidateArg(Storage is not null);
-        List<T> list = new(_count);
-        for (int i = 0; i < _count; i++)
+        List<T> list = new(Count);
+        if (Storage is null)
+        {
+            return list;
+        }
+
+        for (int i = 0; i < Count; i++)
         {
             list.Add(Storage[i]);
         }
@@ -499,7 +502,7 @@ public class Vec<T> : IVector<T>
         {
             Debug.Assert(_count > Storage.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
 
-            T[] temp = new T[(int)Math.Max((uint)(_count + additionalCapacityBeyondPos), (uint)Storage.Length * 2)];
+            T[] temp = new T[(_count + additionalCapacityBeyondPos).Max(Storage.Length * 2)];
             Array.Copy(Storage, 0, temp, 0, _count);
             Storage = temp;
         }
@@ -526,7 +529,7 @@ public class Vec<T> : IVector<T>
 
         if (count != 0)
         {
-            this.ValidateArg(Storage is not null);
+            Debug.Assert(Storage is not null);
             Storage.AsSpan(start, count).Sort();
         }
     }
@@ -575,7 +578,7 @@ public class Vec<T> : IVector<T>
     {
         GuardRange(start, count);
 
-        if (Storage == null)
+        if (Storage is null)
         {
             return -1;
         }

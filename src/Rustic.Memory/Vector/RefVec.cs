@@ -54,7 +54,7 @@ public ref struct RefVec<T>
         set
         {
             Debug.Assert(value >= 0);
-            Debug.Assert(value <= _storage.Length);
+            Debug.Assert(value <= Capacity);
             _pos = value;
         }
     }
@@ -550,7 +550,7 @@ public ref struct RefVec<T>
         Debug.Assert(_pos > _storage.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
 
         // Make sure to let Rent throw an exception if the caller has a bug and the desired capacity is negative
-        T[] poolArray = ArrayPool<T>.Shared.Rent((int)Math.Max((uint)(_pos + additionalCapacityBeyondPos), (uint)_storage.Length * 2));
+        T[] poolArray = ArrayPool<T>.Shared.Rent((_pos + additionalCapacityBeyondPos).Max(_storage.Length * 2));
 
         _storage[.._pos].CopyTo(poolArray);
 

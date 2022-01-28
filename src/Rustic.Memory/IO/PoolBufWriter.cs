@@ -66,7 +66,7 @@ public class PoolBufWriter<T> : BufWriter<T>
         if (Buffer != null)
         {
             Debug.Assert(Length > Buffer.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
-            T[] temp = _pool.Rent(Math.Max(Length + additionalCapacityBeyondPos, Buffer.Length * 2));
+            T[] temp = _pool.Rent((Length + additionalCapacityBeyondPos).Max(Buffer.Length * 2));
             Buffer.AsSpan(0, Length).CopyTo(temp);
             Buffer = temp;
         }
