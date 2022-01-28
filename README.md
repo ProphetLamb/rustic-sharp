@@ -56,7 +56,6 @@ For constructing or writing sequences of data an array is often required. Theref
 | `class PoolBufWriter` | `IBufferWriter` similar to `PoolVec`. |
 
 ```csharp
-
 var obj = [...]
 PoolBufWriter<byte> writer = new();
 Serializer.Serialize(writer, obj);
