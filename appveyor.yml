@@ -28,7 +28,7 @@ build_script:
 
 test_script:
   - dotnet test "src/" --no-build --no-restore --test-adapter-path:. --logger:"Appveyor;LogFilePath=./coverage.opencover.xml" /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
-  - codecov -f "./coverage.opencover.xml"
+  - codecov -f "./src/coverage.opencover.xml"
 
 artifacts:
-  - path: ./coverage*.xml
+  - path: "**/coverage*.xml"
