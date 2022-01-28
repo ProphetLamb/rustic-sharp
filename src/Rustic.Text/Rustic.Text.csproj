@@ -27,6 +27,8 @@
     <PackageProjectUrl>https://github.com/ProphetLamb/rustic-sharp</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/ProphetLamb/rustic-sharp.git</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes>$([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)/../../RELEASENOTES.md"))</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Label="Nuget Pack Options">
@@ -45,6 +47,7 @@
   <ItemGroup>
     <None Include="..\..\.editorconfig" Link=".editorconfig" />
     <Compile Include="..\AssemblyInfo.cs" Link="AssemblyInfo.cs" />
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>

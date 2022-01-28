@@ -27,6 +27,8 @@
     <PackageProjectUrl>https://github.com/ProphetLamb/rustic-sharp</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/ProphetLamb/rustic-sharp.git</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes>$([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)/../../RELEASENOTES.md"))</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Label="Nuget Pack Options">
@@ -42,13 +44,14 @@
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
   </ItemGroup>
 
-  <ItemGroup Condition="!$(DefineConstants.Contains('NET5_0_OR_GREATER'))">
-    <PackageReference Include="System.Memory" Version="4.5.4" />
-  </ItemGroup>
-
   <ItemGroup>
     <None Include="..\..\.editorconfig" Link=".editorconfig" />
     <Compile Include="..\AssemblyInfo.cs" Link="AssemblyInfo.cs" />
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup Condition="!$(DefineConstants.Contains('NET5_0_OR_GREATER'))">
+    <PackageReference Include="System.Memory" Version="4.5.4" />
   </ItemGroup>
 
   <ItemGroup>
