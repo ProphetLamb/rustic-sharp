@@ -24,7 +24,7 @@ before_build:
   - dotnet restore "src/"
 
 build_script:
-  - dotnet build "src/" --no-dependencies --version-suffix %LABEL%
+  - dotnet build "src/" --version-suffix %LABEL%
 
 test_script:
   - dotnet test "src/" --no-build --no-restore --test-adapter-path:. --logger:"Appveyor;LogFilePath=./overage.opencover.xml" /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
