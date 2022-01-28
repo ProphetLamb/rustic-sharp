@@ -1,10 +1,16 @@
-# Version 0.40
+# Version 0.4.1
+
+- Validate null checks
+- Use branchless Max
+- Add test cases for BufWriterTests
+
+# Version 0.4.0
 
 - Rename project root.
 - Enforce horizontal separation between projects.
 - Create `BitVec`.
 
-# Version 0.30
+# Version 0.3.0
 
 ## Major fixes
 - Fixed bogus `ArrayPool` usage
