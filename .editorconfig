@@ -67,8 +67,12 @@ csharp_indent_labels = one_less_than_current
 csharp_prefer_simple_default_expression = true:suggestion
 csharp_style_throw_expression = true:suggestion
 csharp_prefer_simple_using_statement = true:suggestion
+# Indent is more obious when formatting agnostic.
 csharp_prefer_braces = true:silent
+# Clean up clutter and make core more readable.
 csharp_style_implicit_object_creation_when_type_is_apparent=true
+# Logic is invalid for structs that self assign, the rule does not account for that.
+dotnet_style_readonly_field = true:slient
 
 ## Configure Roslyn Analyzers
 ## https://docs.microsoft.com/en-us/visualstudio/code-quality/use-roslyn-analyzers#set-rule-severity-in-an-editorconfig-file
@@ -195,6 +199,9 @@ dotnet_diagnostic.RCS1163.severity = suggestion
 # Disable "Unconstrained type parameter checked for null."
 # Logic which applies to null often does not apply to non-null default.
 dotnet_diagnostic.RCS1165.severity = none
+# RCS1169: Make field read-only
+# Logic is invalid for structs that self assign, the rule does not account for that.
+dotnet_diagnostic.RCS1169.severity = none
 # Disable "Use 'return' instead of assignment"
 # Whether early return is preferable depends on other factors such as whether
 # additional pre-return use/assignment of the variable is likely to be added
