@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Rustic.Common.Extensions;
+namespace Rustic.Common;
 
 /// <summary>Collection of extensions and utility functionality related to <see cref="Random"/> instances.</summary>
-public static class RandomExtensions
+public static class LocalRandom
 {
     [ThreadStatic]
-    private static Random? _random;
+    private static Random? SharedInstance;
 
     /// <summary>Gets the thread-local random pool.</summary>
-    public static Random Shared => _random ??= new();
+    public static Random Shared => SharedInstance ??= new();
 
     /// <summary>Chooses a element from the collection using the random.</summary>
     /// <typeparam name="T">The type of elements in the collection.</typeparam>
