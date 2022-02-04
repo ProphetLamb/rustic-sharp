@@ -1,6 +1,6 @@
 # Rustic
 
-# Common
+## Common
 
 ```powershell
 dotnet add package Rustic.Common
@@ -14,7 +14,7 @@ dotnet add package Rustic.Common
 | `static class ThrowHelper` | Centralized functionality related to validation and throwing exceptions.                                                                                                                   |
 | `static class Arithmetic`  | Collection of extension methods and utility functions related to integer arithmetic. Most functions are ported from [bithacks](https://graphics.stanford.edu/~seander/bithacks.html)       |
 
-# Memory
+## Memory
 
 ```powershell
 dotnet add package Rustic.Memory
@@ -29,7 +29,7 @@ dotnet add package Rustic.Memory
 | `readonly ref struct BitSet`   | Enables unaligned marking of bits in a memory area.             |
 | `readonly ref struct BitVec`   | Partially inlined immutable collection of function parameters.  |
 
-## Vector
+### Vector
 **Namespace Rustic.Memory.Vector**
 
 This package mainly contains the list and buffer implementations
@@ -45,7 +45,7 @@ that aim to optimize memory management, by
 - optimizing for temporary array usage by providing implementations allowing allocation from a `ArrayPool<T>`,
 - and inlining tiny arrays.
 
-## IO
+### IO
 **Namespace Rustic.Memory.IO**
 
 For constructing or writing sequences of data an array is often required. Therefore, a `List<T>` has to be copied to the required layout, to circumvent this `BufWriter` allows moving the reference of the internal array to user control safely.
@@ -72,7 +72,7 @@ Serializer.Serialize(writer, obj);
 return writer.ToArray(dispose: true);
 ```
 
-# Text
+## Text
 
 ```powershell
 dotnet add package Rustic.Text
@@ -86,3 +86,12 @@ In addition to that the package provides the following non-allocating helpers fo
 | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | `ref struct SplitIter` | Iterator slicing a sequence of elements into smaller sequences, by a set of separators. Analogous in function to `string.Split`     |
 | `ref struct Tokenizer` | Allows scanning and navigating a sequence of elements on a per-iteration basis. Inspired by `Utf8JsonReader` but much more generic. |
+
+
+# Source acknowledgements
+
+| Source                                                                                                                                                          | License |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| [ValueStringBuilder: a stack-based string-builder](https://andrewlock.net/a-deep-dive-on-stringbuilder-part-6-vaulestringbuilder-a-stack-based-string-builder/) |         |
+| [bithacks](https://graphics.stanford.edu/~seander/bithacks.html)                                                                                                |         |
+| [`Fast.Reflection`](https://github.com/vexe/Fast.Reflection)                                                                                                    | `MIT`   |
