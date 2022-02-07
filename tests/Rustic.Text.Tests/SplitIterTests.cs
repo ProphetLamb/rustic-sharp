@@ -54,8 +54,8 @@ namespace Rustic.Text.Tests
 
         private static void InsertSeparators(string[] array)
         {
-            int last = array.Length - 1;
-            for (int i = 0; i < last; i += 1)
+            var last = array.Length - 1;
+            for (var i = 0; i < last; i += 1)
             {
                 array[i] += " ";
             }

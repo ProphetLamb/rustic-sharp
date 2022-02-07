@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Rustic.Text\Rustic.Text.csproj" />
+    <ProjectReference Include="..\..\src\Rustic.Text\Rustic.Text.csproj" />
   </ItemGroup>
 
 </Project>
