@@ -6,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 
-using Rustic.Common;
 using Rustic.Memory.IO;
 
 namespace Rustic.Memory;
@@ -17,7 +16,7 @@ public static class TinySpan
     /// <summary>Returns an empty <see cref="TinySpan{T}"/>.</summary>
     /// <typeparam name="T">The type of the span.</typeparam>
     /// <returns>An empty <see cref="TinySpan{T}"/>.</returns>
-    public static TinySpan<T> Empty<T>() => default;
+    public static TinySpan<T> Empty<T>() => new(ReadOnlySpan<T>.Empty);
 
     /// <summary>Initializes a new parameter span with one value.</summary>
     /// <typeparam name="T"></typeparam>
@@ -160,22 +159,22 @@ public static class TinySpan
         {
             return default;
         }
-        T arg0 = en.Current;
+        var arg0 = en.Current;
         if (!en.MoveNext())
         {
             return From(arg0);
         }
-        T arg1 = en.Current;
+        var arg1 = en.Current;
         if (!en.MoveNext())
         {
             return From(arg0, arg1);
         }
-        T arg2 = en.Current;
+        var arg2 = en.Current;
         if (!en.MoveNext())
         {
             return From(arg0, arg1, arg2);
         }
-        T arg3 = en.Current;
+        var arg3 = en.Current;
         if (!en.MoveNext())
         {
             return From(arg0, arg1, arg2, arg3);
@@ -243,7 +242,7 @@ public readonly ref struct TinySpan<T>
     /// <summary>The number of items in the params span.</summary>
     public int Length => _length;
 
-    /// <summary>Returns true if Count is 0.</summary>
+    /// <summary>Returns true if Length is 0.</summary>
     public bool IsEmpty => 0 >= (uint)_length;
 
     /// <inheritdoc cref="IReadOnlyList{T}.this" />
@@ -319,7 +318,7 @@ public readonly ref struct TinySpan<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void SetBlock(Span<T> destination)
     {
-        int index = 0;
+        var index = 0;
         switch (_length)
         {
             case 4:
@@ -391,7 +390,7 @@ public readonly ref struct TinySpan<T>
             return _values;
         }
 
-        T[]? array = _length switch
+        var array = _length switch
         {
             4 => new[] { _arg0!, _arg1!, _arg2!, _arg3! },
             3 => new[] { _arg0!, _arg1!, _arg2! },
@@ -422,12 +421,12 @@ public readonly ref struct TinySpan<T>
     private string GetDebuggerDisplay()
     {
         StrBuilder sb = new();
-        sb.Append("Count = ");
+        sb.Append("Length = ");
         sb.Append(Length.ToString());
         sb.Append(", Params = {");
 
-        int last = _length - 1;
-        for (int i = 0; i < last; i++)
+        var last = _length - 1;
+        for (var i = 0; i < last; i++)
         {
             sb.Append(this[i]?.ToString());
             sb.Append(", ");
@@ -469,7 +468,7 @@ public readonly ref struct TinySpan<T>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
-            int index = _index + 1;
+            var index = _index + 1;
 
             if ((uint)index < (uint)_span.Length)
             {

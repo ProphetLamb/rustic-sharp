@@ -5,6 +5,7 @@
     <LangVersion>10.0</LangVersion>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RootNamespace>Rustic</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Label="Assembly Info">

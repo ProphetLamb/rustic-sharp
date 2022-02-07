@@ -6,9 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Rustic.Common;
-
-// Source: https://source.dot.net/System.Private.CoreLib/StrBuilder.cs.html
+namespace Rustic;
 
 /// <summary>
 ///     This class represents a mutable string. Initially allocated in the stack, resorts to the <see cref="ArrayPool{T}.Shared"/> when growing.
@@ -114,7 +112,7 @@ public ref struct StrBuilder
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
-            index.ValidateArgRange(index >= 0 && index < Length);
+            Debug.Assert(index >= 0 && index < Length);
             return ref _chars[index];
         }
     }
@@ -125,7 +123,7 @@ public ref struct StrBuilder
     /// <returns>The string represented by the builder.</returns>
     public override string ToString()
     {
-        var s = _chars[.._pos].ToString();
+        var s = _chars.Slice(0, _pos).ToString();
         Dispose();
         return s;
     }
@@ -134,14 +132,14 @@ public ref struct StrBuilder
     {
         if (Length == 0)
         {
-            return "Length = 0, Values = []";
+            return "Capacity = 0, Values = []";
         }
 
         StringBuilder sb = new(256);
         return sb
-            .Append("Length = ").Append(_pos)
+            .Append("Capacity = ").Append(_pos)
             .Append(", Values = [")
-            .Append(_chars[.._pos].ToString())
+            .Append(_chars.Slice(0, _pos).ToString())
             .Append(']')
             .ToString();
     }
@@ -161,7 +159,7 @@ public ref struct StrBuilder
             _chars[Length] = '\0';
         }
 
-        return _chars[.._pos];
+        return _chars.Slice(0, _pos);
     }
 
     /// <summary>
@@ -169,7 +167,7 @@ public ref struct StrBuilder
     /// </summary>
     public ReadOnlySpan<char> AsSpan()
     {
-        return _chars[.._pos];
+        return _chars.Slice(0, _pos);
     }
 
     /// <summary>
@@ -178,7 +176,7 @@ public ref struct StrBuilder
     /// <param name="start">The zero-based index of the first char.</param>
     public ReadOnlySpan<char> AsSpan(int start)
     {
-        return _chars[start.._pos];
+        return _chars.Slice(start, _pos - start);
     }
 
     /// <summary>
@@ -194,7 +192,7 @@ public ref struct StrBuilder
     /// <inheritdoc cref="Span{T}.TryCopyTo"/>
     public bool TryCopyTo(Span<char> destination, out int charsWritten)
     {
-        if (_chars[.._pos].TryCopyTo(destination))
+        if (_chars.Slice(0, _pos).TryCopyTo(destination))
         {
             charsWritten = _pos;
             Dispose();
@@ -219,8 +217,8 @@ public ref struct StrBuilder
             Grow(count);
         }
 
-        int remaining = _pos - index;
-        _chars.Slice(index, remaining).CopyTo(_chars[(index + count)..]);
+        var remaining = _pos - index;
+        _chars.Slice(index, remaining).CopyTo(_chars.Slice(index + count));
         _chars.Slice(index, count).Fill(value);
         _pos += count;
     }
@@ -237,8 +235,8 @@ public ref struct StrBuilder
             Grow(1);
         }
 
-        int remaining = _pos - index;
-        _chars.Slice(index, remaining).CopyTo(_chars[(index + 1)..]);
+        var remaining = _pos - index;
+        _chars.Slice(index, remaining).CopyTo(_chars.Slice(index + 1));
         _chars[index] = value;
         _pos += 1;
     }
@@ -255,20 +253,20 @@ public ref struct StrBuilder
             return;
         }
 
-        int count = value!.Length;
+        var count = value!.Length;
 
         if (_pos > _chars.Length - count)
         {
             Grow(count);
         }
 
-        int remaining = _pos - index;
-        _chars.Slice(index, remaining).CopyTo(_chars[(index + count)..]);
+        var remaining = _pos - index;
+        _chars.Slice(index, remaining).CopyTo(_chars.Slice(index + count));
         value
 #if !NET6_0_OR_GREATER
                 .AsSpan()
 #endif
-                .CopyTo(_chars[index..]);
+                .CopyTo(_chars.Slice(index));
         _pos += count;
     }
 
@@ -279,7 +277,7 @@ public ref struct StrBuilder
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Append(char value)
     {
-        int pos = _pos;
+        var pos = _pos;
         if ((uint)pos < (uint)_chars.Length)
         {
             _chars[pos] = value;
@@ -303,7 +301,7 @@ public ref struct StrBuilder
             return;
         }
 
-        int pos = _pos;
+        var pos = _pos;
         if (value!.Length == 1 && (uint)pos < (uint)_chars.Length) // very common case, e.g. appending strings from NumberFormatInfo like separators, percent symbols, etc.
         {
             _chars[pos] = value[0];
@@ -317,7 +315,7 @@ public ref struct StrBuilder
 
     private void AppendSlow(string s)
     {
-        int pos = _pos;
+        var pos = _pos;
         if (pos > _chars.Length - s.Length)
         {
             Grow(s.Length);
@@ -327,7 +325,7 @@ public ref struct StrBuilder
 #if !NET6_0_OR_GREATER
                 .AsSpan()
 #endif
-                .CopyTo(_chars[pos..]);
+                .CopyTo(_chars.Slice(pos));
         _pos += s.Length;
     }
 
@@ -365,7 +363,7 @@ public ref struct StrBuilder
             return;
         }
 
-        int pos = _pos;
+        var pos = _pos;
         if (pos > _chars.Length - length)
         {
             Grow(length);
@@ -386,13 +384,13 @@ public ref struct StrBuilder
     /// <param name="value">The span to append.</param>
     public void Append(ReadOnlySpan<char> value)
     {
-        int pos = _pos;
+        var pos = _pos;
         if (pos > _chars.Length - value.Length)
         {
             Grow(value.Length);
         }
 
-        value.CopyTo(_chars[_pos..]);
+        value.CopyTo(_chars.Slice(_pos));
         _pos += value.Length;
     }
 
@@ -404,7 +402,7 @@ public ref struct StrBuilder
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<char> AppendSpan(int length)
     {
-        int origPos = _pos;
+        var origPos = _pos;
         if (origPos > _chars.Length - length)
         {
             Grow(length);
@@ -436,13 +434,13 @@ public ref struct StrBuilder
         Debug.Assert(_pos > _chars.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
 
         // Make sure to let Rent throw an exception if the caller has a bug and the desired capacity is negative
-        char[]? poolArray = ArrayPool<char>.Shared.Rent((_pos + additionalCapacityBeyondPos).Max(_chars.Length * 2));
+        var poolArray = ArrayPool<char>.Shared.Rent((_pos + additionalCapacityBeyondPos).Max(_chars.Length * 2));
 
-        _chars[.._pos].CopyTo(poolArray);
+        _chars.Slice(0, _pos).CopyTo(poolArray);
 
-        char[]? toReturn = _arrayToReturnToPool;
+        var toReturn = _arrayToReturnToPool;
         _chars = _arrayToReturnToPool = poolArray;
-        if (toReturn != null)
+        if (toReturn is not null)
         {
             ArrayPool<char>.Shared.Return(toReturn);
         }
@@ -452,9 +450,9 @@ public ref struct StrBuilder
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Dispose()
     {
-        char[]? toReturn = _arrayToReturnToPool;
+        var toReturn = _arrayToReturnToPool;
         this = default; // for safety, to avoid using pooled array if this instance is erroneously appended to again
-        if (toReturn != null)
+        if (toReturn is not null)
         {
             ArrayPool<char>.Shared.Return(toReturn);
         }

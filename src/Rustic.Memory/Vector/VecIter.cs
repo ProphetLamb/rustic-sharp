@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 
-using Rustic.Common;
-
 namespace Rustic.Memory.Vector;
 
 /// <summary>
@@ -30,7 +28,7 @@ public struct VecIter<T>
     {
         offset.ValidateArgRange(offset >= 0);
         count.ValidateArgRange(count >= 0);
-        int arrayLength = (array?.Length) ?? 0;
+        var arrayLength = (array?.Length) ?? 0;
         count.ValidateArgRange(count <= arrayLength - offset);
 
         _array = array;
@@ -130,7 +128,7 @@ public struct VecIter<T>
     /// <inheritdoc />
     public bool MoveNext()
     {
-        int index = _pos + 1;
+        var index = _pos + 1;
 
         if ((uint)index < (uint)_count)
         {
@@ -151,7 +149,7 @@ public struct VecIter<T>
     ///     Instantiates a new <see cref="ArraySegment{T}"/> representing the same segment as the iterator.
     /// </summary>
     /// <param name="segment">The iterator.</param>
-    public static implicit operator ArraySegment<T>(VecIter<T> segment) => segment.Array != null ? new(segment.Array, segment.Offset, segment.Length) : default;
+    public static implicit operator ArraySegment<T>(VecIter<T> segment) => segment.Array is not null ? new(segment.Array, segment.Offset, segment.Length) : default;
 }
 /// <summary>
 ///     Extension methods for <see cref="ArraySegment{T}"/> and <see cref="Array"/>.

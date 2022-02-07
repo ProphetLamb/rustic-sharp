@@ -6,8 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 
-using Rustic.Common;
-
 namespace Rustic.Memory.Vector;
 
 /// <summary>Represents a strongly typed vector of object that can be accessed by ref. Provides a similar interface as <see cref="List{T}"/>.</summary>
@@ -328,14 +326,14 @@ public static class VectorTraits
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void InsertRange<T>(this IVector<T> self, Index index, ReadOnlySpan<T> values)
     {
-        int off = index.GetOffset(self.Count);
+        var off = index.GetOffset(self.Count);
         self.InsertRange(off, values);
     }
 
     /// <inheritdoc cref="List{T}.Remove"/>
     public static bool Remove<T>(this IVector<T> self, in T item)
     {
-        int index = self.IndexOf(in item);
+        var index = self.IndexOf(in item);
         if (index >= 0)
         {
             self.RemoveAt(index);
@@ -349,7 +347,7 @@ public static class VectorTraits
     public static bool Remove<T, E>(this IVector<T> self, in T item, E comparer)
         where E : IEqualityComparer<T>
     {
-        int index = self.IndexOf(in item, comparer);
+        var index = self.IndexOf(in item, comparer);
         if (index >= 0)
         {
             self.RemoveAt(index);
@@ -381,7 +379,7 @@ public static class VectorTraits
     public static void SwapRemove<T>(this IVector<T> self, int index)
     {
         index.ValidateArgRange(index >= 0 && index < self.Count);
-        int last = self.Count - 1;
+        var last = self.Count - 1;
         self[index] = self[last];
         self.RemoveAt(last); // Should not copy when removing the last element.
     }

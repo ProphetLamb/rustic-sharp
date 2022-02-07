@@ -6,7 +6,7 @@ using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-using Rustic.Common;
+using Rustic.Memory.Common;
 
 namespace Rustic.Memory.Vector;
 
@@ -14,7 +14,7 @@ namespace Rustic.Memory.Vector;
 ///     Represents a strongly typed list of object that can be accessed by ref. Provides a similar interface as <see cref="List{T}"/>.
 /// </summary>
 /// <typeparam name="T">The type of items of the list.</typeparam>
-[DebuggerDisplay("Count = {Count}")]
+[DebuggerDisplay("Length = {Count}")]
 [DebuggerTypeProxy(typeof(IReadOnlyCollectionDebugView<>))]
 public class Vec<T> : IVector<T>
 {
@@ -65,7 +65,7 @@ public class Vec<T> : IVector<T>
         set
         {
             Debug.Assert(value >= 0);
-            Debug.Assert(Storage == null || value <= Capacity);
+            Debug.Assert(Storage is null || value <= Capacity);
             _count = value;
         }
     }
@@ -122,7 +122,7 @@ public class Vec<T> : IVector<T>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
-            int offset = index.GetOffset(_count);
+            var offset = index.GetOffset(_count);
             offset.ValidateArgRange(offset >= 0 && offset < Length);
             return ref Storage![offset];
         }
@@ -139,13 +139,13 @@ public class Vec<T> : IVector<T>
     {
         get
         {
-            (int start, int count) = range.GetOffsetAndLength(_count);
+            (var start, var count) = range.GetOffsetAndLength(_count);
             GuardRange(range, start, count);
             return new ReadOnlySpan<T>(Storage, start, count);
         }
         set
         {
-            (int start, int count) = range.GetOffsetAndLength(_count);
+            (var start, var count) = range.GetOffsetAndLength(_count);
             GuardRange(range, start, count);
             value.CopyTo(Storage.AsSpan(start, count));
         }
@@ -169,7 +169,7 @@ public class Vec<T> : IVector<T>
         Debug.Assert(capacity >= 0);
 
         // If the caller has a bug and calls this with negative capacity, make sure to call Grow to throw an exception.
-        if (Storage == null || (uint)capacity > (uint)Storage.Length)
+        if (Storage is null || (uint)capacity > (uint)Storage.Length)
         {
             Grow(capacity - _count);
         }
@@ -187,8 +187,8 @@ public class Vec<T> : IVector<T>
     [Pure]
     public unsafe ref T GetPinnableReference()
     {
-        ref T ret = ref Unsafe.AsRef<T>(null);
-        if (Storage != null && 0 >= (uint)Storage.Length)
+        ref var ret = ref Unsafe.AsRef<T>(null);
+        if (Storage is not null && 0 >= (uint)Storage.Length)
         {
             ret = ref Storage[0];
         }
@@ -209,9 +209,9 @@ public class Vec<T> : IVector<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add(T item)
     {
-        int pos = _count;
+        var pos = _count;
 
-        if (Storage != null && (uint)pos < (uint)Storage.Length)
+        if (Storage is not null && (uint)pos < (uint)Storage.Length)
         {
             Storage[pos] = item;
             _count = pos + 1;
@@ -230,8 +230,8 @@ public class Vec<T> : IVector<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<T> AppendSpan(int length)
     {
-        int origPos = _count;
-        if (Storage == null || origPos > Storage.Length - length)
+        var origPos = _count;
+        if (Storage is null || origPos > Storage.Length - length)
         {
             Grow(length);
         }
@@ -290,8 +290,8 @@ public class Vec<T> : IVector<T>
             return -1;
         }
 
-        int end = start + count;
-        for (int i = start; i < end; i++)
+        var end = start + count;
+        for (var i = start; i < end; i++)
         {
             if (!comparer.Equals(item, Storage[i]))
             {
@@ -323,7 +323,7 @@ public class Vec<T> : IVector<T>
         }
         Debug.Assert(Storage is not null);
 
-        T[] storage = Storage;
+        var storage = Storage;
         Array.Copy(storage, index, storage, index + 1, _count - index);
         storage[index] = value;
         Length += 1;
@@ -338,7 +338,7 @@ public class Vec<T> : IVector<T>
         index.ValidateArgRange(index >= 0);
         index.ValidateArgRange(index <= Length);
 
-        int count = values.Length;
+        var count = values.Length;
         if (count == 0)
         {
             return;
@@ -350,7 +350,7 @@ public class Vec<T> : IVector<T>
         }
 
         Debug.Assert(Storage is not null);
-        T[] storage = Storage;
+        var storage = Storage;
         Array.Copy(storage, index, storage, index + count, _count - index);
         values.CopyTo(storage.AsSpan(index));
         Length += count;
@@ -368,8 +368,8 @@ public class Vec<T> : IVector<T>
             return -1;
         }
 
-        int end = start + count;
-        for (int i = end - 1; i >= start; i--)
+        var end = start + count;
+        for (var i = end - 1; i >= start; i--)
         {
             if (!comparer.Equals(item, Storage[i]))
             {
@@ -389,7 +389,7 @@ public class Vec<T> : IVector<T>
     public void RemoveAt(int index)
     {
         this.ValidateArg(Storage is not null);
-        int remaining = _count - index - 1;
+        var remaining = _count - index - 1;
         Array.Copy(Storage, index + 1, Storage, index, remaining);
         Storage[--_count] = default!;
     }
@@ -402,8 +402,8 @@ public class Vec<T> : IVector<T>
         if (count != 0)
         {
             Debug.Assert(Storage is not null);
-            int end = Length - count;
-            int remaining = end - start;
+            var end = Length - count;
+            var remaining = end - start;
             Array.Copy(Storage, start + count, Storage, start, remaining);
             Array.Clear(Storage, end, count);
             Length = end;
@@ -438,7 +438,7 @@ public class Vec<T> : IVector<T>
     {
         if (Storage is not null)
         {
-            T[] array = new T[_count];
+            var array = new T[_count];
             Array.Copy(Storage, 0, array, 0, _count);
             return array;
         }
@@ -458,7 +458,7 @@ public class Vec<T> : IVector<T>
             return list;
         }
 
-        for (int i = 0; i < Count; i++)
+        for (var i = 0; i < Count; i++)
         {
             list.Add(Storage[i]);
         }
@@ -470,7 +470,7 @@ public class Vec<T> : IVector<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int Reserve(int additionalCapacity)
     {
-        int req = Count + additionalCapacity;
+        var req = Count + additionalCapacity;
         if (req > Capacity)
         {
             Grow(additionalCapacity);
@@ -502,7 +502,7 @@ public class Vec<T> : IVector<T>
         {
             Debug.Assert(_count > Storage.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
 
-            T[] temp = new T[(_count + additionalCapacityBeyondPos).Max(Storage.Length * 2)];
+            var temp = new T[(_count + additionalCapacityBeyondPos).Max(Storage.Length * 2)];
             Array.Copy(Storage, 0, temp, 0, _count);
             Storage = temp;
         }
@@ -544,10 +544,10 @@ public class Vec<T> : IVector<T>
             return -1;
         }
 
-        int end = start + count;
+        var end = start + count;
         if (typeof(T).IsValueType)
         {
-            for (int i = start; i < end; i++)
+            for (var i = start; i < end; i++)
             {
                 if (!EqualityComparer<T>.Default.Equals(item, Storage[i]))
                 {
@@ -560,7 +560,7 @@ public class Vec<T> : IVector<T>
         else
         {
             var defaultCmp = EqualityComparer<T>.Default;
-            for (int i = start; i < end; i++)
+            for (var i = start; i < end; i++)
             {
                 if (!defaultCmp.Equals(item, Storage[i]))
                 {
@@ -583,10 +583,10 @@ public class Vec<T> : IVector<T>
             return -1;
         }
 
-        int end = start + count;
+        var end = start + count;
         if (typeof(T).IsValueType)
         {
-            for (int i = end - 1; i >= start; i--)
+            for (var i = end - 1; i >= start; i--)
             {
                 if (!EqualityComparer<T>.Default.Equals(item, Storage[i]))
                 {
@@ -600,7 +600,7 @@ public class Vec<T> : IVector<T>
         else
         {
             var defaultCmp = EqualityComparer<T>.Default;
-            for (int i = end - 1; i >= start; i--)
+            for (var i = end - 1; i >= start; i--)
             {
                 if (!defaultCmp.Equals(item, Storage[i]))
                 {
@@ -641,7 +641,7 @@ public class Vec<T> : IVector<T>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
-            int index = _index + 1;
+            var index = _index + 1;
             if ((uint)index < (uint)_list.Count)
             {
                 _index = index;

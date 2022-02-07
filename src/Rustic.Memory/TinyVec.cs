@@ -7,7 +7,6 @@ using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
-using Rustic.Common;
 using Rustic.Memory.IO;
 
 namespace Rustic.Memory;
@@ -114,22 +113,22 @@ public static class TinyVec
         {
             return default;
         }
-        T arg0 = en.Current;
+        var arg0 = en.Current;
         if (!en.MoveNext())
         {
             return From(arg0);
         }
-        T arg1 = en.Current;
+        var arg1 = en.Current;
         if (!en.MoveNext())
         {
             return From(arg0, arg1);
         }
-        T arg2 = en.Current;
+        var arg2 = en.Current;
         if (!en.MoveNext())
         {
             return From(arg0, arg1, arg2);
         }
-        T arg3 = en.Current;
+        var arg3 = en.Current;
         if (!en.MoveNext())
         {
             return From(arg0, arg1, arg2, arg3);
@@ -189,7 +188,7 @@ public readonly struct TinyVec<T>
         _params = segment;
         _length = segment.Count;
 
-        int i = 0;
+        var i = 0;
         _arg0 = _length > 0 ? segment[i++] : default!;
         _arg1 = _length > 1 ? segment[i++] : default!;
         _arg2 = _length > 2 ? segment[i++] : default!;
@@ -253,7 +252,7 @@ public readonly struct TinyVec<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void SetBlock(Span<T> destination)
     {
-        int index = 0;
+        var index = 0;
         switch (_length)
         {
             case 4:
@@ -345,7 +344,7 @@ public readonly struct TinyVec<T>
             return _params.Array is null ? default : new ReadOnlySpan<T>(_params.Array, _params.Offset, _params.Count);
         }
 
-        T[] array = _length switch
+        var array = _length switch
         {
             4 => new[] { _arg0!, _arg1!, _arg2!, _arg3! },
             3 => new[] { _arg0!, _arg1!, _arg2! },
@@ -372,12 +371,12 @@ public readonly struct TinyVec<T>
     private string GetDebuggerDisplay()
     {
         StrBuilder vsb = new(stackalloc char[256]);
-        vsb.Append("Count = ");
+        vsb.Append("Length = ");
         vsb.Append(Count.ToString(CultureInfo.InvariantCulture));
         vsb.Append(", Params = {");
 
-        int last = _length - 1;
-        for (int i = 0; i < last; i++)
+        var last = _length - 1;
+        for (var i = 0; i < last; i++)
         {
             vsb.Append(this[i]!.ToString());
             vsb.Append(", ");
@@ -422,7 +421,7 @@ public readonly struct TinyVec<T>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
-            int index = _index + 1;
+            var index = _index + 1;
 
             if ((uint)index < (uint)_array.Count)
             {

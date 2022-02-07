@@ -2,8 +2,6 @@
 using System.Buffers;
 using System.Diagnostics;
 
-using Rustic.Common;
-
 namespace Rustic.Memory.IO;
 
 /// <summary>
@@ -63,10 +61,10 @@ public class PoolBufWriter<T> : BufWriter<T>
     {
         Debug.Assert(additionalCapacityBeyondPos > 0);
 
-        if (Buffer != null)
+        if (Buffer is not null)
         {
             Debug.Assert(Length > Buffer.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
-            T[] temp = _pool.Rent((Length + additionalCapacityBeyondPos).Max(Buffer.Length * 2));
+            var temp = _pool.Rent((Length + additionalCapacityBeyondPos).Max(Buffer.Length * 2));
             Buffer.AsSpan(0, Length).CopyTo(temp);
             Buffer = temp;
         }

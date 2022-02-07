@@ -18,7 +18,7 @@ public enum SplitOptions : byte
     /// <summary>Do not return zero-length segments. Instead return the next result, if any.</summary>
     RemoveEmptyEntries = 1 << 0,
 
-    /// <summary>Include the seperator at the end of the resulting segment, if not at the end.</summary>
+    /// <summary>Include the separator at the end of the resulting segment, if not at the end.</summary>
     IncludeSeparator = 1 << 1,
 
     /// <summary>All options.</summary>
@@ -77,14 +77,14 @@ public ref struct SplitIter<T>
     public bool MoveNext()
     {
         // Moves index to after the previous separator & zeros length
-        int position = SkipCurrent();
+        var position = SkipCurrent();
         if (position >= _source.Length)
         {
             return false;
         }
 
-        IEqualityComparer<T>? comparer = _comparer;
-        if (comparer == null)
+        var comparer = _comparer;
+        if (comparer is null)
         {
             if (typeof(T).IsValueType)
             {
@@ -117,7 +117,7 @@ public ref struct SplitIter<T>
         var len = _source.Length;
         for (; pos < len; pos += 1)
         {
-            for (int seg = 0; seg < _separators.Length; seg += 1)
+            for (var seg = 0; seg < _separators.Length; seg += 1)
             {
                 if (EqualityComparer<T>.Default.Equals(_separators[seg], _source[pos]))
                 {
@@ -134,7 +134,7 @@ public ref struct SplitIter<T>
         var len = _source.Length;
         for (; pos < len; pos += 1)
         {
-            for (int seg = 0; seg < _separators.Length; seg += 1)
+            for (var seg = 0; seg < _separators.Length; seg += 1)
             {
                 if (comparer.Equals(_separators[seg], _source[pos]))
                 {
@@ -226,7 +226,7 @@ public static class SplitIterExtensions
         using PoolBufWriter<O> buf = new();
         foreach (var seg in self)
         {
-            O cur = seed();
+            var cur = seed();
             foreach (var itm in seg)
             {
                 cur = aggregate(cur, itm);

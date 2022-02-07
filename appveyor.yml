@@ -1,6 +1,11 @@
-version: "0.1.{build}"
+version: "{build}"
+branches:
+  only:
+    - master
 
 cache:
+  - '%LocalAppData%\NuGet\Cache'
+  - '%LocalAppData%\NuGet\v3-cache'
   - '%USERPROFILE%\.nuget\packages'
   - C:\ProgramData\chocolatey\bin -> appveyor.yml
   - C:\ProgramData\chocolatey\lib -> appveyor.yml
@@ -32,3 +37,12 @@ test_script:
 
 artifacts:
   - path: "coverage.opencover.xml"
+
+deploy:
+  - provider: NuGet
+    server:
+    api_key:
+      secure: oy2hhpit2futukhmu7qaoghtatnwymcelldizddxofzyoa
+    skip_symbols: true
+    on:
+      branch: master

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 
-using Rustic.Common;
 using Rustic.Memory;
 
 namespace Rustic.Text;
@@ -42,6 +41,8 @@ public ref struct Tokenizer<T>
         _tokenLength = 0;
     }
 
+    public ReadOnlySpan<T> Raw => _source;
+
     /// <summary>
     ///     Defines the current position of the iterator.
     /// </summary>
@@ -52,11 +53,11 @@ public ref struct Tokenizer<T>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
-            value.ValidateArgRange(value >= 0 && value < Length);
+            value.ValidateArgRange(value >= 0 && value <= Length);
 
-            if (value >= _index)
+            if (value > _index)
             {
-                _tokenLength = _index - value;
+                _tokenLength += value - _index;
             }
             else
             {
@@ -69,28 +70,27 @@ public ref struct Tokenizer<T>
     /// <inheritdoc cref="Span{T}.Length"/>
     public int Length => _source.Length;
 
-    /// <summary>
-    ///     Represents the token currently being built.
-    /// </summary>
-    public ReadOnlySpan<T> Token
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _source.Slice(_index, _tokenLength);
-    }
+    /// <summary>Represents the token currently being built.</summary>
+    public ReadOnlySpan<T> Token => _source.Slice(_index, _tokenLength);
 
-    /// <summary>
-    ///     Represents the zero-based start-index of the current token inside the span.
-    /// </summary>
+    public ref readonly T Current => ref _source[_index];
+
+    /// <summary>Represents the zero-based start-index of the current token inside the span.</summary>
     public int TokenIndex => _index;
 
-    /// <summary>
-    ///     Represents the length of the current token.
-    /// </summary>
+    /// <summary>Represents the length of the current token.</summary>
     public int TokenLength => _tokenLength;
 
-    /// <summary>
-    ///     Consumes one element.
-    /// </summary>
+    public ref readonly T this[int index]
+    {
+        get
+        {
+            index.ValidateArgRange(index >= 0 && index < Length);
+            return ref _source[index];
+        }
+    }
+
+    /// <summary>Consumes one element.</summary>
     /// <returns><see langword="true"/> if the element could be consumed; otherwise, <see langword="false"/>.</returns>
     public bool Consume()
     {
@@ -103,13 +103,11 @@ public ref struct Tokenizer<T>
         return false;
     }
 
-    /// <summary>
-    ///     Consumes a specified amount of elements.
-    /// </summary>
+    /// <summary>Consumes a specified amount of elements.</summary>
     /// <returns><see langword="true"/> if the elements could be consumed; otherwise, <see langword="false"/>.</returns>
     public bool Consume(int amount)
     {
-        amount.ValidateArgRange(amount >= 0);
+        amount.ValidateArgRange(amount <= _tokenLength);
 
         if (_index < Length - _tokenLength - amount)
         {
@@ -135,7 +133,7 @@ public ref struct Tokenizer<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadOnlySpan<T> FinalizeToken()
     {
-        ReadOnlySpan<T> token = Token;
+        var token = Token;
         _index += _tokenLength;
         _tokenLength = 0;
         return token;
@@ -175,7 +173,7 @@ public ref struct Tokenizer<T>
             return false;
         }
 
-        int head = Head;
+        var head = Head;
         if (head < position)
         {
             _tokenLength = position - head;
@@ -193,7 +191,7 @@ public ref struct Tokenizer<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool ReadNextSequence(in ReadOnlySpan<T> expectedSequence)
     {
-        bool success = PeekNextSequence(expectedSequence, out int head);
+        var success = PeekNextSequence(expectedSequence, out var head);
         Head = head;
         return success;
     }
@@ -206,7 +204,7 @@ public ref struct Tokenizer<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryReadNextSequence(in ReadOnlySpan<T> expectedSequence)
     {
-        if (PeekNextSequence(expectedSequence, out int head))
+        if (PeekNextSequence(expectedSequence, out var head))
         {
             Head = head;
             return true;
@@ -230,10 +228,10 @@ public ref struct Tokenizer<T>
             return false;
         }
 
-        int matched = 0;
-        IEqualityComparer<T>? comparer = _comparer;
+        var matched = 0;
+        var comparer = _comparer;
 
-        if (comparer == null)
+        if (comparer is null)
         {
             if (typeof(T).IsValueType)
             {
@@ -281,7 +279,7 @@ public ref struct Tokenizer<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool ReadSequence(in ReadOnlySpan<T> expectedSequence)
     {
-        bool success = PeekSequence(expectedSequence, out int head);
+        var success = PeekSequence(expectedSequence, out var head);
         Head = head;
         return success;
     }
@@ -294,7 +292,7 @@ public ref struct Tokenizer<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryReadSequence(in ReadOnlySpan<T> expectedSequence)
     {
-        if (PeekSequence(expectedSequence, out int head))
+        if (PeekSequence(expectedSequence, out var head))
         {
             Head = head;
             return true;
@@ -318,10 +316,10 @@ public ref struct Tokenizer<T>
             return false;
         }
 
-        int matched = 0;
-        IEqualityComparer<T>? comparer = _comparer;
+        var matched = 0;
+        var comparer = _comparer;
 
-        if (comparer == null)
+        if (comparer is null)
         {
             if (typeof(T).IsValueType)
             {
@@ -371,7 +369,7 @@ public ref struct Tokenizer<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool ReadNext(in TinySpan<T> expected)
     {
-        bool success = PeekNext(expected);
+        var success = PeekNext(expected);
         Head += 1;
         return success;
     }
@@ -401,16 +399,16 @@ public ref struct Tokenizer<T>
     [Pure]
     public bool PeekNext(in TinySpan<T> expected)
     {
-        int head = Head;
+        var head = Head;
         if (head == _source.Length)
         {
             return false;
         }
 
-        T current = _source[head];
-        IEqualityComparer<T>? comparer = _comparer;
+        var current = _source[head];
+        var comparer = _comparer;
 
-        if (comparer == null)
+        if (comparer is null)
         {
             for (var i = 0; i < expected.Length; i++)
             {
@@ -447,7 +445,7 @@ public ref struct Tokenizer<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool ReadUntil(in TinySpan<T> expected)
     {
-        bool success = PeekUntil(expected, out int head);
+        var success = PeekUntil(expected, out var head);
         Head = head;
         return success;
     }
@@ -460,7 +458,7 @@ public ref struct Tokenizer<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryReadUntil(in TinySpan<T> expected)
     {
-        if (PeekUntil(expected, out int head))
+        if (PeekUntil(expected, out var head))
         {
             Head = head;
             return true;
@@ -484,17 +482,17 @@ public ref struct Tokenizer<T>
             return false;
         }
 
-        bool consumeNext = true;
-        IEqualityComparer<T>? comparer = _comparer;
+        var consumeNext = true;
+        var comparer = _comparer;
 
-        if (comparer == null)
+        if (comparer is null)
         {
             if (typeof(T).IsValueType)
             {
                 do
                 {
-                    T current = _source[head];
-                    for (int i = 0; i < expected.Length; i++)
+                    var current = _source[head];
+                    for (var i = 0; i < expected.Length; i++)
                     {
                         // ValueType: Devirtualize with EqualityComparer<TValue>.Default intrinsic
                         if (!EqualityComparer<T>.Default.Equals(expected[i], current))
@@ -518,8 +516,8 @@ public ref struct Tokenizer<T>
 
         do
         {
-            T current = _source[head];
-            for (int i = 0; i < expected.Length; i++)
+            var current = _source[head];
+            for (var i = 0; i < expected.Length; i++)
             {
                 if (!comparer.Equals(expected[i], current))
                 {
@@ -547,7 +545,7 @@ public ref struct Tokenizer<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool ReadNext(in T expected)
     {
-        bool success = PeekNext(expected);
+        var success = PeekNext(expected);
         Head += 1;
         return success;
     }
@@ -577,16 +575,16 @@ public ref struct Tokenizer<T>
     [Pure]
     public bool PeekNext(in T expected)
     {
-        int head = Head;
+        var head = Head;
         if (head == _source.Length)
         {
             return false;
         }
 
-        T current = _source[head];
-        IEqualityComparer<T>? comparer = _comparer;
+        var current = _source[head];
+        var comparer = _comparer;
 
-        if (comparer == null)
+        if (comparer is null)
         {
             return EqualityComparer<T>.Default.Equals(expected, current);
         }
@@ -602,7 +600,7 @@ public ref struct Tokenizer<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool ReadUntil(in T expected)
     {
-        bool success = PeekUntil(expected, out int head);
+        var success = PeekUntil(expected, out var head);
         Head = head;
         return success;
     }
@@ -615,7 +613,7 @@ public ref struct Tokenizer<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryReadUntil(in T expected)
     {
-        if (PeekUntil(expected, out int head))
+        if (PeekUntil(expected, out var head))
         {
             Head = head;
             return true;
@@ -639,9 +637,9 @@ public ref struct Tokenizer<T>
             return false;
         }
 
-        IEqualityComparer<T>? comparer = _comparer;
+        var comparer = _comparer;
 
-        if (comparer == null)
+        if (comparer is null)
         {
             if (typeof(T).IsValueType)
             {
@@ -690,7 +688,7 @@ public ref struct Tokenizer<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool ReadNext(in T expected0, in T expected1)
     {
-        bool success = PeekNext(expected0, expected1);
+        var success = PeekNext(expected0, expected1);
         Head += 1;
         return success;
     }
@@ -722,16 +720,16 @@ public ref struct Tokenizer<T>
     [Pure]
     public bool PeekNext(in T expected0, in T expected1)
     {
-        int head = Head;
+        var head = Head;
         if (head == _source.Length)
         {
             return false;
         }
 
-        T current = _source[head];
-        IEqualityComparer<T>? comparer = _comparer;
+        var current = _source[head];
+        var comparer = _comparer;
 
-        if (comparer == null)
+        if (comparer is null)
         {
             return EqualityComparer<T>.Default.Equals(expected0, current)
                 || EqualityComparer<T>.Default.Equals(expected1, current);
@@ -750,7 +748,7 @@ public ref struct Tokenizer<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool ReadUntil(in T expected0, in T expected1)
     {
-        bool success = PeekUntil(expected0, expected1, out int head);
+        var success = PeekUntil(expected0, expected1, out var head);
         Head = head;
         return success;
     }
@@ -764,7 +762,7 @@ public ref struct Tokenizer<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryReadUntil(in T expected0, in T expected1)
     {
-        if (PeekUntil(expected0, expected1, out int head))
+        if (PeekUntil(expected0, expected1, out var head))
         {
             Head = head;
             return true;
@@ -789,9 +787,9 @@ public ref struct Tokenizer<T>
             return false;
         }
 
-        IEqualityComparer<T>? comparer = _comparer;
+        var comparer = _comparer;
 
-        if (comparer == null)
+        if (comparer is null)
         {
             if (typeof(T).IsValueType)
             {

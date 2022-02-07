@@ -3,8 +3,6 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-using Rustic.Common;
-
 namespace Rustic.Memory.Vector;
 
 /// <summary>

@@ -3,8 +3,6 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-using Rustic.Common;
-
 namespace Rustic.Memory;
 
 /// <summary>Represents a collection of bits with a list-like interface. Resorts to <see cref="ArrayPool{T}.Shared"/> when growing.</summary>
@@ -69,7 +67,7 @@ public ref struct BitVec
     public void Add(bool value)
     {
         Reserve(1);
-        int pos = _pos;
+        var pos = _pos;
         _raw.Set(pos, Convert.ToInt32(value));
         _pos = pos + 1;
     }
@@ -89,7 +87,7 @@ public ref struct BitVec
     {
         Debug.Assert(Count > Capacity - additionalCapacityBeyondPos);
 
-        int req = (Capacity * 2).Max(Count + additionalCapacityBeyondPos);
+        var req = (Capacity * 2).Max(Count + additionalCapacityBeyondPos);
         var temp = ArrayPool<int>.Shared.Rent(Arithmetic.IntsToContainBits(req));
         Span<int> span = temp;
         _raw.RawStorage.CopyTo(span);

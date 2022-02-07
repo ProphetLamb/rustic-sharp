@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 
-using Rustic.Common;
 using Rustic.Memory.Vector;
 
 namespace Rustic.Memory.IO;
@@ -15,7 +14,7 @@ namespace Rustic.Memory.IO;
 ///     Reusable <see cref="IBufferWriter{T}"/> intended for use as a thread-static singleton.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-[DebuggerDisplay("Count: {Count}")]
+[DebuggerDisplay("Length: {Count}")]
 [DebuggerTypeProxy(typeof(PoolBufWriterDebuggerView<>))]
 public class BufWriter<T> :
     IBufferWriter<T>,
@@ -155,7 +154,7 @@ public class BufWriter<T> :
     /// <inheritdoc />
     public void Add(T item)
     {
-        int pos = _index;
+        var pos = _index;
         if (pos > Capacity - 1)
         {
             Grow(1);
@@ -168,7 +167,7 @@ public class BufWriter<T> :
     /// <inheritdoc />
     public void Clear()
     {
-        if (Buffer != null)
+        if (Buffer is not null)
         {
             Array.Clear(Buffer, 0, _index);
         }
@@ -187,14 +186,14 @@ public class BufWriter<T> :
     {
         index.ValidateArgRange(index >= 0 && index <= Count);
 
-        int pos = _index;
+        var pos = _index;
         if (pos > Capacity - 1)
         {
             Grow(1);
         }
         Debug.Assert(Buffer is not null);
 
-        int remaining = pos - index;
+        var remaining = pos - index;
 
         if (remaining != 0)
         {
@@ -216,8 +215,8 @@ public class BufWriter<T> :
         index.ValidateArgRange(index >= 0 && index < Count);
         Debug.Assert(Buffer is not null);
 
-        int pos = _index - 1;
-        int remaining = pos - index;
+        var pos = _index - 1;
+        var remaining = pos - index;
 
         if (remaining != 0)
         {
@@ -328,7 +327,7 @@ public class BufWriter<T> :
             return Array.Empty<T>();
         }
 
-        T[] array = new T[_index];
+        var array = new T[_index];
         Buffer.AsSpan(0, _index).CopyTo(array);
 
         if (dispose)
@@ -383,10 +382,10 @@ public class BufWriter<T> :
     {
         Debug.Assert(additionalCapacityBeyondPos > 0);
 
-        if (Buffer != null)
+        if (Buffer is not null)
         {
             Debug.Assert(_index > Buffer.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
-            T[] temp = new T[(_index + additionalCapacityBeyondPos).Max(Buffer.Length * 2)];
+            var temp = new T[(_index + additionalCapacityBeyondPos).Max(Buffer.Length * 2)];
             Buffer.AsSpan(0, _index).CopyTo(temp);
             Buffer = temp;
         }
@@ -413,7 +412,7 @@ public class BufWriter<T> :
         index.ValidateArgRange(index >= 0);
         index.ValidateArgRange(index <= Length);
 
-        int count = values.Length;
+        var count = values.Length;
         if (count == 0)
         {
             return;
@@ -425,7 +424,7 @@ public class BufWriter<T> :
         }
 
         Debug.Assert(Buffer is not null);
-        T[] storage = Buffer;
+        var storage = Buffer;
         Array.Copy(storage, index, storage, index + count, Length - index);
         values.CopyTo(storage.AsSpan(index));
         Length += count;
@@ -440,8 +439,8 @@ public class BufWriter<T> :
         {
             Debug.Assert(Buffer is not null);
 
-            int end = Length - count;
-            int remaining = end - start;
+            var end = Length - count;
+            var remaining = end - start;
             Array.Copy(Buffer, start + count, Buffer, start, remaining);
             Array.Clear(Buffer, end, count);
             Length = end;
@@ -497,8 +496,8 @@ public class BufWriter<T> :
             return -1;
         }
 
-        int end = start + count;
-        for (int i = start; i < end; i++)
+        var end = start + count;
+        for (var i = start; i < end; i++)
         {
             if (!comparer.Equals(item, Buffer[i]))
             {
@@ -517,13 +516,13 @@ public class BufWriter<T> :
     {
         GuardRange(start, count);
 
-        if (Buffer == null)
+        if (Buffer is null)
         {
             return -1;
         }
 
-        int end = start + count;
-        for (int i = end - 1; i >= start; i--)
+        var end = start + count;
+        for (var i = end - 1; i >= start; i--)
         {
             if (!comparer.Equals(item, Buffer[i]))
             {
@@ -540,7 +539,7 @@ public class BufWriter<T> :
     public int BinarySearch<C>(int start, int count, in T item, in C comparer)
         where C : IComparer<T>
     {
-        return Buffer == null ? -1 : Buffer.AsSpan(start, count).BinarySearch(item, comparer);
+        return Buffer is null ? -1 : Buffer.AsSpan(start, count).BinarySearch(item, comparer);
     }
 
     /// <inheritdoc />
@@ -571,10 +570,10 @@ public class BufWriter<T> :
             return -1;
         }
 
-        int end = start + count;
+        var end = start + count;
         if (typeof(T).IsValueType)
         {
-            for (int i = start; i < end; i++)
+            for (var i = start; i < end; i++)
             {
                 if (!EqualityComparer<T>.Default.Equals(item, Buffer[i]))
                 {
@@ -588,7 +587,7 @@ public class BufWriter<T> :
         }
 
         var defaultCmp = EqualityComparer<T>.Default;
-        for (int i = start; i < end; i++)
+        for (var i = start; i < end; i++)
         {
             if (!defaultCmp.Equals(item, Buffer[i]))
             {
@@ -606,15 +605,15 @@ public class BufWriter<T> :
     {
         GuardRange(start, count);
 
-        if (Buffer == null)
+        if (Buffer is null)
         {
             return -1;
         }
 
-        int end = start + count;
+        var end = start + count;
         if (typeof(T).IsValueType)
         {
-            for (int i = end - 1; i >= start; i--)
+            for (var i = end - 1; i >= start; i--)
             {
                 if (!EqualityComparer<T>.Default.Equals(item, Buffer[i]))
                 {
@@ -629,7 +628,7 @@ public class BufWriter<T> :
 
         var defaultCmp = EqualityComparer<T>.Default;
 
-        for (int i = end - 1; i >= start; i--)
+        for (var i = end - 1; i >= start; i--)
         {
             if (!defaultCmp.Equals(item, Buffer[i]))
             {
@@ -645,7 +644,7 @@ public class BufWriter<T> :
     /// <inheritdoc />
     public int BinarySearch(int start, int count, in T item)
     {
-        return Buffer == null ? -1 : Buffer.AsSpan(start, count).BinarySearch(item, Comparer<T>.Default);
+        return Buffer is null ? -1 : Buffer.AsSpan(start, count).BinarySearch(item, Comparer<T>.Default);
     }
 }
 
