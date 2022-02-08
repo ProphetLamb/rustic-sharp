@@ -9,14 +9,14 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Assembly Info">
-    <AssemblyName>Rustic.Common</AssemblyName>
-    <AssemblyTitle>Rustic.Common</AssemblyTitle>
+    <AssemblyName>Rustic.Functional</AssemblyName>
+    <AssemblyTitle>Rustic.Functional</AssemblyTitle>
     <AssemblyVersion>0.4.1</AssemblyVersion>
   </PropertyGroup>
 
   <PropertyGroup Label="Nuget Package Info">
-    <PackageId>Rustic.Common</PackageId>
-    <Title>Rustic.Common</Title>
+    <PackageId>Rustic.Functional</PackageId>
+    <Title>Rustic.Functional</Title>
     <Authors>ProphetLamb</Authors>
     <Owners>ProhetLamb</Owners>
     <Version>0.4.1</Version>
@@ -62,6 +62,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Rustic.Attributes\Rustic.Attributes.csproj" />
+    <ProjectReference Include="..\Rustic.Common\Rustic.Common.csproj" />
   </ItemGroup>
 
 </Project>

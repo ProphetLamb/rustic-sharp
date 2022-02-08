@@ -7,8 +7,6 @@ using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
-using Rustic.Memory.IO;
-
 namespace Rustic.Memory;
 
 /// <summary>Partially inlined immutable collection of function parameters.</summary>

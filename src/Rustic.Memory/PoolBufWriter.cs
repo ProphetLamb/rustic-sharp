@@ -2,7 +2,7 @@
 using System.Buffers;
 using System.Diagnostics;
 
-namespace Rustic.Memory.IO;
+namespace Rustic.Memory;
 
 /// <summary>
 ///     Reusable <see cref="IBufferWriter{T}"/> intended for use as a thread-static singleton.

@@ -54,6 +54,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Rustic.Common\Rustic.Common.csproj" />
+    <ProjectReference Include="..\Rustic.Functional\Rustic.Functional.csproj" />
   </ItemGroup>
 
 </Project>

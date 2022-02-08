@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 
-namespace Rustic.Memory.Vector;
+namespace Rustic.Memory;
 
 /// <summary>Represents a strongly typed vector of object that can be accessed by ref. Provides a similar interface as <see cref="List{T}"/>.</summary>
 /// <typeparam name="T">The type of items of the vector.</typeparam>

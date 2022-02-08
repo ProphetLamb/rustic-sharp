@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Rustic.DataEnumGenerator;
 
-internal readonly partial struct GeneratorInfo
+internal readonly partial struct GenInfo
 {
     public readonly NamespaceDeclarationSyntax Ns;
     public readonly ImmutableArray<BaseTypeDeclarationSyntax> Nesting;
@@ -19,7 +19,7 @@ internal readonly partial struct GeneratorInfo
     public readonly string EnumValueName;
     public readonly string EnumExtensionsName;
 
-    public GeneratorInfo(NamespaceDeclarationSyntax ns, ImmutableArray<BaseTypeDeclarationSyntax> nesting,
+    public GenInfo(NamespaceDeclarationSyntax ns, ImmutableArray<BaseTypeDeclarationSyntax> nesting,
         EnumDeclarationSyntax enumDecl, ImmutableArray<EnumDeclInfo> members)
     {
         Ns = ns;
@@ -56,7 +56,7 @@ namespace Rustic.Attributes
 }
 #nullable restore";
 
-    public static void Generate(ref SourceTextBuilder builder, in GeneratorInfo info)
+    public static void Generate(ref SrcBuilder builder, in GenInfo info)
     {
         builder.AppendLine("#nullable enable");
         builder.AppendLine("using System;");
@@ -68,7 +68,7 @@ namespace Rustic.Attributes
         builder.AppendLine();
         builder.AppendLine($"namespace {info.Namespace}");
 
-        builder.AppendLine('{'); builder.Indent();
+        builder.BlockStart();
 
         EnumExtensionsClass.Generate(ref builder, in info);
 
@@ -79,7 +79,7 @@ namespace Rustic.Attributes
             EnumValueStruct.Generate(ref builder, in info);
         }
 
-        builder.Outdent(); builder.AppendLine('}');
+        builder.BlockEnd();
         builder.AppendLine("#nullable restore");
     }
 }

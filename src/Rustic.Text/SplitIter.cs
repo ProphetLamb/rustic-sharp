@@ -4,7 +4,6 @@ using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 
 using Rustic.Memory;
-using Rustic.Memory.IO;
 
 namespace Rustic.Text;
 

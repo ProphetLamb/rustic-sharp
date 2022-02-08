@@ -2,27 +2,27 @@ namespace Rustic.DataEnumGenerator;
 
 internal static class EnumValueStruct
 {
-    public static void Generate(ref SourceTextBuilder builder, in GeneratorInfo info)
+    public static void Generate(ref SrcBuilder builder, in GenInfo info)
     {
         builder.AppendLine("[Serializable]");
         builder.AppendLine("[StructLayout(LayoutKind.Explicit)]");
         builder.AppendLine($"{info.Modifiers} readonly struct {info.EnumValueName}");
-        builder.AppendLine('{'); builder.Indent();
+        builder.BlockStart();
 
-        builder.AppendDoubleLine("#region Fields");
+        builder.Region("Fields");
         Fields(ref builder, in info);
-        builder.AppendDoubleLine("#endregion Fields");
+        builder.EndRegion("Fields");
 
-        builder.AppendDoubleLine("#region Constructor");
+        builder.Region("Constructor");
         Ctor(ref builder, in info);
         SerCtor(ref builder, in info);
         foreach (var e in info.Members)
         {
             Factory(ref builder, in info, in e);
         }
-        builder.AppendDoubleLine("#endregion Constructor");
+        builder.EndRegion("Constructor");
 
-        builder.AppendDoubleLine("#region Members");
+        builder.Region("Members");
         foreach (var e in info.Members)
         {
             IsEnum(ref builder, in info, in e);
@@ -41,27 +41,26 @@ internal static class EnumValueStruct
                 ExpectEnum(ref builder, in info, in e);
             }
         }
-        builder.AppendDoubleLine("#endregion Members");
+        builder.EndRegion("Members");
 
-        builder.AppendDoubleLine("#region IEquatable members");
+        builder.Region("IEquatable members");
         EqualsEnum(ref builder, in info);
         EqualsOther(ref builder, in info);
         EqualsObj(ref builder, in info);
         HashCode(ref builder, in info);
         OperatorEq(ref builder, in info);
         OperatorNeq(ref builder, in info);
-        builder.AppendDoubleLine("#endregion IEquatable members");
+        builder.EndRegion("IEquatable members");
 
-        builder.AppendDoubleLine("#region ISerializable");
+        builder.Region("ISerializable");
         SerGetObjData(ref builder, in info);
-        builder.AppendDoubleLine("#endregion ISerializable");
+        builder.EndRegion("ISerializable");
 
         OperatorEnum(ref builder, in info);
-
-        builder.Outdent(); builder.AppendLine('}');
+        builder.BlockEnd();
     }
 
-    private static void Fields(ref SourceTextBuilder builder, in GeneratorInfo info)
+    private static void Fields(ref SrcBuilder builder, in GenInfo info)
     {
         builder.AppendLine("[FieldOffset(0)]");
         builder.AppendLine($"public readonly {info.EnumName} Value;");
@@ -78,7 +77,7 @@ internal static class EnumValueStruct
         builder.AppendLine();
     }
 
-    private static void Ctor(ref SourceTextBuilder builder, in GeneratorInfo info)
+    private static void Ctor(ref SrcBuilder builder, in GenInfo info)
     {
         // Declaration
         builder.AppendIndent(); builder.Append($"private {info.EnumValueName}(");
@@ -92,21 +91,17 @@ internal static class EnumValueStruct
             }
         }
         builder.Append(')'); builder.AppendLine();
-
-        builder.AppendLine('{'); builder.Indent();
+        builder.BlockStart();
 
         builder.AppendLine("this.Value = value;");
 
         CtorSwitch(ref builder, in info);
-
-        builder.Outdent(); builder.AppendLine('}');
-        builder.AppendLine();
+        builder.BlockEnd();
     }
 
-    private static void CtorSwitch(ref SourceTextBuilder builder, in GeneratorInfo info)
+    private static void CtorSwitch(ref SrcBuilder builder, in GenInfo info)
     {
-        builder.AppendLine("switch (value)");
-        builder.AppendLine('{'); builder.Indent();
+        builder.StartSwitchBlock("value");
 
         // Branches for each DataEnum
         foreach (var e in info.Members)
@@ -118,7 +113,7 @@ internal static class EnumValueStruct
         }
 
         // Default
-        builder.AppendLine("default:"); builder.Indent();
+        builder.CaseStart();
         foreach (var e in info.Members)
         {
             if (e.IsDataEnum)
@@ -126,12 +121,11 @@ internal static class EnumValueStruct
                 builder.AppendLine($"this.{e.NameUnchecked} = default!;");
             }
         }
-        builder.AppendLine("break;"); builder.Outdent();
-
-        builder.Outdent(); builder.AppendLine('}');
+        builder.CaseEnd();
+        builder.BlockEnd();
     }
 
-    private static void CtorSwitchCase(ref SourceTextBuilder builder, in GeneratorInfo info, in EnumDeclInfo current)
+    private static void CtorSwitchCase(ref SrcBuilder builder, in GenInfo info, in EnumDeclInfo current)
     {
         builder.AppendLine($"case {info.EnumName}.{current.Name}:"); builder.Indent();
         foreach (var e in info.Members)
@@ -146,7 +140,7 @@ internal static class EnumValueStruct
         builder.AppendLine("break;"); builder.Outdent();
     }
 
-    private static void Factory(ref SourceTextBuilder builder, in GeneratorInfo info, in EnumDeclInfo current)
+    private static void Factory(ref SrcBuilder builder, in GenInfo info, in EnumDeclInfo current)
     {
         builder.AppendLine("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
         builder.AppendIndent(); builder.Append($"public static {info.EnumValueName} {current.Name}(");
@@ -156,7 +150,7 @@ internal static class EnumValueStruct
         }
         builder.Append(')'); builder.AppendLine();
 
-        builder.AppendLine('{'); builder.Indent();
+        builder.BlockStart();
         builder.AppendIndent(); builder.Append($"return new {info.EnumValueName}({info.EnumName}.{current.Name}");
 
         foreach (var e in info.Members)
@@ -168,180 +162,137 @@ internal static class EnumValueStruct
         }
 
         builder.Append(");"); builder.AppendLine();
-        builder.Outdent(); builder.AppendLine('}');
-        builder.AppendLine();
+        builder.BlockEnd();
     }
 
-    private static void IsEnum(ref SourceTextBuilder builder, in GeneratorInfo info, in EnumDeclInfo current)
+    private static void IsEnum(ref SrcBuilder builder, in GenInfo info, in EnumDeclInfo current)
     {
         builder.AppendLine($"public bool Is{current.Name}");
-        builder.AppendLine('{'); builder.Indent();
+        builder.BlockStart();
 
         builder.AppendLine("get");
-        builder.AppendLine('{'); builder.Indent();
+        builder.BlockStart();
 
-        builder.AppendLine($"return this.Equals({info.EnumName}.{current.Name});");
-
-        builder.Outdent(); builder.AppendLine('}');
-
-        builder.Outdent(); builder.AppendLine('}');
-        builder.AppendLine();
+        builder.Return($"this.Equals({info.EnumName}.{current.Name})");
+        builder.BlockEnd();
+        builder.BlockEnd();
     }
 
-    private static void TryEnum(ref SourceTextBuilder builder, in GeneratorInfo info, in EnumDeclInfo current)
+    private static void TryEnum(ref SrcBuilder builder, in GenInfo info, in EnumDeclInfo current)
     {
         builder.AppendLine($"public bool Try{current.Name}(out {current.TypeName} value)");
-        builder.AppendLine('{'); builder.Indent();
+        builder.BlockStart();
 
-        builder.AppendLine($"if (this.Is{current.Name})");
-        builder.AppendLine('{'); builder.Indent();
-
+        builder.StartIfBlock($"this.Is{current.Name}");
         builder.AppendLine($"value = this.{current.NameUnchecked};");
-        builder.AppendLine("return true;");
-
-        builder.Outdent(); builder.AppendLine('}');
-        builder.AppendLine();
+        builder.Return("true");
+        builder.BlockEnd();
 
         builder.AppendLine("value = default!;");
-        builder.AppendLine("return false;");
-
-        builder.Outdent(); builder.AppendLine('}');
-        builder.AppendLine();
+        builder.Return("false");
+        builder.BlockEnd();
     }
 
-    private static void ExpectEnum(ref SourceTextBuilder builder, in GeneratorInfo info, in EnumDeclInfo current)
+    private static void ExpectEnum(ref SrcBuilder builder, in GenInfo info, in EnumDeclInfo current)
     {
         builder.AppendLine($"public {current.TypeName} Expect{current.Name}(string? message)");
-        builder.AppendLine('{'); builder.Indent();
+        builder.BlockStart();
 
-        builder.AppendLine($"if (this.Is{current.Name})");
-        builder.AppendLine('{'); builder.Indent();
-
-        builder.AppendLine($"return this.{current.NameUnchecked};");
-
-        builder.Outdent(); builder.AppendLine('}');
-        builder.AppendLine();
+        builder.StartIfBlock($"this.Is{current.Name}");
+        builder.Return($"this.{current.NameUnchecked}");
+        builder.BlockEnd();
 
         builder.AppendLine("throw new InvalidOperationException(message);");
-
-        builder.Outdent(); builder.AppendLine('}');
-        builder.AppendLine();
+        builder.BlockEnd();
     }
 
-    private static void EqualsEnum(ref SourceTextBuilder builder, in GeneratorInfo info)
+    private static void EqualsEnum(ref SrcBuilder builder, in GenInfo info)
     {
         builder.AppendLine("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
         builder.AppendLine($"public bool Equals({info.EnumName} other)");
-        builder.AppendLine('{'); builder.Indent();
+        builder.BlockStart();
 
-        builder.AppendLine("return this.Value == other;");
-
-        builder.Outdent(); builder.AppendLine('}');
-        builder.AppendLine();
+        builder.Return("this.Value == other");
+        builder.BlockEnd();
     }
 
-    private static void EqualsOther(ref SourceTextBuilder builder, in GeneratorInfo info)
+    private static void EqualsOther(ref SrcBuilder builder, in GenInfo info)
     {
         builder.AppendLine($"public bool Equals({info.EnumValueName} other)");
-        builder.AppendLine('{'); builder.Indent();
+        builder.BlockStart();
 
-        builder.AppendLine("if (this.Value != other.Value)");
-        builder.AppendLine('{'); builder.Indent();
+        builder.StartIfBlock("this.Value != other.Value");
+        builder.Return("false");
+        builder.BlockEnd();
 
-        builder.AppendLine("return false;");
-
-        builder.Outdent(); builder.AppendLine('}');
-        builder.AppendLine();
-
-        builder.AppendLine("switch (this.Value)");
-        builder.AppendLine('{'); builder.Indent();
+        builder.StartSwitchBlock("this.Value");
 
         foreach (var e in info.Members)
         {
             if (e.IsDataEnum)
             {
-                builder.AppendLine($"case {info.EnumName}.{e.Name}:"); builder.Indent();
-                builder.AppendLine($"return EqualityComparer<{e.TypeName}>.Default.Equals(this.{e.NameUnchecked}, other.{e.NameUnchecked});"); builder.Outdent();
+                builder.CaseStart($"{info.EnumName}.{e.Name}");
+                builder.Return($"EqualityComparer<{e.TypeName}>.Default.Equals(this.{e.NameUnchecked}, other.{e.NameUnchecked})");
+                builder.CaseEnd();
             }
         }
+        builder.BlockEnd();
 
-        builder.Outdent(); builder.AppendLine('}');
-        builder.AppendLine();
-
-        builder.AppendLine("return true;");
-
-        builder.Outdent(); builder.AppendLine('}');
-        builder.AppendLine();
+        builder.Return("true");
+        builder.BlockEnd();
     }
 
-    private static void EqualsObj(ref SourceTextBuilder builder, in GeneratorInfo info)
+    private static void EqualsObj(ref SrcBuilder builder, in GenInfo info)
     {
         builder.AppendLine("public override bool Equals(object? obj)");
-        builder.AppendLine('{'); builder.Indent();
+        builder.BlockStart();
 
-        builder.AppendLine($"if (obj is {info.EnumValueName} other)");
-        builder.AppendLine('{'); builder.Indent();
+        builder.StartIfBlock($"obj is {info.EnumValueName} other");
+        builder.Return("this.Equals(other)");
+        builder.BlockEnd();
 
-        builder.AppendLine("return this.Equals(other);");
+        builder.StartIfBlock($"obj is {info.EnumName} value");
+        builder.Return("this.Equals(value)");
+        builder.BlockEnd();
 
-        builder.Outdent(); builder.AppendLine('}');
-        builder.AppendLine();
-
-        builder.AppendLine($"if (obj is {info.EnumName} value)");
-        builder.AppendLine('{'); builder.Indent();
-
-        builder.AppendLine("return this.Equals(value);");
-
-        builder.Outdent(); builder.AppendLine('}');
-        builder.AppendLine();
-
-        builder.AppendLine("return false;");
-
-        builder.Outdent(); builder.AppendLine('}');
-        builder.AppendLine();
+        builder.Return("false");
+        builder.BlockEnd();
     }
 
-    private static void HashCode(ref SourceTextBuilder builder, in GeneratorInfo info)
+    private static void HashCode(ref SrcBuilder builder, in GenInfo info)
     {
         builder.AppendLine("public override int GetHashCode()");
-        builder.AppendLine('{'); builder.Indent();
+        builder.BlockStart();
 
-        builder.AppendLine("var hash = new HashCode();");
+        builder.AppendLine("HashCode hash = new HashCode();");
         builder.AppendLine("hash.Add(this.Value);");
         builder.AppendLine();
 
-        builder.AppendLine("switch (this.Value)");
-        builder.AppendLine('{'); builder.Indent();
+        builder.StartSwitchBlock("this.Value");
 
         foreach (var e in info.Members)
         {
             if (e.IsDataEnum)
             {
-                builder.AppendLine($"case {info.EnumName}.{e.Name}:"); builder.Indent();
+                builder.CaseStart($"{info.EnumName}.{e.Name}"); ;
                 builder.AppendLine($"hash.Add(this.{e.NameUnchecked});");
-                builder.AppendLine("break;"); builder.Outdent();
+                builder.CaseEnd();
             }
         }
+        builder.BlockEnd();
 
-
-        builder.Outdent(); builder.AppendLine('}');
-        builder.AppendLine();
-
-        builder.AppendLine("return hash.ToHashCode();");
-
-        builder.Outdent(); builder.AppendLine('}');
-        builder.AppendLine();
+        builder.Return("hash.ToHashCode()");
+        builder.BlockEnd();
     }
 
-    private static void SerCtor(ref SourceTextBuilder builder, in GeneratorInfo info)
+    private static void SerCtor(ref SrcBuilder builder, in GenInfo info)
     {
         builder.AppendLine($"private {info.EnumValueName}(SerializationInfo info, StreamingContext context)");
-        builder.AppendLine('{'); builder.Indent();
+        builder.BlockStart();
 
         builder.AppendLine($"this.Value = ({info.EnumName})info.GetValue(\"Value\", typeof({info.EnumName}))!;");
 
-        builder.AppendLine("switch (Value)");
-        builder.AppendLine('{'); builder.Indent();
+        builder.StartSwitchBlock("Value");
 
         foreach (var e in info.Members)
         {
@@ -352,7 +303,7 @@ internal static class EnumValueStruct
         }
 
         // Default
-        builder.AppendLine("default:"); builder.Indent();
+        builder.CaseStart();
         foreach (var e in info.Members)
         {
             if (e.IsDataEnum)
@@ -360,17 +311,14 @@ internal static class EnumValueStruct
                 builder.AppendLine($"this.{e.NameUnchecked} = default!;");
             }
         }
-        builder.AppendLine("break;"); builder.Outdent();
-
-        builder.Outdent(); builder.AppendLine('}');
-
-        builder.Outdent(); builder.AppendLine('}');
-        builder.AppendLine();
+        builder.CaseEnd();
+        builder.BlockEnd();
+        builder.BlockEnd();
     }
 
-    private static void SerCtorSwitchCase(ref SourceTextBuilder builder, in GeneratorInfo info, in EnumDeclInfo current)
+    private static void SerCtorSwitchCase(ref SrcBuilder builder, in GenInfo info, in EnumDeclInfo current)
     {
-        builder.AppendLine($"case {info.EnumName}.{current.Name}:"); builder.Indent();
+        builder.CaseStart($"{info.EnumName}.{current.Name}");
         foreach (var e in info.Members)
         {
             if (e.IsDataEnum && e != current)
@@ -381,68 +329,57 @@ internal static class EnumValueStruct
         builder.AppendLine();
 
         builder.AppendLine($"this.{current.NameUnchecked} = ({current.TypeName})info.GetValue(\"{current.NameUnchecked}\", typeof({current.TypeName}))!;");
-        builder.AppendLine("break;"); builder.Outdent();
+        builder.CaseEnd();
     }
 
-    private static void SerGetObjData(ref SourceTextBuilder builder, in GeneratorInfo info)
+    private static void SerGetObjData(ref SrcBuilder builder, in GenInfo info)
     {
         builder.AppendLine("public void GetObjectData(SerializationInfo info, StreamingContext context)");
-        builder.AppendLine('{'); builder.Indent();
+        builder.BlockStart();
 
         builder.AppendLine($"info.AddValue(\"Value\", this.Value, typeof({info.EnumName}));");
 
-        builder.AppendLine("switch (Value)");
-        builder.AppendLine('{'); builder.Indent();
-
+        builder.StartSwitchBlock("Value");
         foreach (var e in info.Members)
         {
             if (e.IsDataEnum)
             {
-                builder.AppendLine($"case {info.EnumName}.{e.Name}:"); builder.Indent();
+                builder.CaseStart($"{info.EnumName}.{e.Name}");
                 builder.AppendLine($"info.AddValue(\"{e.NameUnchecked}\", this.{e.NameUnchecked}, typeof({e.TypeName}));");
-                builder.AppendLine("break;"); builder.Outdent();
+                builder.CaseEnd();
             }
         }
-
-        builder.Outdent(); builder.AppendLine('}');
-
-        builder.Outdent(); builder.AppendLine('}');
-        builder.AppendLine();
+        builder.BlockEnd();
+        builder.BlockEnd();
     }
 
-    private static void OperatorEq(ref SourceTextBuilder builder, in GeneratorInfo info)
+    private static void OperatorEq(ref SrcBuilder builder, in GenInfo info)
     {
         builder.AppendLine("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
         builder.AppendLine($"public static bool operator ==(in {info.EnumValueName} left, in {info.EnumValueName} right)");
-        builder.AppendLine('{'); builder.Indent();
+        builder.BlockStart();
 
-        builder.AppendLine("return left.Equals(right);");
-
-        builder.Outdent(); builder.AppendLine('}');
-        builder.AppendLine();
+        builder.Return("left.Equals(right)");
+        builder.BlockEnd();
     }
 
-    private static void OperatorNeq(ref SourceTextBuilder builder, in GeneratorInfo info)
+    private static void OperatorNeq(ref SrcBuilder builder, in GenInfo info)
     {
         builder.AppendLine("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
         builder.AppendLine($"public static bool operator !=(in {info.EnumValueName} left, in {info.EnumValueName} right)");
-        builder.AppendLine('{'); builder.Indent();
+        builder.BlockStart();
 
-        builder.AppendLine("return !left.Equals(right);");
-
-        builder.Outdent(); builder.AppendLine('}');
-        builder.AppendLine();
+        builder.Return("!left.Equals(right)");
+        builder.BlockEnd();
     }
 
-    private static void OperatorEnum(ref SourceTextBuilder builder, in GeneratorInfo info)
+    private static void OperatorEnum(ref SrcBuilder builder, in GenInfo info)
     {
         builder.AppendLine("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
         builder.AppendLine($"public static implicit operator {info.EnumName}(in {info.EnumValueName} value)");
-        builder.AppendLine('{'); builder.Indent();
+        builder.BlockStart();
 
-        builder.AppendLine("return value.Value;");
-
-        builder.Outdent(); builder.AppendLine('}');
-        builder.AppendLine();
+        builder.Return("value.Value");
+        builder.BlockEnd();
     }
 }

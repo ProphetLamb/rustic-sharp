@@ -3,7 +3,7 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Rustic.Memory.Vector;
+namespace Rustic.Memory;
 
 /// <summary>
 ///     Represents a strongly typed list of object that can be accessed by ref. Provides a similar interface as <see cref="System.Collections.Generic.List{T}"/>.

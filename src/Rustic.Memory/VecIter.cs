@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 
-namespace Rustic.Memory.Vector;
+namespace Rustic.Memory;
 
 /// <summary>
 ///     Enumerates the elements of a segment of an array.

@@ -24,7 +24,7 @@ public delegate T CtorInvoker<out T>(object[] parameters);
 /// The results are cached. Once a delegate is generated, any subsequent call to generate the same delegate on the same field/property/method will return the previously generated delegate
 /// Note: Since this generates IL, it won't work on AOT platforms such as iOS an Android. But is useful and works very well in editor codes and standalone targets
 /// </summary>
-public static class ILReflection
+public static class ILReflect
 {
     [ThreadStatic] private static ILEmitter? EmitInst;
     [CLSCompliant(false)]

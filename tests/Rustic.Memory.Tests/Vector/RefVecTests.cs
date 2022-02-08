@@ -7,7 +7,7 @@ using FluentAssertions;
 
 using NUnit.Framework;
 
-using Rustic.Memory.Vector;
+using Rustic.Memory;
 
 namespace Rustic.Memory.Tests.Vector;
 

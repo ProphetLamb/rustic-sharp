@@ -6,10 +6,10 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 
+using Rustic.Memory;
 using Rustic.Memory.Common;
-using Rustic.Memory.Vector;
 
-namespace Rustic.Memory.IO;
+namespace Rustic.Memory;
 
 /// <summary>
 ///     Reusable <see cref="IBufferWriter{T}"/> intended for use as a thread-static singleton.

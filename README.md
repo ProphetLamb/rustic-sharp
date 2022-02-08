@@ -30,7 +30,7 @@ dotnet add package Rustic.Memory
 | `readonly ref struct BitVec`   | Partially inlined immutable collection of function parameters.  |
 
 ### Vector
-**Namespace Rustic.Memory.Vector**
+**Namespace Rustic.Memory**
 
 This package mainly contains the list and buffer implementations
 

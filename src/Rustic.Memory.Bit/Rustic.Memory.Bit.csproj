@@ -5,25 +5,24 @@
     <LangVersion>10.0</LangVersion>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <RootNamespace>Rustic</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Label="Assembly Info">
-    <AssemblyName>Rustic.Common.Attributes</AssemblyName>
-    <AssemblyTitle>Rustic.Common.Attributes</AssemblyTitle>
+    <AssemblyName>Rustic.Memory.Bit</AssemblyName>
+    <AssemblyTitle>Rustic.Memory.Bit</AssemblyTitle>
     <AssemblyVersion>0.4.1</AssemblyVersion>
   </PropertyGroup>
 
   <PropertyGroup Label="Nuget Package Info">
-    <PackageId>Rustic.Common.Attributes</PackageId>
-    <Title>Rustic.Common.Attributes</Title>
+    <PackageId>Rustic.Memory.Bit</PackageId>
+    <Title>Rustic.Memory.Bit</Title>
     <Authors>ProphetLamb</Authors>
     <Owners>ProhetLamb</Owners>
     <Version>0.4.1</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Description>Attributes not delivered with the mscorelib.</Description>
-    <PackageTags>Attribute</PackageTags>
+    <Description>Commonly used collection implementation.</Description>
+    <PackageTags>ArrayPool;Ref;Span;Collections</PackageTags>
     <Copyright>Copyright (c) ProphetLamb 2022</Copyright>
     <PackageProjectUrl>https://github.com/ProphetLamb/rustic-sharp</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
@@ -39,8 +38,11 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <DebugType>embedded</DebugType>
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-    <DeterministicSourcePaths Condition="'$(EnableSourceLink)' == ''">false</DeterministicSourcePaths>
   </PropertyGroup>
+
+  <ItemGroup Label="Nuget Pack Source Link">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Include="..\..\.editorconfig" Link=".editorconfig" />
@@ -48,8 +50,12 @@
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
-  <ItemGroup Label="Nuget Pack Source Link">
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+  <ItemGroup Condition="!$(DefineConstants.Contains('NET5_0_OR_GREATER'))">
+    <PackageReference Include="System.Memory" Version="4.5.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rustic.Common\Rustic.Common.csproj" />
   </ItemGroup>
 
 </Project>

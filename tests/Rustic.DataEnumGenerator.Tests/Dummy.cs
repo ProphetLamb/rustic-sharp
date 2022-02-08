@@ -2,6 +2,8 @@ using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 #nullable enable
 namespace Rustic.Attributes
@@ -30,7 +32,7 @@ namespace Rustic.Yee
 
     public static class DummyExtensions
     {
-        public static System.String Name(this Dummy value)
+        public static string Name(this Dummy value)
         {
             switch (value)
             {
@@ -40,25 +42,19 @@ namespace Rustic.Yee
                     return value.ToString();
             }
         }
+
+        public static ReadOnlySpan<Dummy> Values => new Rustic.Yee.Dummy[]
+        {
+            Dummy.Default,
+            Dummy.Minimum,
+            Dummy.Maximum,
+        };
     }
 
     [Serializable]
     [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit)]
     public readonly struct DummyValue : IEquatable<DummyValue>, IEquatable<Dummy>, ISerializable
     {
-        public static ReadOnlySpan<Dummy> Values
-        {
-            get
-            {
-                return new Rustic.Yee.Dummy[]
-                {
-                    Dummy.Default,
-                    Dummy.Minimum,
-                    Dummy.Maximum,
-                };
-            }
-        }
-
         [System.Runtime.InteropServices.FieldOffset(0)]
         public readonly Dummy Value;
 
@@ -283,6 +279,91 @@ namespace Rustic.Yee
         public static implicit operator Dummy(in DummyValue value)
         {
             return value.Value;
+        }
+
+        public sealed class JsonConverter : JsonConverter<DummyValue>
+        {
+            public override bool HandleNull => true;
+
+            public override DummyValue Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            {
+                if (reader.TokenType == JsonTokenType.Null)
+                {
+                    _ = reader.Read();
+                    return default;
+                }
+
+                _ = reader.Read();
+
+                if (reader.TokenType != JsonTokenType.PropertyName)
+                {
+                    throw new JsonException($"Expected PropertyName, actual {reader.TokenType}");
+                }
+
+                var value = reader.GetString();
+
+                _ = reader.Read();
+
+                DummyValue result = default!;
+                if ("Default".Equals(value, StringComparison.OrdinalIgnoreCase))
+                {
+                    result = ReadDefault(ref reader, options);
+                }
+                else if ("Minimum".Equals(value, StringComparison.OrdinalIgnoreCase))
+                {
+                    result = ReadMinimum(ref reader, options);
+                }
+
+                return result;
+            }
+
+            private static DummyValue ReadDefault(ref Utf8JsonReader reader, JsonSerializerOptions options)
+            {
+                if (reader.TokenType != JsonTokenType.Null)
+                {
+                    throw new JsonException($"Expected Null, actual {reader.TokenType}");
+                }
+                _ = reader.Read();
+                return Default();
+            }
+
+            private static DummyValue ReadMinimum(ref Utf8JsonReader reader, JsonSerializerOptions options)
+            {
+                var converter = (JsonConverter<(int, int)>)options.GetConverter(typeof((int, int)));
+                var data = converter.Read(ref reader, typeof((int, int)), options);
+                return Minimum(data);
+            }
+
+            public override void Write(Utf8JsonWriter writer, DummyValue value, JsonSerializerOptions options)
+            {
+                writer.WriteStartObject();
+
+                switch (value.Value)
+                {
+                    case Dummy.Default:
+                        WriteDefault(writer, value, options);
+                        break;
+                    case Dummy.Minimum:
+                        WriteMinimum(writer, value, options);
+                        break;
+                    case Dummy.Maximum:
+                        break;
+                }
+
+                writer.WriteEndObject();
+            }
+
+            private static void WriteDefault(Utf8JsonWriter writer, DummyValue value, JsonSerializerOptions options)
+            {
+                writer.WriteNull("Default");
+            }
+
+            private static void WriteMinimum(Utf8JsonWriter writer, DummyValue value, JsonSerializerOptions options)
+            {
+                writer.WritePropertyName("Minimum");
+                var converter = (JsonConverter<(int, int)>)options.GetConverter(typeof((int, int)));
+                converter.Write(writer, value.MinimumUnchecked, options);
+            }
         }
     }
 }

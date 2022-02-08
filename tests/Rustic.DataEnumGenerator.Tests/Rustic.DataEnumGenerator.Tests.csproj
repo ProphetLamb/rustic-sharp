@@ -25,12 +25,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Rustic.DataEnumGenerator\Rustic.DataEnumGenerator.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\..\src\Rustic.Common\Rustic.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="..\..\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Content Include=".\TestFile.cs.test" CopyToOutputDirectory="Always" />
   </ItemGroup>

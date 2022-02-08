@@ -2,9 +2,9 @@
 
 namespace Rustic.DataEnumGenerator;
 
-internal ref struct SourceTextBuilder
+internal ref struct SrcBuilder
 {
-    public SourceTextBuilder(Span<char> initialBuffer, int indentSize = 4)
+    public SrcBuilder(Span<char> initialBuffer, int indentSize = 4)
     {
         Builder = new StrBuilder(initialBuffer);
         IndentSize = indentSize;
@@ -62,6 +62,24 @@ internal ref struct SourceTextBuilder
         Builder.Append(Environment.NewLine);
     }
 
+    public void NoIndentLine(string text)
+    {
+        Builder.Append(text);
+        Builder.Append(Environment.NewLine);
+    }
+
+    public void NoIndentLine(ReadOnlySpan<char> text)
+    {
+        Builder.Append(text);
+        Builder.Append(Environment.NewLine);
+    }
+
+    public void NoIndentLine(char text)
+    {
+        Builder.Append(text);
+        Builder.Append(Environment.NewLine);
+    }
+
     public void AppendDoubleLine(string text)
     {
         Builder.Append(Environment.NewLine);
@@ -116,4 +134,81 @@ internal ref struct SourceTextBuilder
         IndentLevel = 0;
         return Builder.ToString();
     }
+
+    #region Language specific
+
+    public void BlockStart()
+    {
+        AppendLine('{');
+        Indent();
+    }
+
+    public void BlockEnd()
+    {
+        Outdent();
+        AppendLine('}');
+        AppendLine();
+    }
+
+    public void Return(string? expression = null)
+    {
+        AppendIndent();
+        Builder.Append("return ");
+        Builder.Append(expression);
+        Builder.Append(';');
+        AppendLine();
+    }
+
+    public void StartIfBlock(string condition)
+    {
+        AppendIndent();
+        Builder.Append("if (");
+        Builder.Append(condition);
+        Builder.Append(")");
+        BlockStart();
+    }
+
+    public void StartSwitchBlock(string value)
+    {
+        AppendIndent();
+        Builder.Append("switch (");
+        Builder.Append(value);
+        Builder.Append(")");
+        BlockStart();
+    }
+
+    public void CaseStart(string? constant = null)
+    {
+        AppendIndent();
+        if (constant is null)
+        {
+            Builder.Append("default:");
+        }
+        else
+        {
+            Builder.Append("case ");
+            Builder.Append(constant);
+            Builder.Append(":");
+        }
+        Indent();
+        AppendLine();
+    }
+
+    public void CaseEnd()
+    {
+        Outdent();
+        AppendLine("break;");
+    }
+
+    public void Region(string name)
+    {
+        AppendDoubleLine($"#region {name}");
+    }
+
+    public void EndRegion(string name)
+    {
+        AppendDoubleLine($"#endregion {name}");
+    }
+
+    #endregion Language specific
 }

@@ -33,8 +33,8 @@ dotnet_style_qualification_for_method = false:warning
 dotnet_style_qualification_for_event = false:warning
 
 # Prefered body style
-csharp_style_expression_bodied_methods = false:suggestion
-csharp_style_expression_bodied_constructors = false:warning
+csharp_style_expression_bodied_methods = false:silent
+csharp_style_expression_bodied_constructors = false:silent
 csharp_style_expression_bodied_operators = true:silent
 csharp_style_expression_bodied_properties = true:silent
 csharp_style_expression_bodied_indexers = true:silent
@@ -74,7 +74,7 @@ csharp_style_implicit_object_creation_when_type_is_apparent=true
 # Logic is invalid for structs that self assign, the rule does not account for that.
 dotnet_style_readonly_field = false
 # The rule does not account for fluent builders.
-csharp_style_unused_value_expression_statement_preference=unused_local_variable
+csharp_style_unused_value_expression_statement_preference=unused_local_variable:silent
 # The syntax is not compatible with netstandard2.0 and produces spagetti code.
 csharp_style_prefer_range_operator=false:suggestion
 
@@ -318,7 +318,12 @@ dotnet_diagnostic.S4457.severity = suggestion
 dotnet_diagnostic.SA1600.severity = suggestion
 # Suggest "Partial elements must be documented"
 dotnet_diagnostic.SA1601.severity = suggestion
+# CA1000: Do not declare static members on generic types
 dotnet_diagnostic.CA1000.severity = none
+# Add missing cases to switch expression
+dotnet_diagnostic.IDE0072.severity = silent
+# CA1822: Mark members as static
+dotnet_diagnostic.CA1822.severity = silent
 
 [*.{cs,vb}]
 

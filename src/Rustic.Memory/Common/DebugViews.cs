@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-using Rustic.Memory.IO;
-
 namespace Rustic.Memory.Common;
 
 /// <summary>Proxy class used for displaying a <see cref="IReadOnlyCollection{T}"/> in the debugger.</summary>
@@ -34,7 +32,6 @@ public class IReadOnlyCollectionDebugView<T>
         }
     }
 }
-
 
 internal sealed class PoolBufWriterDebuggerView<T>
 {

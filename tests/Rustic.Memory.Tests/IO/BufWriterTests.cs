@@ -7,8 +7,8 @@ using FluentAssertions;
 
 using NUnit.Framework;
 
+using Rustic.Memory;
 using Rustic.Memory.IO;
-using Rustic.Memory.Vector;
 
 namespace Rustic.Memory.Tests.IO;
 

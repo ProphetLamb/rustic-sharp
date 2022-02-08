@@ -2,50 +2,47 @@ namespace Rustic.DataEnumGenerator;
 
 internal static class EnumExtensionsClass
 {
-    public static void Generate(ref SourceTextBuilder builder, in GeneratorInfo info)
+    public static void Generate(ref SrcBuilder builder, in GenInfo info)
     {
         builder.AppendLine($"{info.Modifiers} static class {info.EnumExtensionsName}");
-        builder.AppendLine('{'); builder.Indent();
+        builder.BlockStart();
 
         Name(ref builder, in info);
         Description(ref builder, in info);
         Values(ref builder, in info);
 
-        builder.Outdent(); builder.AppendLine('}');
+        builder.BlockEnd();
     }
 
-    private static void Name(ref SourceTextBuilder builder, in GeneratorInfo info)
+    private static void Name(ref SrcBuilder builder, in GenInfo info)
     {
         builder.AppendLine($"public static string Name(this {info.EnumName} value)");
-        builder.AppendLine('{'); builder.Indent();
+        builder.BlockStart();
 
-        builder.AppendLine("switch (value)");
-        builder.AppendLine('{'); builder.Indent();
+        builder.StartSwitchBlock("value");
 
         foreach (var e in info.Members)
         {
             builder.AppendLine($"case {info.EnumName}.{e.Name}:");
             builder.Indent();
-            builder.AppendLine($"return nameof({info.EnumName}.{e.Name});");
+            builder.Return($"nameof({info.EnumName}.{e.Name})");
             builder.Outdent();
         }
 
         builder.AppendLine("default:"); builder.Indent();
-        builder.AppendLine("return value.ToString();"); builder.Outdent();
+        builder.Return("value.ToString()"); builder.Outdent();
 
-        builder.Outdent(); builder.AppendLine('}');
+        builder.BlockEnd();
 
-        builder.Outdent(); builder.AppendLine('}');
-        builder.AppendLine();
+        builder.BlockEnd();
     }
 
-    private static void Description(ref SourceTextBuilder builder, in GeneratorInfo info)
+    private static void Description(ref SrcBuilder builder, in GenInfo info)
     {
         builder.AppendLine($"public static string? Description(this {info.EnumName} value)");
-        builder.AppendLine('{'); builder.Indent();
+        builder.BlockStart();
 
-        builder.AppendLine("switch (value)");
-        builder.AppendLine('{'); builder.Indent();
+        builder.StartSwitchBlock("value");
 
         foreach (var e in info.Members)
         {
@@ -53,32 +50,31 @@ internal static class EnumExtensionsClass
             {
                 builder.AppendLine($"case {info.EnumName}.{e.Name}:");
                 builder.Indent();
-                builder.AppendLine($"return \"{e.Description}\";");
+                builder.Return($"\"{e.Description}\"");
                 builder.Outdent();
             }
         }
 
         builder.AppendLine("default:");
         builder.Indent();
-        builder.AppendLine("return null;");
+        builder.Return("null");
         builder.Outdent();
 
-        builder.Outdent(); builder.AppendLine('}');
+        builder.BlockEnd();
 
-        builder.Outdent(); builder.AppendLine('}');
-        builder.AppendLine();
+        builder.BlockEnd();
     }
 
-    private static void Values(ref SourceTextBuilder builder, in GeneratorInfo info)
+    private static void Values(ref SrcBuilder builder, in GenInfo info)
     {
         builder.AppendLine($"public static ReadOnlySpan<{info.EnumName}> Values");
-        builder.AppendLine('{'); builder.Indent();
+        builder.BlockStart();
 
         builder.AppendLine("get");
-        builder.AppendLine('{'); builder.Indent();
+        builder.BlockStart();
 
         builder.AppendLine($"return new {info.EnumName}[]");
-        builder.AppendLine('{'); builder.Indent();
+        builder.BlockStart();
 
         foreach (var e in info.Members)
         {
@@ -87,9 +83,8 @@ internal static class EnumExtensionsClass
 
         builder.Outdent(); builder.AppendLine("};");
 
-        builder.Outdent(); builder.AppendLine('}');
+        builder.BlockEnd();
 
-        builder.Outdent(); builder.AppendLine('}');
-        builder.AppendLine();
+        builder.BlockEnd();
     }
 }

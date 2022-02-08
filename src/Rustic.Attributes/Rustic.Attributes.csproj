@@ -9,21 +9,21 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Assembly Info">
-    <AssemblyName>Rustic.Common</AssemblyName>
-    <AssemblyTitle>Rustic.Common</AssemblyTitle>
+    <AssemblyName>Rustic.Attributes</AssemblyName>
+    <AssemblyTitle>Rustic.Attributes</AssemblyTitle>
     <AssemblyVersion>0.4.1</AssemblyVersion>
   </PropertyGroup>
 
   <PropertyGroup Label="Nuget Package Info">
-    <PackageId>Rustic.Common</PackageId>
-    <Title>Rustic.Common</Title>
+    <PackageId>Rustic.Attributes</PackageId>
+    <Title>Rustic.Attributes</Title>
     <Authors>ProphetLamb</Authors>
     <Owners>ProhetLamb</Owners>
     <Version>0.4.1</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Description>Packages types and functionallity usable across most projects.</Description>
-    <PackageTags>Arithmetic,Logic,Functional,Text</PackageTags>
+    <Description>Attributes not delivered with the mscorelib.</Description>
+    <PackageTags>Attribute</PackageTags>
     <Copyright>Copyright (c) ProphetLamb 2022</Copyright>
     <PackageProjectUrl>https://github.com/ProphetLamb/rustic-sharp</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
@@ -39,6 +39,7 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <DebugType>embedded</DebugType>
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <DeterministicSourcePaths Condition="'$(EnableSourceLink)' == ''">false</DeterministicSourcePaths>
   </PropertyGroup>
 
   <ItemGroup>
@@ -47,21 +48,8 @@
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="System.Reflection.Emit" Version="4.7.0" />
-    <PackageReference Include="System.Text.Json" Version="6.0.1" />
-  </ItemGroup>
-
-  <ItemGroup Condition="!$(DefineConstants.Contains('NET5_0_OR_GREATER'))">
-    <PackageReference Include="System.Memory" Version="4.5.4" />
-  </ItemGroup>
-
   <ItemGroup Label="Nuget Pack Source Link">
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Rustic.Attributes\Rustic.Attributes.csproj" />
   </ItemGroup>
 
 </Project>
