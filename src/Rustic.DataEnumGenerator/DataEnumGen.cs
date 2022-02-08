@@ -17,7 +17,7 @@ public class DataEnumGen : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        context.RegisterPostInitializationOutput(ctx => ctx.AddSource($"{GeneratorInfo.DataEnumSymbol}.g.cs", SourceText.From(GeneratorInfo.DataEnumSource, Encoding.UTF8)));
+        context.RegisterPostInitializationOutput(ctx => ctx.AddSource($"{GenInfo.DataEnumSymbol}.g.cs", SourceText.From(GenInfo.DataEnumSource, Encoding.UTF8)));
 
         var enumDecls = context.SyntaxProvider.CreateSyntaxProvider(
                 static (s, _) => IsEnumDecl(s),
@@ -36,7 +36,7 @@ public class DataEnumGen : IIncrementalGenerator
         return node is EnumDeclarationSyntax;
     }
 
-    private static GeneratorInfo? CollectTreeInfo(GeneratorSyntaxContext context)
+    private static GenInfo? CollectTreeInfo(GeneratorSyntaxContext context)
     {
         if (context.Node is not EnumDeclarationSyntax enumDecl)
         {
@@ -59,7 +59,7 @@ public class DataEnumGen : IIncrementalGenerator
         }
 
         var (nsDecl, nestingDecls) = enumDecl.GetHierarchy<BaseTypeDeclarationSyntax>();
-        return new GeneratorInfo(nsDecl, nestingDecls, enumDecl, members.MoveToImmutable());
+        return new GenInfo(nsDecl, nestingDecls, enumDecl, members.MoveToImmutable());
     }
 
     private static EnumDeclInfo CollectEnumDeclInfo(GeneratorSyntaxContext context, EnumMemberDeclarationSyntax memberDecl)
@@ -85,20 +85,20 @@ public class DataEnumGen : IIncrementalGenerator
 
     private static bool HasFlags(AttributeSyntax s, GeneratorSyntaxContext ctx)
     {
-        return GeneratorInfo.FlagsSymbol.Equals(ctx.SemanticModel.GetTypeInfo(s).Type?.ToDisplayString());
+        return GenInfo.FlagsSymbol.Equals(ctx.SemanticModel.GetTypeInfo(s).Type?.ToDisplayString());
     }
 
     private static bool HasDataType(AttributeSyntax s, GeneratorSyntaxContext ctx)
     {
-        return GeneratorInfo.DataEnumSymbol.Equals(ctx.SemanticModel.GetTypeInfo(s).Type?.ToDisplayString());
+        return GenInfo.DataEnumSymbol.Equals(ctx.SemanticModel.GetTypeInfo(s).Type?.ToDisplayString());
     }
 
     private static bool HasDescription(AttributeSyntax s, GeneratorSyntaxContext ctx)
     {
-        return GeneratorInfo.DescriptionSymbol.Equals(ctx.SemanticModel.GetTypeInfo(s).Type?.ToDisplayString());
+        return GenInfo.DescriptionSymbol.Equals(ctx.SemanticModel.GetTypeInfo(s).Type?.ToDisplayString());
     }
 
-    private static void Generate(Compilation compilation, ImmutableArray<GeneratorInfo> members, SourceProductionContext context)
+    private static void Generate(Compilation compilation, ImmutableArray<GenInfo> members, SourceProductionContext context)
     {
         if (members.IsDefaultOrEmpty)
         {
@@ -107,8 +107,8 @@ public class DataEnumGen : IIncrementalGenerator
 
         foreach (var info in members.Distinct())
         {
-            SourceTextBuilder builder = new(stackalloc char[2048]);
-            GeneratorInfo.Generate(ref builder, in info);
+            SrcBuilder builder = new(stackalloc char[2048]);
+            GenInfo.Generate(ref builder, in info);
             context.AddSource($"{info.EnumValueName}.g.cs", SourceText.From(builder.ToString(), Encoding.UTF8));
         }
     }
