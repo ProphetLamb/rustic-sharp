@@ -115,6 +115,7 @@ public class Vec<T> : IVector<T>
     /// <inheritdoc/>
     T IReadOnlyList<T>.this[int index] => this[index];
 
+#if NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER
     /// <inheritdoc />
     public ref T this[Index index]
     {
@@ -157,6 +158,7 @@ public class Vec<T> : IVector<T>
         range.ValidateArgRange(count >= 0);
         range.ValidateArgRange(start <= Length - count);
     }
+#endif
 
     /// <summary>
     ///     Ensures that the list has a minimum capacity.

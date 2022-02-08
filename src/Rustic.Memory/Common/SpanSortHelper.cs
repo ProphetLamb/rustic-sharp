@@ -125,21 +125,21 @@ public static class SpanSortHelper<T>
                     return;
                 }
 
-                InsertionSort(keys[..partitionSize], comparer);
+                InsertionSort(keys.Slice(0, partitionSize), comparer);
                 return;
             }
 
             if (depthLimit == 0)
             {
-                HeapSort(keys[..partitionSize], comparer);
+                HeapSort(keys.Slice(0, partitionSize), comparer);
                 return;
             }
             depthLimit--;
 
-            var p = PickPivotAndPartition(keys[..partitionSize], comparer);
+            var p = PickPivotAndPartition(keys.Slice(0, partitionSize), comparer);
 
             // Note we've already partitioned around the pivot and do not have to move the pivot again.
-            IntroSort(keys[(p + 1)..partitionSize], depthLimit, comparer);
+            IntroSort(keys.Slice(p + 1, partitionSize), depthLimit, comparer);
             partitionSize = p;
         }
     }
@@ -344,21 +344,21 @@ internal static class SpanSortHelper<K, V>
                     return;
                 }
 
-                InsertionSort(keys[..partitionSize], values[..partitionSize], comparer);
+                InsertionSort(keys.Slice(0, partitionSize), values.Slice(0, partitionSize), comparer);
                 return;
             }
 
             if (depthLimit == 0)
             {
-                HeapSort(keys[..partitionSize], values[..partitionSize], comparer);
+                HeapSort(keys.Slice(0, partitionSize), values.Slice(0, partitionSize), comparer);
                 return;
             }
             depthLimit--;
 
-            var p = PickPivotAndPartition(keys[..partitionSize], values[..partitionSize], comparer);
+            var p = PickPivotAndPartition(keys.Slice(0, partitionSize), values.Slice(0, partitionSize), comparer);
 
             // Note we've already partitioned around the pivot and do not have to move the pivot again.
-            IntroSort(keys[(p + 1)..partitionSize], values[(p + 1)..partitionSize], depthLimit, comparer);
+            IntroSort(keys.Slice(p + 1, partitionSize), values.Slice(p + 1, partitionSize), depthLimit, comparer);
             partitionSize = p;
         }
     }

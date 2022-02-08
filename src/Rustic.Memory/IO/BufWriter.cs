@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 
+using Rustic.Memory.Common;
 using Rustic.Memory.Vector;
 
 namespace Rustic.Memory.IO;
@@ -109,11 +110,13 @@ public class BufWriter<T> :
 
     ref readonly T IReadOnlyVector<T>.this[int index] => ref this[index];
 
+#if NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER
     /// <inheritdoc />
     public ref T this[Index index] => ref this[index.GetOffset(Length)];
 
     /// <inheritdoc />
     ref readonly T IReadOnlyVector<T>.this[Index index] => ref this[index];
+#endif
 
     /// <inheritdoc />
     T IList<T>.this[int index] { get => this[index]; set => this[index] = value; }
@@ -292,10 +295,10 @@ public class BufWriter<T> :
     {
         if (Buffer is null)
         {
-            return ArraySegment<T>.Empty;
+            return default;
         }
 
-        ArraySegment<T> segment = new(Buffer!, 0, _index);
+        ArraySegment<T> segment = new(Buffer, 0, _index);
 
         Reset();
 
@@ -479,9 +482,20 @@ public class BufWriter<T> :
         count.ValidateArgRange(start <= Length - count);
     }
 
+    public ReadOnlySpan<T> AsSpan()
+    {
+        return new(Buffer);
+    }
+
+    public ReadOnlySpan<T> AsSpan(int start)
+    {
+        return new(Buffer, start, _index - start);
+    }
+
     /// <inheritdoc />
     public ReadOnlySpan<T> AsSpan(int start, int length)
     {
+        length.ValidateArgRange(length >= 0 && length < Count);
         return new(Buffer, start, length);
     }
 
@@ -645,29 +659,5 @@ public class BufWriter<T> :
     public int BinarySearch(int start, int count, in T item)
     {
         return Buffer is null ? -1 : Buffer.AsSpan(start, count).BinarySearch(item, Comparer<T>.Default);
-    }
-}
-
-internal sealed class PoolBufWriterDebuggerView<T>
-{
-    private readonly WeakReference<BufWriter<T>> _ref;
-
-    public PoolBufWriterDebuggerView(BufWriter<T> writer)
-    {
-        _ref = new WeakReference<BufWriter<T>>(writer);
-    }
-
-    [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-    public T[] Items
-    {
-        get
-        {
-            if (_ref.TryGetTarget(out var writer) && !writer.RawStorage.IsEmpty)
-            {
-                var span = writer.RawStorage[..writer.Length];
-                return span.ToArray();
-            }
-            return Array.Empty<T>();
-        }
     }
 }

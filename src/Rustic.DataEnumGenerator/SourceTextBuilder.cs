@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Text;
 
 namespace Rustic.DataEnumGenerator;
 
-public ref struct SourceTextBuilder
+internal ref struct SourceTextBuilder
 {
     public SourceTextBuilder(Span<char> initialBuffer, int indentSize = 4)
     {

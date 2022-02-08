@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics.Contracts;
-using System.Text;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -10,7 +7,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Rustic.DataEnumGenerator.Extensions;
 
-public static class SyntaxExtensions
+internal static class SyntaxExtensions
 {
     public static AttributeSyntax? FindAttribute(this MemberDeclarationSyntax member, GeneratorSyntaxContext context, Func<AttributeSyntax, GeneratorSyntaxContext, bool> selector)
     {
@@ -49,7 +46,7 @@ public static class SyntaxExtensions
     {
         var nesting = ImmutableArray.CreateBuilder<P>(16);
         SyntaxNode? p = node;
-        while ((p = p.Parent) is not null)
+        while ((p = p?.Parent) is not null)
         {
             switch (p)
             {

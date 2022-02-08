@@ -13,19 +13,21 @@ public static class LocalRandom
     public static Random Shared => SharedInstance ??= new();
 
     /// <summary>Chooses a element from the collection using the random.</summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
     public static ref readonly T ChooseFrom<T>(this Random random, ReadOnlySpan<T> collection)
     {
         return ref collection[random.Next(0, collection.Length)];
     }
 
     /// <summary>Chooses a element from the collection using the random.</summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
     public static T ChooseFrom<T>(this Random random, IReadOnlyList<T> collection)
     {
         return collection[random.Next(0, collection.Count)];
     }
 
     /// <summary>Posix portable file name characters.</summary>
-    public static ReadOnlySpan<char> PosixPortable => "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz_-.";
+    public static ReadOnlySpan<char> PosixPortable => "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz_-.".AsSpan();
 
     /// <summary>Returns a random string of a specific length, with characters exclusively from an alphabet.</summary>
     public static string GetString(this Random random, ReadOnlySpan<char> alphabet, int length)
@@ -40,16 +42,8 @@ public static class LocalRandom
     }
 
     /// <summary>Chooses a number of elements from the collection.</summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
     public static IEnumerable<T> ChooseMany<T>(this Random random, IReadOnlyList<T> collection, int number)
-    {
-        for (int i = 0; i < number; i++)
-        {
-            yield return random.ChooseFrom(collection);
-        }
-    }
-
-    /// <summary>Chooses a number of elements from the collection.</summary>
-    public static IEnumerable<T> ChooseMany<T>(this Random random, ReadOnlySpan<T> collection, int number)
     {
         for (int i = 0; i < number; i++)
         {

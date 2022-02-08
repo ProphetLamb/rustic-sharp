@@ -12,7 +12,7 @@ namespace Rustic.DataEnumGenerator;
 ///     This class represents a mutable string. Initially allocated in the stack, resorts to the <see cref="ArrayPool{T}.Shared"/> when growing.
 /// </summary>
 [DebuggerDisplay("{GetDebuggerDisplay(),nq}")]
-public ref struct StrBuilder
+internal ref struct StrBuilder
 {
     private char[]? _arrayToReturnToPool;
     private Span<char> _chars;
@@ -355,7 +355,6 @@ public ref struct StrBuilder
     /// </summary>
     /// <param name="value">The pointer to the first character to append.</param>
     /// <param name="length">The number of characters after the <paramref name="value"/> pointer.</param>
-    [CLSCompliant(false)]
     public unsafe void Append(char* value, int length)
     {
         if (value == (char*)0 || length == 0)

@@ -21,21 +21,21 @@ namespace Rustic.Yee
     public enum Dummy : byte
     {
         Default = 0,
-        [Rustic.Attributes.DataEnum(typeof((int, int)))]
-        [System.ComponentModel.Description("Descr")]
+        [Attributes.DataEnum(typeof((int, int)))]
+        [Description("Descr")]
         Minimum = 1,
-        [Rustic.Attributes.DataEnum(typeof((long, long)))]
+        [Attributes.DataEnum(typeof((long, long)))]
         Maximum = 2,
     }
 
     public static class DummyExtensions
     {
-        public static System.String Name(this Rustic.Yee.Dummy value)
+        public static System.String Name(this Dummy value)
         {
             switch (value)
             {
-                case Rustic.Yee.Dummy.Default:
-                    return nameof(Rustic.Yee.Dummy.Default);
+                case Dummy.Default:
+                    return nameof(Dummy.Default);
                 default:
                     return value.ToString();
             }
@@ -44,94 +44,94 @@ namespace Rustic.Yee
 
     [Serializable]
     [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit)]
-    public readonly struct DummyValue : System.IEquatable<DummyValue>, System.IEquatable<Rustic.Yee.Dummy>, ISerializable
+    public readonly struct DummyValue : IEquatable<DummyValue>, IEquatable<Dummy>, ISerializable
     {
-        public static System.ReadOnlySpan<Rustic.Yee.Dummy> Values
+        public static ReadOnlySpan<Dummy> Values
         {
             get
             {
                 return new Rustic.Yee.Dummy[]
                 {
-                    Rustic.Yee.Dummy.Default,
-                    Rustic.Yee.Dummy.Minimum,
-                    Rustic.Yee.Dummy.Maximum,
+                    Dummy.Default,
+                    Dummy.Minimum,
+                    Dummy.Maximum,
                 };
             }
         }
 
         [System.Runtime.InteropServices.FieldOffset(0)]
-        public readonly Rustic.Yee.Dummy Value;
+        public readonly Dummy Value;
 
-        [System.Runtime.InteropServices.FieldOffset(sizeof(Rustic.Yee.Dummy))]
+        [System.Runtime.InteropServices.FieldOffset(sizeof(Dummy))]
         public readonly (int, int) MinimumUnchecked;
 
-        [System.Runtime.InteropServices.FieldOffset(sizeof(Rustic.Yee.Dummy))]
+        [System.Runtime.InteropServices.FieldOffset(sizeof(Dummy))]
         public readonly (long, long) MaximumUnchecked;
 
         #region Constructor
 
-        private DummyValue(Rustic.Yee.Dummy value, (int, int) minimum, (long, long) maximum)
+        private DummyValue(Dummy value, (int, int) minimum, (long, long) maximum)
         {
-            this.Value = value;
+            Value = value;
             switch (value)
             {
-                case Rustic.Yee.Dummy.Minimum:
-                    this.MaximumUnchecked = maximum;
+                case Dummy.Minimum:
+                    MaximumUnchecked = maximum;
 
-                    this.MinimumUnchecked = minimum;
+                    MinimumUnchecked = minimum;
                     break;
-                case Rustic.Yee.Dummy.Maximum:
-                    this.MinimumUnchecked = minimum;
+                case Dummy.Maximum:
+                    MinimumUnchecked = minimum;
 
-                    this.MaximumUnchecked = maximum;
+                    MaximumUnchecked = maximum;
                     break;
                 default:
-                    this.MinimumUnchecked = default!;
-                    this.MaximumUnchecked = default!;
+                    MinimumUnchecked = default!;
+                    MaximumUnchecked = default!;
                     break;
             }
         }
 
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DummyValue Default()
         {
-            return new DummyValue(Rustic.Yee.Dummy.Default, default!, default!);
+            return new DummyValue(Dummy.Default, default!, default!);
         }
 
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DummyValue Minimum((int, int) value)
         {
-            return new DummyValue(Rustic.Yee.Dummy.Minimum, value, default!);
+            return new DummyValue(Dummy.Minimum, value, default!);
         }
 
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DummyValue Maximum((long, long) value)
         {
-            return new DummyValue(Rustic.Yee.Dummy.Maximum, default!, value);
+            return new DummyValue(Dummy.Maximum, default!, value);
         }
 
         #endregion Constructor
 
         public bool IsDefault
         {
-            get { return this.Equals(Rustic.Yee.Dummy.Default); }
+            get { return Equals(Dummy.Default); }
         }
 
         public bool IsMinimum
         {
-            get { return this.Equals(Rustic.Yee.Dummy.Minimum); }
+            get { return Equals(Dummy.Minimum); }
         }
 
         public bool IsMaximum
         {
-            get { return this.Equals(Rustic.Yee.Dummy.Maximum); }
+            get { return Equals(Dummy.Maximum); }
         }
 
         public bool TryMinimum(out (int, int) value)
         {
-            if (this.IsMinimum)
+            if (IsMinimum)
             {
-                value = this.MinimumUnchecked;
+                value = MinimumUnchecked;
                 return true;
             }
 
@@ -141,9 +141,9 @@ namespace Rustic.Yee
 
         public bool TryMaximum(out (long, long) value)
         {
-            if (this.IsMaximum)
+            if (IsMaximum)
             {
-                value = this.MaximumUnchecked;
+                value = MaximumUnchecked;
                 return true;
             }
 
@@ -153,46 +153,46 @@ namespace Rustic.Yee
 
         public (long, long) ExpectMinimum(string? message)
         {
-            if (this.IsMinimum)
+            if (IsMinimum)
             {
                 return MinimumUnchecked;
             }
 
-            throw new System.InvalidOperationException(message);
+            throw new InvalidOperationException(message);
         }
 
         public (long, long) ExpectMaximum(string? message)
         {
-            if (this.IsMaximum)
+            if (IsMaximum)
             {
                 return MaximumUnchecked;
             }
 
-            throw new System.InvalidOperationException(message);
+            throw new InvalidOperationException(message);
         }
 
 
         #region IEquatable members
 
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        public bool Equals(Rustic.Yee.Dummy other)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Equals(Dummy other)
         {
-            return this.Value == other;
+            return Value == other;
         }
 
         public bool Equals(DummyValue other)
         {
-            if (this.Value != other.Value)
+            if (Value != other.Value)
             {
                 return false;
             }
 
-            switch (this.Value)
+            switch (Value)
             {
-                case Rustic.Yee.Dummy.Minimum:
-                    return System.Collections.Generic.EqualityComparer<(int, int)>.Default.Equals(this.MinimumUnchecked, other.MinimumUnchecked);
-                case Rustic.Yee.Dummy.Maximum:
-                    return System.Collections.Generic.EqualityComparer<(long, long)>.Default.Equals(this.MaximumUnchecked, other.MaximumUnchecked);
+                case Dummy.Minimum:
+                    return System.Collections.Generic.EqualityComparer<(int, int)>.Default.Equals(MinimumUnchecked, other.MinimumUnchecked);
+                case Dummy.Maximum:
+                    return System.Collections.Generic.EqualityComparer<(long, long)>.Default.Equals(MaximumUnchecked, other.MaximumUnchecked);
             }
 
             return true;
@@ -202,11 +202,11 @@ namespace Rustic.Yee
         {
             if (obj is DummyValue other)
             {
-                return this.Equals(other);
+                return Equals(other);
             }
-            if (obj is Rustic.Yee.Dummy value)
+            if (obj is Dummy value)
             {
-                return this.Equals(value);
+                return Equals(value);
             }
 
             return false;
@@ -214,15 +214,15 @@ namespace Rustic.Yee
 
         public override int GetHashCode()
         {
-            System.HashCode hash = new System.HashCode();
-            hash.Add(this.Value);
-            switch (this.Value)
+            HashCode hash = new HashCode();
+            hash.Add(Value);
+            switch (Value)
             {
-                case Rustic.Yee.Dummy.Minimum:
-                    hash.Add(this.MinimumUnchecked);
+                case Dummy.Minimum:
+                    hash.Add(MinimumUnchecked);
                     break;
-                case Rustic.Yee.Dummy.Maximum:
-                    hash.Add(this.MaximumUnchecked);
+                case Dummy.Maximum:
+                    hash.Add(MaximumUnchecked);
                     break;
             }
 
@@ -280,7 +280,7 @@ namespace Rustic.Yee
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator Rustic.Yee.Dummy(in DummyValue value)
+        public static implicit operator Dummy(in DummyValue value)
         {
             return value.Value;
         }

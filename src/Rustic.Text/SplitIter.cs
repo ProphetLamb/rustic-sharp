@@ -30,10 +30,10 @@ public enum SplitOptions : byte
 /// <typeparam name="T">The type of an element of the span.</typeparam>
 public ref struct SplitIter<T>
 {
-    private readonly ReadOnlySpan<T> _source;
-    private readonly TinySpan<T> _separators;
-    private readonly SplitOptions _options;
-    private readonly IEqualityComparer<T>? _comparer;
+    private ReadOnlySpan<T> _source;
+    private TinySpan<T> _separators;
+    private SplitOptions _options;
+    private IEqualityComparer<T>? _comparer;
     private int _index;
     private int _segmentLength;
 

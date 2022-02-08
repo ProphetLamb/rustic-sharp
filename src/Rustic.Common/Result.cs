@@ -3,14 +3,10 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-using Rustic.Extensions;
-
-using static Rustic.Result;
 using static Rustic.Option;
+using static Rustic.Result;
 
 namespace Rustic;
 
@@ -38,7 +34,7 @@ public static class Result
             return default;
         }
 
-        return Some(Err<T,E>(self.ErrUnchecked()));
+        return Some(Err<T, E>(self.ErrUnchecked()));
     }
 
     public static Result<T, E> Flatten<T, E>(in this Result<Result<T, E>, E> self) => self.TryOk(out var result) ? result : Err<T, E>(self.ErrUnchecked());
@@ -69,12 +65,12 @@ public static class Result
 
         if (hasErr)
         {
-            return Err<T, E>(resErr);
+            return Some(Err<T, E>(resErr));
         }
 
         if (hasOk)
         {
-            return Ok<T, E>(resOk);
+            return Some(Ok<T, E>(resOk));
         }
 
         return default;
@@ -390,6 +386,7 @@ public readonly struct Result<T, E> : IEquatable<Result<T, E>>, ISerializable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T OkOr(Func<T> def) => IsOk ? _ok : def();
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [CLSCompliant(false)]
     public unsafe T OkOr(delegate*<T> def) => IsOk ? _ok : def();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -397,29 +394,36 @@ public readonly struct Result<T, E> : IEquatable<Result<T, E>>, ISerializable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public E ErrOr(Func<E> def) => IsErr ? _err : def();
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [CLSCompliant(false)]
     public unsafe E ErrOr(delegate*<E> def) => IsErr ? _err : def();
 
     public Result<U, E> Map<U>(Func<T, U> map) => IsOk ? Ok<U, E>(map(_ok)) : Err<U, E>(_err);
+    [CLSCompliant(false)]
     public unsafe Result<U, E> Map<U>(delegate*<T, U> map) => IsOk ? Ok<U, E>(map(_ok)) : Err<U, E>(_err);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public U MapOr<U>(Func<T, U> map, U def) => IsOk ? map(_ok) : def;
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [CLSCompliant(false)]
     public unsafe U MapOr<U>(delegate*<T, U> map, U def) => IsOk ? map(_ok) : def;
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public U MapOr<U>(Func<T, U> map, Func<U> def) => IsOk ? map(_ok) : def();
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [CLSCompliant(false)]
     public unsafe U MapOr<U>(delegate*<T, U> map, delegate*<U> def) => IsOk ? map(_ok) : def();
 
     public Result<T, F> MapErr<F>(Func<E, F> map) => IsOk ? Ok<T, F>(_ok) : Err<T, F>(map(_err));
+    [CLSCompliant(false)]
     public unsafe Result<T, F> MapErr<F>(delegate*<E, F> map) => IsOk ? Ok<T, F>(_ok) : Err<T, F>(map(_err));
 
     public Result<U, E> And<U>(Result<U, E> res) => IsOk ? res : Err<U, E>(_err);
     public Result<U, E> And<U>(Func<Result<U, E>> res) => IsOk ? res() : Err<U, E>(_err);
+    [CLSCompliant(false)]
     public unsafe Result<U, E> And<U>(delegate*<Result<U, E>> res) => IsOk ? res() : Err<U, E>(_err);
 
     public Result<T, F> Or<F>(Result<T, F> res) => IsOk ? Ok<T, F>(_ok) : res;
     public Result<T, F> Or<F>(Func<E, Result<T, F>> res) => IsOk ? Ok<T, F>(_ok) : res(_err);
+    [CLSCompliant(false)]
     public unsafe Result<T, F> Or<F>(delegate*<E, Result<T, F>> res) => IsOk ? Ok<T, F>(_ok) : res(_err);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

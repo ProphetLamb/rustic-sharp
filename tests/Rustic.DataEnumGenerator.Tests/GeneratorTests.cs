@@ -40,7 +40,7 @@ public class GeneratorTests
         var trees = outputCompilation.SyntaxTrees;
         Debug.Assert(trees.Count() == TEST_SOURCES_LEN + GEN_SOURCES_LEN); // we have two syntax trees, the original 'user' provided one, and two added by the generator
         var log = outputCompilation.GetDiagnostics();
-        Debug.Assert(!log.Where(d => d.Severity >= DiagnosticSeverity.Error).Any()); // verify the compilation with the added source has no diagnostics
+        Debug.Assert(!log.Any(static (d) => d.Severity >= DiagnosticSeverity.Error)); // verify the compilation with the added source has no diagnostics
 
         // Or we can look at the results directly:
         GeneratorDriverRunResult runResult = driver.GetRunResult();
@@ -64,7 +64,7 @@ public class GeneratorTests
             {
                 MetadataReference.CreateFromFile(typeof(System.String).GetTypeInfo().Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(System.ComponentModel.DescriptionAttribute).GetTypeInfo().Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(System.ReadOnlySpan<char>).GetTypeInfo().Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ReadOnlySpan<char>).GetTypeInfo().Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(System.Collections.Generic.List<char>).GetTypeInfo().Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(System.Runtime.CompilerServices.MethodImplAttribute).GetTypeInfo().Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(System.Runtime.Serialization.ISerializable).GetTypeInfo().Assembly.Location),

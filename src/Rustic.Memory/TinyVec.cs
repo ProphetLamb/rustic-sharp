@@ -189,10 +189,10 @@ public readonly struct TinyVec<T>
         _length = segment.Count;
 
         var i = 0;
-        _arg0 = _length > 0 ? segment[i++] : default!;
-        _arg1 = _length > 1 ? segment[i++] : default!;
-        _arg2 = _length > 2 ? segment[i++] : default!;
-        _arg3 = _length > 3 ? segment[i] : default!;
+        _arg0 = _length > 0 ? segment.Array[i++] : default!;
+        _arg1 = _length > 1 ? segment.Array[i++] : default!;
+        _arg2 = _length > 2 ? segment.Array[i++] : default!;
+        _arg3 = _length > 3 ? segment.Array[i] : default!;
     }
 
     /// <inheritdoc/>
@@ -214,7 +214,7 @@ public readonly struct TinyVec<T>
                 1 => _arg1!,
                 2 => _arg2!,
                 3 => _arg3!,
-                _ => _params[index],
+                _ => _params.Array[index],
             };
         }
     }

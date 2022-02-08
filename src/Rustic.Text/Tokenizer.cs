@@ -266,7 +266,7 @@ public ref struct Tokenizer<T>
             {
                 return false;
             }
-        } while ((matched != expectedSequence.Length) & (++head < _source.Length));
+        } while ((matched != expectedSequence.Length) && (++head < _source.Length));
 
         return matched == expectedSequence.Length;
     }

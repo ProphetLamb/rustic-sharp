@@ -17,7 +17,7 @@ public class Fmt
         IEqualityComparer<char>? comparer = null)
         where D : IFmtDef
     {
-        StrBuilder sb = new(stackalloc char[2048.Min(format.Length + 48 * definition.Count)]);
+        StrBuilder sb = new(stackalloc char[2048.Min(format.Length + (48 * definition.Count))]);
         FmtBuilder<D> fb = new(sb, format, definition, comparer);
         while (fb.Next()) ;
         return fb.ToString();
@@ -77,7 +77,7 @@ public ref struct FmtBuilder<D>
         return _definition.NextTextStart(ref _tokenizer);
     }
 
-    public string ToString()
+    public override string ToString()
     {
         var s = _builder.ToString();
         Dispose();
@@ -136,15 +136,15 @@ public readonly struct IdxDef : IFmtDef
 
     public bool NextTextEnd(ref Tokenizer<char> tokenizer)
     {
-        while ((Prefix.Length == 0 || tokenizer.ReadSequence(Prefix)) && tokenizer.ReadUntil('{') && tokenizer.TryReadNext('{')) ;
+        while ((Prefix.Length == 0 || tokenizer.ReadSequence(Prefix.AsSpan())) && tokenizer.ReadUntil('{') && tokenizer.TryReadNext('{')) ;
 
-        tokenizer.Consume(-Prefix.Length-1);
+        tokenizer.Consume(-Prefix.Length - 1);
         return true;
     }
 
     public bool NextHoleBegin(ref Tokenizer<char> tokenizer)
     {
-        return tokenizer.Consume(Prefix.Length+1);
+        return tokenizer.Consume(Prefix.Length + 1);
     }
 
     public bool NextHoleEnd(ref Tokenizer<char> tokenizer)
@@ -162,7 +162,11 @@ public readonly struct IdxDef : IFmtDef
 
     public bool TryGetValue(in ReadOnlySpan<char> key, out ReadOnlySpan<char> value)
     {
+#if NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER
         if (!Int32.TryParse(key, NumberStyles.Integer, Format, out var idx))
+#else
+        if (!Int32.TryParse(key.ToString(), NumberStyles.Integer, Format, out var idx))
+#endif
         {
             value = ReadOnlySpan<char>.Empty;
             return false;
@@ -175,9 +179,17 @@ public readonly struct IdxDef : IFmtDef
         }
 
         var arg = Arguments[idx];
-        value = Format?.GetFormat(arg?.GetType()) is ICustomFormatter f
-            ? f.Format("{0}", arg, Format)
-            : arg?.ToString();
+        string? s;
+        if (Format?.GetFormat(arg?.GetType()) is ICustomFormatter f)
+        {
+            s = f.Format("{0}", arg, Format);
+        }
+        else
+        {
+            s = arg?.ToString();
+        }
+
+        value = s.AsSpan();
         return true;
     }
 }
@@ -206,15 +218,15 @@ public readonly struct NamedDef : IFmtDef
 
     public bool NextTextEnd(ref Tokenizer<char> tokenizer)
     {
-        while ((Prefix.Length == 0 || tokenizer.ReadSequence(Prefix)) && tokenizer.ReadNext('{') && tokenizer.TryReadNext('{')) ;
+        while ((Prefix.Length == 0 || tokenizer.ReadSequence(Prefix.AsSpan())) && tokenizer.ReadNext('{') && tokenizer.TryReadNext('{')) ;
 
-        tokenizer.Consume(-Prefix.Length-1);
+        tokenizer.Consume(-Prefix.Length - 1);
         return true;
     }
 
     public bool NextHoleBegin(ref Tokenizer<char> tokenizer)
     {
-        return tokenizer.Consume(Prefix.Length+1);
+        return tokenizer.Consume(Prefix.Length + 1);
     }
 
     public bool NextHoleEnd(ref Tokenizer<char> tokenizer)
@@ -238,9 +250,17 @@ public readonly struct NamedDef : IFmtDef
             return false;
         }
 
-        value = Format?.GetFormat(arg?.GetType()) is ICustomFormatter f
-            ? f.Format("{0}", arg, Format)
-            : arg?.ToString();
+        string? s;
+        if (Format?.GetFormat(arg?.GetType()) is ICustomFormatter f)
+        {
+            s = f.Format("{0}", arg, Format);
+        }
+        else
+        {
+            s = arg?.ToString();
+        }
+
+        value = s.AsSpan();
         return true;
     }
 }

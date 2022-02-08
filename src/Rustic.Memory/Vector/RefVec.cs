@@ -75,11 +75,12 @@ public ref struct RefVec<T>
         }
     }
 
+#if NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER
     /// <summary>
     ///     Gets or sets the element at the specified <paramref name="index"/>.
     /// </summary>
     /// <param name="index">The index of the element to get or set.</param>
-    public ref T this[Index index]
+    public ref T this[in Index index]
     {
         [Pure]
         get
@@ -94,7 +95,7 @@ public ref struct RefVec<T>
     ///     Gets a span of elements of elements from the specified <paramref name="range"/>.
     /// </summary>
     /// <param name="range">The range of elements to get or set.</param>
-    public ReadOnlySpan<T> this[Range range]
+    public ReadOnlySpan<T> this[in Range range]
     {
         [Pure]
         get
@@ -112,12 +113,13 @@ public ref struct RefVec<T>
         }
     }
 
-    private void GuardRange(Range range, int start, int count)
+    private void GuardRange(in Range range, int start, int count)
     {
         range.ValidateArgRange(start >= 0);
         range.ValidateArgRange(count >= 0);
         range.ValidateArgRange(start <= Length - count);
     }
+#endif
 
     /// <summary>
     ///     Ensures that the list has a minimum capacity.
@@ -158,9 +160,10 @@ public ref struct RefVec<T>
     /// <summary>
     ///     Returns a span around the contents of the list.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadOnlySpan<T> AsSpan()
     {
-        return _storage[.._pos];
+        return _storage.Slice(0, _pos);
     }
 
     /// <summary>
@@ -170,7 +173,7 @@ public ref struct RefVec<T>
     /// <returns>The span representing the content.</returns>
     public ReadOnlySpan<T> AsSpan(int start)
     {
-        return _storage[start.._pos];
+        return _storage.Slice(start, _pos - start);
     }
 
     /// <summary>
@@ -338,7 +341,7 @@ public ref struct RefVec<T>
         }
 
         var remaining = _pos - index;
-        _storage.Slice(index, remaining).CopyTo(_storage[(index + 1)..]);
+        _storage.Slice(index, remaining).CopyTo(_storage.Slice(index + 1));
         _storage[index] = value;
         _pos += 1;
     }
@@ -356,8 +359,8 @@ public ref struct RefVec<T>
         }
 
         var remaining = _pos - index;
-        _storage.Slice(index, remaining).CopyTo(_storage[(index + count)..]);
-        span.CopyTo(_storage[index..]);
+        _storage.Slice(index, remaining).CopyTo(_storage.Slice(index + count));
+        span.CopyTo(_storage.Slice(index));
         _pos += count;
     }
 
@@ -424,7 +427,7 @@ public ref struct RefVec<T>
     public void RemoveAt(int index)
     {
         var remaining = _pos - index - 1;
-        _storage.Slice(index + 1, remaining).CopyTo(_storage[index..]);
+        _storage.Slice(index + 1, remaining).CopyTo(_storage.Slice(index));
         _storage[--_pos] = default!;
     }
 
@@ -435,7 +438,7 @@ public ref struct RefVec<T>
 
         var end = _pos - count;
         var remaining = end - start;
-        _storage.Slice(start + count, remaining).CopyTo(_storage[start..]);
+        _storage.Slice(start + count, remaining).CopyTo(_storage.Slice(start));
 
         if (_arrayToReturnToPool is not null)
         {
@@ -443,7 +446,7 @@ public ref struct RefVec<T>
         }
         else
         {
-            _storage[end..].Clear();
+            _storage.Slice(end).Clear();
         }
 
         _pos = end;
@@ -457,7 +460,7 @@ public ref struct RefVec<T>
     }
 
     /// <inheritdoc cref="List{T}.Reverse()"/>
-    public void Reverse() => _storage[.._pos].Reverse();
+    public void Reverse() => _storage.Slice(0, _pos).Reverse();
 
     /// <inheritdoc cref="List{T}.Reverse(Int32, Int32)"/>
     public void Reverse(int start, int count)
@@ -469,19 +472,19 @@ public ref struct RefVec<T>
     /// <inheritdoc cref="List{T}.Sort()"/>
     public void Sort()
     {
-        _storage[.._pos].Sort();
+        _storage.Slice(0, _pos).Sort();
     }
 
     /// <inheritdoc cref="List{T}.Sort(Comparison{T})"/>
     public void Sort(Comparison<T> comparison)
     {
-        _storage[.._pos].Sort(comparison);
+        _storage.Slice(0, _pos).Sort(comparison);
     }
 
     /// <inheritdoc cref="List{T}.Sort(IComparer{T})"/>
     public void Sort(IComparer<T> comparer)
     {
-        _storage[.._pos].Sort(comparer);
+        _storage.Slice(0, _pos).Sort(comparer);
     }
 
     /// <inheritdoc cref="List{T}.Sort(Int32, Int32, IComparer{T})"/>
@@ -495,7 +498,7 @@ public ref struct RefVec<T>
     public T[] ToArray()
     {
         var array = new T[_pos];
-        _storage[.._pos].CopyTo(array.AsSpan());
+        AsSpan().CopyTo(array.AsSpan());
         return array;
     }
 
@@ -550,7 +553,7 @@ public ref struct RefVec<T>
         // Make sure to let Rent throw an exception if the caller has a bug and the desired capacity is negative
         var poolArray = ArrayPool<T>.Shared.Rent((_pos + additionalCapacityBeyondPos).Max(_storage.Length * 2));
 
-        _storage[.._pos].CopyTo(poolArray);
+        AsSpan().CopyTo(poolArray);
 
         var toReturn = _arrayToReturnToPool;
         _storage = _arrayToReturnToPool = poolArray;
@@ -664,7 +667,7 @@ public static class RefVecExtensions
             return false;
         }
 
-        return list.RawStorage[..count].SequenceEqual(other.RawStorage[..count]);
+        return list.AsSpan().SequenceEqual(other.AsSpan());
     }
 
     /// <summary>
@@ -676,7 +679,7 @@ public static class RefVecExtensions
     public static int SequenceCompareTo<T>(this RefVec<T> list, RefVec<T> other)
         where T : IComparable<T>
     {
-        return list.RawStorage[..list.Length].SequenceCompareTo(other.RawStorage[..other.Length]);
+        return list.AsSpan().SequenceCompareTo(other.AsSpan());
     }
 
     internal static int SequenceCompareHelper<T>(ref T first, int firstLength, ref T second, int secondLength, IComparer<T> comparer)

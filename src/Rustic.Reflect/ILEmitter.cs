@@ -4,7 +4,8 @@ using System.Reflection.Emit;
 
 namespace Rustic.Reflect;
 
-#pragma warning disable IDE1006, IDE0058
+#pragma warning disable IDE1006, IDE0058, CA1707
+[CLSCompliant(false)]
 public class ILEmitter
 {
     public ILGenerator Gen = null!;
@@ -81,4 +82,4 @@ public class ILEmitter
     public unsafe ILEmitter perform(delegate*<ILEmitter, MemberInfo, void> action, MemberInfo member) { action(this, member); return this; }
     public ILEmitter ifbyref_ldloca_else_ldloc(LocalBuilder local, Type type) { if (type.IsByRef) { ldloca(local); } else { ldloc(local); } return this; }
 }
-#pragma warning restore IDE1006, IDE0058
+#pragma warning restore IDE1006, IDE0058, CA1707

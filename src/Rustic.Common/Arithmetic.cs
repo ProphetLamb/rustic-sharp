@@ -73,7 +73,7 @@ public static class Arithmetic
 
     /// <summary>Negates the <paramref name="value"/>.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static long Negate(in this nint value) => (value ^ -1) + 1;
+    public static long Negate(this nint value) => (value ^ -1) + 1;
 
     /// <summary>Negates the value <paramref name="negate"/>, if the condition <paramref name="value"/> is 1.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -196,7 +196,7 @@ public static class Arithmetic
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Abs(in this int v)
     {
-        var mask = v >> sizeof(int) * 8 - 1;
+        var mask = v >> ((sizeof(int) * 8) - 1);
         return (v + mask) ^ mask;
     }
 
@@ -204,17 +204,17 @@ public static class Arithmetic
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static long Abs(in this long v)
     {
-        var mask = v >> sizeof(long) * 8 - 1;
+        var mask = v >> ((sizeof(long) * 8) - 1);
         return (v + mask) ^ mask;
     }
 
     /// <summary>Computes the unchecked absolute of a value.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static nint Abs(in this nint v)
+    public static nint Abs(this nint v)
     {
         unsafe
         {
-            var mask = v >> sizeof(nint) * 8 - 1;
+            var mask = v >> ((sizeof(nint) * 8) - 1);
             return (v + mask) ^ mask;
         }
     }
@@ -253,7 +253,7 @@ public static class Arithmetic
 
     /// <summary>Computes the maximum of two given positive integers.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static long Max(in this nint x, in nint y)
+    public static long Max(this nint x, nint y)
     {
         Debug.Assert(x.Abs() == x && y.Abs() == y);
         return x - ((x - y) & ((x - y) >> (PtrWidth - 1)));
@@ -261,7 +261,7 @@ public static class Arithmetic
 
     /// <summary>Computes the minimum of two given positive integers.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static long Min(in this nint x, in nint y)
+    public static long Min(this nint x, nint y)
     {
         Debug.Assert(Math.Abs(x) == x && Math.Abs(y) == y);
         return y + ((x - y) & ((x - y) >> (PtrWidth - 1)));
@@ -276,7 +276,7 @@ public static class Arithmetic
     /// <param name="value">The value.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [CLSCompliant(false)]
-    public static bool IsPow2(in uint value) => (value & (value - 1)) == 0 && value != 0 ;
+    public static bool IsPow2(in uint value) => (value & (value - 1)) == 0 && value != 0;
 
     /// <summary>Evaluate whether a given integral value is a power of 2.</summary>
     /// <param name="value">The value.</param>
@@ -292,13 +292,13 @@ public static class Arithmetic
     /// <summary>Evaluate whether a given integral value is a power of 2.</summary>
     /// <param name="value">The value.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool IsPow2(in nint value) => (value & (value - 1)) == 0 && value > 0;
+    public static bool IsPow2(nint value) => (value & (value - 1)) == 0 && value > 0;
 
     /// <summary>Evaluate whether a given integral value is a power of 2.</summary>
     /// <param name="value">The value.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [CLSCompliant(false)]
-    public static bool IsPow2(in nuint value) => (value & (value - 1)) == 0 && value != 0;
+    public static bool IsPow2(nuint value) => (value & (value - 1)) == 0 && value != 0;
 
     /// <summary>Computes the number of decimal digits required to represent the integer value.</summary>
     [CLSCompliant(false)]
@@ -395,6 +395,7 @@ public static class Arithmetic
     }
 
     /// <summary>Returns the storage of the value.</summary>
+    [CLSCompliant(false)]
     public static ulong GetBits(in this double v)
     {
         DFBits union = new();
@@ -403,6 +404,7 @@ public static class Arithmetic
     }
 
     /// <summary>Returns the floating-point number of the storage.</summary>
+    [CLSCompliant(false)]
     public static double FromBits(in ulong b)
     {
         DFBits union = new();
@@ -420,6 +422,7 @@ public static class Arithmetic
     }
 
     /// <summary>Returns the storage of the value.</summary>
+    [CLSCompliant(false)]
     public static uint GetBits(in this float v)
     {
         SFBits union = new();
@@ -428,6 +431,7 @@ public static class Arithmetic
     }
 
     /// <summary>Returns the floating-point number of the storage.</summary>
+    [CLSCompliant(false)]
     public static float FromBits(in uint b)
     {
         SFBits union = new();

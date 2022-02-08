@@ -3,11 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-
-using Rustic.Extensions;
 
 using static Rustic.Option;
 
@@ -16,18 +12,23 @@ namespace Rustic;
 public static class Option
 {
     /// <summary>Wraps the value in a <see cref="Option{T}"/> some.</summary>
+    /// <typeparam name="T"></typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Option<T> Some<T>(in T value) => new(value);
 
     /// <summary>Returns a new <see cref="Option{T}"/> none.</summary>
+    /// <typeparam name="T"></typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Option<T> None<T>() => default;
 
     /// <summary>Flattens a nested <see cref="Option{T}"/>.</summary>
+    /// <typeparam name="T"></typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Option<T> Flatten<T>(this Option<Option<T>> self) => self.TrySome(out var inner) ? inner : default;
 
     /// <summary>Unzips the option of a tuple to a tuple of options.</summary>
+    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="U"></typeparam>
     public static (Option<T>, Option<U>) Unzip<T, U>(in this Option<(T, U)> self)
     {
         if (self.TrySome(out var zipped))
@@ -71,6 +72,7 @@ public static class Option
     }
 
     /// <summary>Awaits invoking the action, returns none if successful; otherwise, returns some exception <typeparamref name="E"/>.</summary>
+    /// <typeparam name="E"></typeparam>
     public static async Task<Option<E>> TryInvoke<E>(this Func<Task> action)
         where E : Exception
     {
@@ -89,7 +91,7 @@ public static class Option
     #endregion TAP
 }
 
-/// <summary>Represents an optional value. Every <see cref="Option{T}"/> is either <see cref="Option.Some{T}"/> or <see cref="Option.None{T}"/>.</summary>
+/// <summary>Represents an optional value. Every <see cref="Option{T}"/> is either <see cref="Some{T}"/> or <see cref="None{T}"/>.</summary>
 /// <typeparam name="T">The type of the value.</typeparam>
 [Serializable]
 [StructLayout(LayoutKind.Explicit)]
@@ -147,34 +149,48 @@ public readonly struct Option<T> : IEquatable<Option<T>>
     public T SomeOr(Func<T> other) => IsNone ? other() : _value;
     /// <summary>Coalesces the option with the fallback value specified.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [CLSCompliant(false)]
     public unsafe T SomeOr(delegate*<T> other) => IsNone ? other() : _value;
 
     /// <summary>If <see cref="IsSome"/> maps the value.</summary>
+    /// <typeparam name="U">The type to map to.</typeparam>
     public Option<U> Map<U>(Func<T, U> map) => IsSome ? Some(map(_value)) : default;
     /// <summary>If <see cref="IsSome"/> maps the value.</summary>
+    /// <typeparam name="U"></typeparam>
+    [CLSCompliant(false)]
     public unsafe Option<U> Map<U>(delegate*<in T, U> map) => IsSome ? Some(map(_value)) : default;
 
     /// <summary>If <see cref="IsSome"/> maps the value; coalesces with the <paramref name="def"/>ault value.</summary>
+    /// <typeparam name="U">The type to map to.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public U MapOr<U>(Func<T, U> map, U def) => IsSome ? map(_value) : def;
     /// <summary>If <see cref="IsSome"/> maps the value; coalesces with the <paramref name="def"/>ault value.</summary>
+    /// <typeparam name="U">The type to map to.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [CLSCompliant(false)]
     public unsafe U MapOr<U>(delegate*<T, U> map, U def) => IsSome ? map(_value) : def;
     /// <summary>If <see cref="IsSome"/> maps the value; coalesces with the <paramref name="def"/>ault value.</summary>
+    /// <typeparam name="U">The type to map to.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public U MapOr<U>(Func<T, U> map, Func<U> def) => IsSome ? map(_value) : def();
     /// <summary>If <see cref="IsSome"/> maps the value; coalesces with the <paramref name="def"/>ault value.</summary>
+    /// <typeparam name="U">The type to map to.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [CLSCompliant(false)]
     public unsafe U MapOr<U>(delegate*<T, U> map, delegate*<U> def) => IsSome ? map(_value) : def();
 
     /// <summary>If <see cref="IsNone"/> returns None; otherwise, returns the <paramref name="other"/> option.</summary>
+    /// <typeparam name="U">The of the other value.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Option<U> And<U>(Option<U> other) => IsSome ? other : default;
     /// <summary>If <see cref="IsNone"/> returns None; otherwise, returns the <paramref name="other"/> option.</summary>
+    /// <typeparam name="U">The of the other value.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Option<U> And<U>(Func<Option<U>> other) => IsSome ? other() : default;
     /// <summary>If <see cref="IsNone"/> returns None; otherwise, returns the <paramref name="other"/> option.</summary>
+    /// <typeparam name="U">The of the other value.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [CLSCompliant(false)]
     public unsafe Option<U> And<U>(delegate*<Option<U>> other) => IsSome ? other() : default;
 
     /// <summary>If <see cref="IsSome"/> returns this; otherwise, returns the <paramref name="other"/> option.</summary>
@@ -185,6 +201,7 @@ public readonly struct Option<T> : IEquatable<Option<T>>
     public Option<T> Or(Func<Option<T>> other) => IsSome ? this : other();
     /// <summary>If <see cref="IsSome"/> returns this; otherwise, returns the <paramref name="other"/> option.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [CLSCompliant(false)]
     public unsafe Option<T> Or(delegate*<Option<T>> other) => IsSome ? this : other();
 
     /// <summary>Returns Some if exactly one of this, and <paramref name="other"/> is Some, otherwise returns None.</summary>
@@ -204,13 +221,20 @@ public readonly struct Option<T> : IEquatable<Option<T>>
     /// <summary>If <see cref="IsSome"/> and the filter applies to the value returns Some; otherwise returns None.</summary>
     public Option<T> Where(Predicate<T> filter) => IsSome && filter(_value) ? this : default;
     /// <summary>If <see cref="IsSome"/> and the filter applies to the value returns Some; otherwise returns None.</summary>
+    [CLSCompliant(false)]
     public unsafe Option<T> Where(delegate*<T, bool> filter) => IsSome && filter(_value) ? this : default;
 
     /// <summary>Zips the option with another; otherwise, returns None.</summary>
+    /// <typeparam name="U"></typeparam>
     public Option<(T, U)> Zip<U>(Option<U> other) => IsSome && other.IsSome ? Some((_value, other._value)) : default;
     /// <summary>Zips the option with another then maps the value; otherwise, returns None.</summary>
+    /// <typeparam name="U"></typeparam>
+    /// <typeparam name="R"></typeparam>
     public Option<R> Zip<U, R>(Option<U> other, Func<T, U, R> map) => Zip(other).TrySome(out var zipped) ? Some(map(zipped.Item1, zipped.Item2)) : default;
     /// <summary>Zips the option with another then maps the value; otherwise, returns None.</summary>
+    /// <typeparam name="U"></typeparam>
+    /// <typeparam name="R"></typeparam>
+    [CLSCompliant(false)]
     public unsafe Option<R> Zip<U, R>(Option<U> other, delegate*<T, U, R> map) => Zip(other).TrySome(out var zipped) ? Some(map(zipped.Item1, zipped.Item2)) : default;
 
     /// <summary>Returns <c>true</c> if Some value is equal to the <paramref name="value"/>; otherwise, <c>false</c>.</summary>

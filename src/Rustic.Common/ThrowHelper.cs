@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 
-using Rustic.Attributes;
+using Microsoft.VisualStudio.Validation;
 
 namespace Rustic;
 

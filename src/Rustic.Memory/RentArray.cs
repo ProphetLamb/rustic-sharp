@@ -6,14 +6,12 @@ using System.Diagnostics;
 namespace Rustic.Memory;
 
 /// <summary>Allows renting a array without necessarily allocating.</summary>
+/// <typeparam name="T"></typeparam>
 /// <remarks>
-/// To be used when tiny arrays of exact size are required by hot API, to reduce load on the GC.
-/// Each thread used a separate array pool from which arrays of continuously increasing size are stored.
-///
-/// Only use <see cref="Rent"/> tiny arrays.
-///
-/// Can grow, but should be avoided where possible because the grow increment is one item.
-///
+/// <para>To be used when tiny arrays of exact size are required by hot API, to reduce load on the GC.
+/// Each thread used a separate array pool from which arrays of continuously increasing size are stored.</para>
+/// <para>Only use <see cref="Rent"/> tiny arrays.</para>
+/// <para>Can grow, but should be avoided where possible because the grow increment is one item.</para>
 /// <code>
 /// using (RentArray&lt;Type&gt; rent = new(2) { typeof(int), typeof(T) })
 /// {
@@ -126,5 +124,5 @@ public struct RentArray<T> : IEnumerable<T>, IDisposable
         }
     }
 
-    public static implicit operator T[](in RentArray<T> self) => self.Array;
+    public static implicit operator T[](RentArray<T> rent) => rent.Array;
 }
