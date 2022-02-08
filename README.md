@@ -92,6 +92,7 @@ In addition to that the package provides the following non-allocating helpers fo
 
 | Source                                                                                                                                                          | License |
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| [.Net Foundation](https://dotnetfoundation.org/)                                                                                                                | `MIT`   |
 | [ValueStringBuilder: a stack-based string-builder](https://andrewlock.net/a-deep-dive-on-stringbuilder-part-6-vaulestringbuilder-a-stack-based-string-builder/) |         |
 | [bithacks](https://graphics.stanford.edu/~seander/bithacks.html)                                                                                                |         |
 | [`Fast.Reflection`](https://github.com/vexe/Fast.Reflection)                                                                                                    | `MIT`   |

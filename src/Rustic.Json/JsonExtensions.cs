@@ -3,22 +3,25 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Rustic.Extensions;
+namespace Rustic.Json;
 
 public static class JsonExtensions
 {
     /// <summary>Configures the <see cref="JsonSerializerOptions"/> for <see cref="Option{T}"/> structures.</summary>
+    /// <typeparam name="T">The type of the Option value.</typeparam>
     public static JsonSerializerOptions ConfigureOptions<T>(this JsonSerializerOptions self)
     {
-        self.Converters.Add(new OptionJsonConverter<T>());
+        self.Converters.Add(new OptionConverter<T>());
         return self;
     }
 
     /// <summary>Configures the <see cref="JsonSerializerOptions"/> for <see cref="Result{T}"/> and <see cref="Result{T,E}"/> structures.</summary>
+    /// <typeparam name="T">The type of the Result.Ok value.</typeparam>
+    /// <typeparam name="E">The type of the Result.Err value.</typeparam>
     public static JsonSerializerOptions ConfigureResult<T, E>(this JsonSerializerOptions self)
     {
-        self.Converters.Add(new ResultJsonConverter<T, E>());
-        self.Converters.Add(new ResultJsonConverter<T>());
+        self.Converters.Add(new ResultConverter<T, E>());
+        self.Converters.Add(new ResultConverter<T>());
         return self;
     }
 
@@ -70,6 +73,7 @@ public static class JsonExtensions
     }
 
     /// <summary>Returns the converter for the type.</summary>
+    /// <typeparam name="T">The type of the Option value.</typeparam>
     public static JsonConverter<T> GetConverter<T>(this JsonSerializerOptions self)
     {
         return (JsonConverter<T>)self.GetConverter(typeof(T));
@@ -83,10 +87,11 @@ public static class JsonExtensions
         {
             ThrowHelper.ThrowJsonException($"Unable to obtain the string key value. The value '{value}' is null or whitespace.");
         }
-        return value;
+        return value!;
     }
 
     /// <summary>Attempts to read from the reader using the converter.</summary>
+    /// <typeparam name="T">The type of the Option value.</typeparam>
     public static bool TryRead<T>(ref this Utf8JsonReader self, JsonConverter<T> converter, JsonSerializerOptions options, [NotNullWhen(true)] out T value)
     {
         if (!converter.CanConvert(typeof(T)))
@@ -111,6 +116,7 @@ public static class JsonExtensions
     }
 
     /// <summary>Attempts to write to the value to the writer using the converter.</summary>
+    /// <typeparam name="T">The type of the Option value.</typeparam>
     public static bool TryWrite<T>(this Utf8JsonWriter self, T value, JsonConverter<T> converter, JsonSerializerOptions options)
     {
         if (!converter.CanConvert(typeof(T)))

@@ -1,28 +1,28 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;netcoreapp3.1;net50;net60</TargetFrameworks>
     <LangVersion>10.0</LangVersion>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <IncludeBuildOutput>false</IncludeBuildOutput>
   </PropertyGroup>
 
   <PropertyGroup Label="Assembly Info">
-    <AssemblyTitle>Rustic.DataEnumGenerator</AssemblyTitle>
+    <AssemblyName>Rustic.Json</AssemblyName>
+    <AssemblyTitle>Rustic.Json</AssemblyTitle>
     <AssemblyVersion>0.4.1</AssemblyVersion>
   </PropertyGroup>
 
   <PropertyGroup Label="Nuget Package Info">
-    <PackageId>Rustic.DataEnumGenerator</PackageId>
-    <Title>Rustic.DataEnumGenerator</Title>
+    <PackageId>Rustic.Json</PackageId>
+    <Title>Rustic.Json</Title>
     <Authors>ProphetLamb</Authors>
     <Owners>ProhetLamb</Owners>
     <Version>0.4.1</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Description>Source generator for `DataEnum`s.</Description>
-    <PackageTags>SourceGenerator,Enum</PackageTags>
+    <Description>Json converters &amp; reader, writer utility functionality.</Description>
+    <PackageTags>Json,Text</PackageTags>
     <Copyright>Copyright (c) ProphetLamb 2022</Copyright>
     <PackageProjectUrl>https://github.com/ProphetLamb/rustic-sharp</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
@@ -38,6 +38,7 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <DebugType>embedded</DebugType>
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <DeterministicSourcePaths Condition="'$(EnableSourceLink)' == ''">false</DeterministicSourcePaths>
   </PropertyGroup>
 
   <ItemGroup>
@@ -46,27 +47,13 @@
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
-  <!-- This ensures the library will be packaged as a source generator when we use `dotnet pack` -->
-  <ItemGroup>
-    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.3">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.1" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.0.1" />
-  </ItemGroup>
-
   <ItemGroup Label="Nuget Pack Source Link">
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+    <PackageReference Include="System.Text.Json" Version="6.0.1" />
   </ItemGroup>
 
-
-  <ItemGroup Condition="!$(DefineConstants.Contains('NET5_0_OR_GREATER'))">
-    <PackageReference Include="System.Memory" Version="4.5.4" />
+  <ItemGroup>
+    <ProjectReference Include="..\Rustic.Common\Rustic.Common.csproj" />
   </ItemGroup>
 
 </Project>
