@@ -439,4 +439,96 @@ public static class Arithmetic
         return union.Value;
     }
 
+
+    /// <summary>
+    /// Rotates the specified value left by the specified number of bits.
+    /// Similar in behavior to the x86 instruction ROL.
+    /// </summary>
+    /// <param name="value">The value to rotate.</param>
+    /// <param name="offset">The number of bits to rotate by.
+    /// Any value outside the range [0..31] is treated as congruent mod 32.</param>
+    /// <returns>The rotated value.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [CLSCompliant(false)]
+    public static uint RotateLeft(in this uint value, in int offset)
+        => (value << offset) | (value >> (32 - offset));
+
+    /// <summary>
+    /// Rotates the specified value left by the specified number of bits.
+    /// Similar in behavior to the x86 instruction ROL.
+    /// </summary>
+    /// <param name="value">The value to rotate.</param>
+    /// <param name="offset">The number of bits to rotate by.
+    /// Any value outside the range [0..63] is treated as congruent mod 64.</param>
+    /// <returns>The rotated value.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [CLSCompliant(false)]
+    public static ulong RotateLeft(in this ulong value, in int offset)
+        => (value << offset) | (value >> (64 - offset));
+
+    /// <summary>
+    /// Rotates the specified value left by the specified number of bits.
+    /// Similar in behavior to the x86 instruction ROL.
+    /// </summary>
+    /// <param name="value">The value to rotate.</param>
+    /// <param name="offset">The number of bits to rotate by.
+    /// Any value outside the range [0..31] is treated as congruent mod 32 on a 32-bit process,
+    /// and any value outside the range [0..63] is treated as congruent mod 64 on a 64-bit process.</param>
+    /// <returns>The rotated value.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [CLSCompliant(false)]
+    public static nuint RotateLeft(this nuint value, in int offset)
+    {
+#if TARGET_64BIT
+            return (nuint)RotateLeft((ulong)value, offset);
+#else
+        return (nuint)RotateLeft((uint)value, offset);
+#endif
+    }
+
+    /// <summary>
+    /// Rotates the specified value right by the specified number of bits.
+    /// Similar in behavior to the x86 instruction ROR.
+    /// </summary>
+    /// <param name="value">The value to rotate.</param>
+    /// <param name="offset">The number of bits to rotate by.
+    /// Any value outside the range [0..31] is treated as congruent mod 32.</param>
+    /// <returns>The rotated value.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [CLSCompliant(false)]
+    public static uint RotateRight(in this uint value, in int offset)
+        => (value >> offset) | (value << (32 - offset));
+
+    /// <summary>
+    /// Rotates the specified value right by the specified number of bits.
+    /// Similar in behavior to the x86 instruction ROR.
+    /// </summary>
+    /// <param name="value">The value to rotate.</param>
+    /// <param name="offset">The number of bits to rotate by.
+    /// Any value outside the range [0..63] is treated as congruent mod 64.</param>
+    /// <returns>The rotated value.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [CLSCompliant(false)]
+    public static ulong RotateRight(in this ulong value, in int offset)
+        => (value >> offset) | (value << (64 - offset));
+
+    /// <summary>
+    /// Rotates the specified value right by the specified number of bits.
+    /// Similar in behavior to the x86 instruction ROR.
+    /// </summary>
+    /// <param name="value">The value to rotate.</param>
+    /// <param name="offset">The number of bits to rotate by.
+    /// Any value outside the range [0..31] is treated as congruent mod 32 on a 32-bit process,
+    /// and any value outside the range [0..63] is treated as congruent mod 64 on a 64-bit process.</param>
+    /// <returns>The rotated value.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [CLSCompliant(false)]
+    public static nuint RotateRight(this nuint value, in int offset)
+    {
+#if TARGET_64BIT
+            return (nuint)RotateRight((ulong)value, offset);
+#else
+        return (nuint)RotateRight((uint)value, offset);
+#endif
+    }
 }
