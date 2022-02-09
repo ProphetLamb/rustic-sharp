@@ -11,7 +11,7 @@
   <PropertyGroup Label="Assembly Info">
     <AssemblyName>Rustic.Source</AssemblyName>
     <AssemblyTitle>Rustic.Source</AssemblyTitle>
-    <AssemblyVersion>0.4.1</AssemblyVersion>
+    <AssemblyVersion>0.5.0</AssemblyVersion>
   </PropertyGroup>
 
   <PropertyGroup Label="Nuget Package Info">
@@ -19,7 +19,7 @@
     <Title>Rustic.Source</Title>
     <Authors>ProphetLamb</Authors>
     <Owners>ProhetLamb</Owners>
-    <Version>0.4.1</Version>
+    <Version>0.5.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <Description>Packages types and functionallity related to extending source generators.</Description>
@@ -34,7 +34,6 @@
 
   <PropertyGroup Label="Nuget Pack Options">
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb;.xml</AllowedOutputExtensionsInPackageBuildOutputFolder>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <DebugType>embedded</DebugType>

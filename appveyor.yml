@@ -26,13 +26,15 @@ configuration:
 before_build:
   - choco install opencover.portable
   - choco install codecov
-  - dotnet restore "src/"
+  - dotnet restore
 
 build_script:
-  - dotnet build "src/" --version-suffix %LABEL%
+  - dotnet build --version-suffix %LABEL%
+  - dotnet build -c:Release --version-suffix %LABEL%
+  - dotnet pack -c:Release --version-suffix %LABEL%
 
 test_script:
-  - dotnet test "src/" --no-build --no-restore --test-adapter-path:. --logger:"Appveyor;LogFilePath=./coverage.opencover.xml" /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+  - dotnet test --no-build --no-restore --test-adapter-path:. --logger:"Appveyor;LogFilePath=./coverage.opencover.xml" /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
   - codecov -f "coverage.opencover.xml"
 
 artifacts:
