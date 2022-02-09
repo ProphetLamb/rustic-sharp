@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -8,6 +9,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
 using NUnit.Framework;
+using NUnit.Framework.Internal;
 
 using Rustic.DataEnumGenerator;
 
@@ -16,6 +18,22 @@ namespace Rustic.Memory.Tests;
 [TestFixture]
 public class GeneratorTests
 {
+    private readonly StreamWriter _writer;
+
+    public GeneratorTests()
+    {
+        _writer = new($"../../../{nameof(GeneratorTests)}.log", true);
+        _writer.AutoFlush = true;
+        Logger = new Logger(nameof(GeneratorTests), InternalTraceLevel.Debug, _writer);
+    }
+
+    ~GeneratorTests()
+    {
+        _writer.Dispose();
+    }
+
+    internal Logger Logger { get; }
+
     [Test]
     public void SimpleGeneratorTest()
     {
@@ -35,12 +53,12 @@ public class GeneratorTests
         // (Note: the generator driver itself is immutable, and all calls return an updated version of the driver that you should use for subsequent calls)
         driver = driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out var outputCompilation, out var diagnostics);
 
+        Logging(outputCompilation, diagnostics);
+
         // We can now assert things about the resulting compilation:
         Debug.Assert(diagnostics.IsEmpty); // there were no diagnostics created by the generators
-        var trees = outputCompilation.SyntaxTrees;
-        Debug.Assert(trees.Count() == TEST_SOURCES_LEN + GEN_SOURCES_LEN); // we have two syntax trees, the original 'user' provided one, and two added by the generator
-        var log = outputCompilation.GetDiagnostics();
-        Debug.Assert(!log.Any(static (d) => d.Severity >= DiagnosticSeverity.Error)); // verify the compilation with the added source has no diagnostics
+        Debug.Assert(outputCompilation.SyntaxTrees.Count() == TEST_SOURCES_LEN + GEN_SOURCES_LEN); // we have two syntax trees, the original 'user' provided one, and two added by the generator
+        Debug.Assert(!outputCompilation.GetDiagnostics().Any(static (d) => d.Severity >= DiagnosticSeverity.Error)); // verify the compilation with the added source has no diagnostics
 
         // Or we can look at the results directly:
         GeneratorDriverRunResult runResult = driver.GetRunResult();
@@ -55,6 +73,25 @@ public class GeneratorTests
         Debug.Assert(generatorResult.Diagnostics.IsEmpty);
         Debug.Assert(generatorResult.GeneratedSources.Length == GEN_SOURCES_LEN);
         Debug.Assert(generatorResult.Exception is null);
+    }
+
+    private void Logging(Compilation comp, ImmutableArray<Diagnostic> diagnostics)
+    {
+
+        foreach (var diag in diagnostics)
+        {
+            Logger.Debug("Initial diagnostics {0}", diag.ToString());
+        }
+
+        foreach (var tree in comp.SyntaxTrees)
+        {
+            Logger.Debug("SyntaxTree\nName=\"{0}\",\nText=\"{1}\"", tree.FilePath, tree.ToString());
+        }
+
+        foreach (var diag in comp.GetDiagnostics())
+        {
+            Logger.Debug("Diagnostics {0}", diag.ToString());
+        }
     }
 
     private static Compilation CreateCompilation(string source)

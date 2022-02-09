@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
-using Rustic.DataEnumGenerator.Extensions;
+using Rustic.Source;
 
 namespace Rustic.DataEnumGenerator;
 
@@ -107,9 +107,9 @@ public class DataEnumGen : IIncrementalGenerator
 
         foreach (var info in members.Distinct())
         {
-            SrcBuilder builder = new(stackalloc char[2048]);
-            GenInfo.Generate(ref builder, in info);
-            context.AddSource($"{info.EnumValueName}.g.cs", SourceText.From(builder.ToString(), Encoding.UTF8));
+            SrcBuilder text = new(2048);
+            GenInfo.Generate(text, in info);
+            context.AddSource($"{info.EnumName}Value.g.cs", SourceText.From(text.ToString(), Encoding.UTF8));
         }
     }
 }
@@ -122,7 +122,6 @@ public readonly struct EnumDeclInfo : IEquatable<EnumDeclInfo>
     public readonly string? Description;
 
     public readonly string Name;
-    public readonly string NameUnchecked;
     public readonly string NameLower;
     public readonly string? TypeName;
 
@@ -133,7 +132,6 @@ public readonly struct EnumDeclInfo : IEquatable<EnumDeclInfo>
         Description = description;
 
         Name = EnumNode.Identifier.Text;
-        NameUnchecked = $"{Name}Unchecked";
         NameLower = Name.ToLower();
         TypeName = TypeNode?.ToString();
     }

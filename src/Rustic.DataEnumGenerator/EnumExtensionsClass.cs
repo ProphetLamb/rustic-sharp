@@ -1,90 +1,70 @@
+using Rustic.Source;
+
 namespace Rustic.DataEnumGenerator;
 
 internal static class EnumExtensionsClass
 {
-    public static void Generate(ref SrcBuilder builder, in GenInfo info)
+    public static void Generate(SrcBuilder text, in GenInfo info)
     {
-        builder.AppendLine($"{info.Modifiers} static class {info.EnumExtensionsName}");
-        builder.BlockStart();
-
-        Name(ref builder, in info);
-        Description(ref builder, in info);
-        Values(ref builder, in info);
-
-        builder.BlockEnd();
-    }
-
-    private static void Name(ref SrcBuilder builder, in GenInfo info)
-    {
-        builder.AppendLine($"public static string Name(this {info.EnumName} value)");
-        builder.BlockStart();
-
-        builder.StartSwitchBlock("value");
-
-        foreach (var e in info.Members)
+        using (text.Decl($"{info.Modifiers} static class {info.EnumName}Extensions"))
         {
-            builder.AppendLine($"case {info.EnumName}.{e.Name}:");
-            builder.Indent();
-            builder.Return($"nameof({info.EnumName}.{e.Name})");
-            builder.Outdent();
+            Name(text, in info);
+            Description(text, in info);
+            Values(text, in info);
         }
-
-        builder.AppendLine("default:"); builder.Indent();
-        builder.Return("value.ToString()"); builder.Outdent();
-
-        builder.BlockEnd();
-
-        builder.BlockEnd();
     }
 
-    private static void Description(ref SrcBuilder builder, in GenInfo info)
+    private static void Name(SrcBuilder text, in GenInfo info)
     {
-        builder.AppendLine($"public static string? Description(this {info.EnumName} value)");
-        builder.BlockStart();
-
-        builder.StartSwitchBlock("value");
-
-        foreach (var e in info.Members)
+        using (text.Decl($"public static string Name(this {info.EnumName} value)"))
         {
-            if (e.Description is not null)
+            text.Switch("value", in info, info.Members,
+                static (ctx, current) => $"{ctx.EnumName}.{current.Name}",
+                static (t, ctx, current) =>
+                {
+                    t.Stmt($"return nameof({ctx.EnumName}.{current.Name});");
+                    return true;
+                },
+                static (t, _) =>
+                {
+                    t.Stmt("return value.ToString();");
+                    return true;
+                });
+        }
+    }
+
+    private static void Description(SrcBuilder text, in GenInfo info)
+    {
+        using (text.Decl($"public static string? Description(this {info.EnumName} value)"))
+        {
+            text.Switch("value", in info, info.Members,
+                static (ctx, current) => current.Description is null ? null : $"{ctx.EnumName}.{current.Name}",
+                static (t, _, current) =>
+                {
+                    t.Stmt($"return \"{current.Description}\";");
+                    return true;
+                },
+                static (t, _) =>
+                {
+                    t.Stmt("return null;");
+                    return true;
+                });
+        }
+    }
+
+    private static void Values(SrcBuilder text, in GenInfo info)
+    {
+        using (text.Decl($"public static ReadOnlySpan<{info.EnumName}> Values"))
+        {
+            text.Stmt("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
+            using (text.Decl("get"))
             {
-                builder.AppendLine($"case {info.EnumName}.{e.Name}:");
-                builder.Indent();
-                builder.Return($"\"{e.Description}\"");
-                builder.Outdent();
+                using var array = text.Coll($"return new {info.EnumName}[] ");
+                foreach (var e in info.Members)
+                {
+                    array.Add($"{info.EnumName}.{e.Name}");
+                }
             }
         }
-
-        builder.AppendLine("default:");
-        builder.Indent();
-        builder.Return("null");
-        builder.Outdent();
-
-        builder.BlockEnd();
-
-        builder.BlockEnd();
-    }
-
-    private static void Values(ref SrcBuilder builder, in GenInfo info)
-    {
-        builder.AppendLine($"public static ReadOnlySpan<{info.EnumName}> Values");
-        builder.BlockStart();
-
-        builder.AppendLine("get");
-        builder.BlockStart();
-
-        builder.AppendLine($"return new {info.EnumName}[]");
-        builder.BlockStart();
-
-        foreach (var e in info.Members)
-        {
-            builder.AppendLine($"{info.EnumName}.{e.Name},");
-        }
-
-        builder.Outdent(); builder.AppendLine("};");
-
-        builder.BlockEnd();
-
-        builder.BlockEnd();
     }
 }

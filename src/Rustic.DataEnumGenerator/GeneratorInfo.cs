@@ -4,20 +4,21 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
+using Rustic.Source;
+
 namespace Rustic.DataEnumGenerator;
 
-internal readonly partial struct GenInfo
+internal readonly struct GenInfo
 {
     public readonly NamespaceDeclarationSyntax Ns;
     public readonly ImmutableArray<BaseTypeDeclarationSyntax> Nesting;
     public readonly EnumDeclarationSyntax EnumDecl;
     public readonly ImmutableArray<EnumDeclInfo> Members;
+    public readonly ImmutableArray<EnumDeclInfo> DataMembers;
 
     public readonly string Namespace;
     public readonly string Modifiers;
     public readonly string EnumName;
-    public readonly string EnumValueName;
-    public readonly string EnumExtensionsName;
 
     public GenInfo(NamespaceDeclarationSyntax ns, ImmutableArray<BaseTypeDeclarationSyntax> nesting,
         EnumDeclarationSyntax enumDecl, ImmutableArray<EnumDeclInfo> members)
@@ -26,11 +27,10 @@ internal readonly partial struct GenInfo
         Nesting = nesting;
         EnumDecl = enumDecl;
         Members = members;
+        DataMembers = members.Where(m => m.IsDataEnum).ToImmutableArray();
         Namespace = Ns.Name.ToString();
         Modifiers = EnumDecl.Modifiers.ToString();
         EnumName = EnumDecl.Identifier.Text;
-        EnumValueName = $"{EnumDecl.Identifier.Text}Value";
-        EnumExtensionsName = $"{EnumDecl.Identifier.Text}Extensions";
     }
 
     public const string FlagsSymbol = "System.FlagsAttribute";
@@ -56,30 +56,29 @@ namespace Rustic.Attributes
 }
 #nullable restore";
 
-    public static void Generate(ref SrcBuilder builder, in GenInfo info)
+    public static void Generate(SrcBuilder text, in GenInfo info)
     {
-        builder.AppendLine("#nullable enable");
-        builder.AppendLine("using System;");
-        builder.AppendLine("using System.ComponentModel;");
-        builder.AppendLine("using System.Collections.Generic;");
-        builder.AppendLine("using System.Runtime.CompilerServices;");
-        builder.AppendLine("using System.Runtime.Serialization;");
-        builder.AppendLine("using System.Runtime.InteropServices;");
-        builder.AppendLine();
-        builder.AppendLine($"namespace {info.Namespace}");
-
-        builder.BlockStart();
-
-        EnumExtensionsClass.Generate(ref builder, in info);
-
-        // Only if there is any DataEnum member.
-        if (info.Members.Any(m => m.IsDataEnum))
+        using (text.InNullable())
         {
-            builder.AppendLine();
-            EnumValueStruct.Generate(ref builder, in info);
-        }
+            text.AppendIndent("using System;")
+                .Stmt("using System.ComponentModel;")
+                .Stmt("using System.Collections.Generic;")
+                .Stmt("using System.Runtime.CompilerServices;")
+                .Stmt("using System.Runtime.Serialization;")
+                .Stmt("using System.Runtime.InteropServices;")
+                .NL();
 
-        builder.BlockEnd();
-        builder.AppendLine("#nullable restore");
+            using (text.Decl($"namespace {info.Namespace}"))
+            {
+                EnumExtensionsClass.Generate(text, in info);
+
+                // Only if there is any DataEnum member.
+                if (info.Members.Any(m => m.IsDataEnum))
+                {
+                    text.NL();
+                    EnumValueStruct.Generate(text, in info);
+                }
+            }
+        }
     }
 }

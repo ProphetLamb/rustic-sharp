@@ -5,9 +5,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Rustic.DataEnumGenerator.Extensions;
+namespace Rustic.Source;
 
-internal static class SyntaxExtensions
+public static class SyntaxExtensions
 {
     public static AttributeSyntax? FindAttribute(this MemberDeclarationSyntax member, GeneratorSyntaxContext context, Func<AttributeSyntax, GeneratorSyntaxContext, bool> selector)
     {

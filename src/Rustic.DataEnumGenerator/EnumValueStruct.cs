@@ -1,385 +1,308 @@
+using Rustic.Source;
+
 namespace Rustic.DataEnumGenerator;
 
 internal static class EnumValueStruct
 {
-    public static void Generate(ref SrcBuilder builder, in GenInfo info)
+    public static void Generate(SrcBuilder text, in GenInfo info)
     {
-        builder.AppendLine("[Serializable]");
-        builder.AppendLine("[StructLayout(LayoutKind.Explicit)]");
-        builder.AppendLine($"{info.Modifiers} readonly struct {info.EnumValueName}");
-        builder.BlockStart();
-
-        builder.Region("Fields");
-        Fields(ref builder, in info);
-        builder.EndRegion("Fields");
-
-        builder.Region("Constructor");
-        Ctor(ref builder, in info);
-        SerCtor(ref builder, in info);
-        foreach (var e in info.Members)
+        using (text.Stmt("[Serializable]")
+                .Stmt("[StructLayout(LayoutKind.Explicit)]")
+                .Decl($"{info.Modifiers} readonly struct {info.EnumName}Value"))
         {
-            Factory(ref builder, in info, in e);
-        }
-        builder.EndRegion("Constructor");
-
-        builder.Region("Members");
-        foreach (var e in info.Members)
-        {
-            IsEnum(ref builder, in info, in e);
-        }
-        foreach (var e in info.Members)
-        {
-            if (e.IsDataEnum)
+            using (text.InRegion("Fields"))
             {
-                TryEnum(ref builder, in info, in e);
+                Fields(text, in info);
+            }
+
+            using (text.InRegion("Constructor"))
+            {
+                Ctor(text, in info);
+                SerCtor(text, in info);
+                foreach (var e in info.Members)
+                {
+                    Factory(text, in info, in e);
+                }
+            }
+
+            using (text.InRegion("Members"))
+            {
+                foreach (var e in info.Members)
+                {
+                    IsEnum(text, in info, in e);
+                }
+                foreach (var e in info.DataMembers)
+                {
+                    TryEnum(text, in info, in e);
+                }
+                foreach (var e in info.DataMembers)
+                {
+                    ExpectEnum(text, in info, in e);
+                }
+            }
+
+            using (text.InRegion("IEquatable members"))
+            {
+                EqualsEnum(text, in info);
+                EqualsOther(text, in info);
+                EqualsObj(text, in info);
+                HashCode(text, in info);
+                OperatorEq(text, in info);
+                OperatorNeq(text, in info);
+            }
+
+            using (text.InRegion("ISerializable"))
+            {
+                SerGetObjData(text, in info);
+            }
+
+            OperatorEnum(text, in info);
+        }
+    }
+
+    private static void Fields(SrcBuilder text, in GenInfo info)
+    {
+        text.Stmt("[FieldOffset(0)]")
+            .Stmt($"public readonly {info.EnumName} Value;");
+
+        foreach (var e in info.DataMembers)
+        {
+            text.Stmt($"[FieldOffset(sizeof({info.EnumName}))]")
+                .Stmt($"public readonly {e.TypeName} {e.Name}Unchecked;");
+        }
+    }
+
+    private static void Ctor(SrcBuilder text, in GenInfo info)
+    {
+        using (text.Decl($"private {info.EnumName}Value", in info, (in GenInfo ctx, ref SrcBuilder.SrcColl p) =>
+        {
+            p.Add($"in {ctx.EnumName} value");
+            foreach (var e in ctx.DataMembers)
+            {
+                p.Add($"in {e.TypeName} {e.NameLower}");
+            }
+        }))
+        {
+            text.Stmt("this.Value = value;");
+            CtorSwitch(text, in info);
+        }
+    }
+
+    private static void CtorSwitch(SrcBuilder text, in GenInfo info)
+    {
+        text.Switch("value", in info, info.DataMembers,
+            static (ctx, current) => $"{ctx.EnumName}.{current.Name}",
+            static (t, ctx, current) =>
+            {
+                foreach (var e in ctx.DataMembers)
+                {
+                    if (e != current)
+                    {
+                        t.Stmt($"this.{e.Name}Unchecked = {e.NameLower};");
+                    }
+                }
+                t.NL().Stmt($"this.{current.Name}Unchecked = {current.NameLower};");
+            },
+            static (t, ctx) =>
+            {
+                foreach (var e in ctx.DataMembers)
+                {
+                    t.Stmt($"this.{e.Name}Unchecked = default!;");
+                }
+            });
+    }
+
+    private static void Factory(SrcBuilder text, in GenInfo info, in EnumDeclInfo current)
+    {
+        using (text.Stmt("[MethodImpl(MethodImplOptions.AggressiveInlining)]")
+            .Decl($"public static {info.EnumName}Value {current.Name}", current, (in EnumDeclInfo ctx, ref SrcBuilder.SrcColl parameters) =>
+        {
+            if (ctx.IsDataEnum)
+            {
+                parameters.Add($"in {ctx.TypeName} value");
+            }
+        }))
+        {
+            using var args = text.Call($"return new {info.EnumName}Value");
+            args.Add($"{info.EnumName}.{current.Name}");
+            foreach (var e in info.DataMembers)
+            {
+                args.Add(e != current ? "default!" : "value");
             }
         }
-        foreach (var e in info.Members)
+    }
+
+    private static void IsEnum(SrcBuilder text, in GenInfo info, in EnumDeclInfo current)
+    {
+        using (text.Decl($"public bool Is{current.Name}"))
         {
-            if (e.IsDataEnum)
+            text.Stmt("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
+            using (text.Decl("get"))
             {
-                ExpectEnum(ref builder, in info, in e);
+                text.Stmt($"return this.Equals({info.EnumName}.{current.Name});");
             }
         }
-        builder.EndRegion("Members");
-
-        builder.Region("IEquatable members");
-        EqualsEnum(ref builder, in info);
-        EqualsOther(ref builder, in info);
-        EqualsObj(ref builder, in info);
-        HashCode(ref builder, in info);
-        OperatorEq(ref builder, in info);
-        OperatorNeq(ref builder, in info);
-        builder.EndRegion("IEquatable members");
-
-        builder.Region("ISerializable");
-        SerGetObjData(ref builder, in info);
-        builder.EndRegion("ISerializable");
-
-        OperatorEnum(ref builder, in info);
-        builder.BlockEnd();
     }
 
-    private static void Fields(ref SrcBuilder builder, in GenInfo info)
+    private static void TryEnum(SrcBuilder text, in GenInfo info, in EnumDeclInfo current)
     {
-        builder.AppendLine("[FieldOffset(0)]");
-        builder.AppendLine($"public readonly {info.EnumName} Value;");
-
-        foreach (var e in info.Members)
+        using (text.Decl($"public bool Try{current.Name}(out {current.TypeName} value)"))
         {
-            if (e.IsDataEnum)
+            using (text.If($"this.Is{current.Name}"))
             {
-                builder.AppendLine();
-                builder.AppendLine($"[FieldOffset(sizeof({info.EnumName}))]");
-                builder.AppendLine($"public readonly {e.TypeName} {e.NameUnchecked};");
+                text.Stmt($"value = this.{current.Name}Unchecked;")
+                    .Stmt("return true;");
             }
+
+            text.Stmt("value = default!;")
+                    .Stmt("return false;");
         }
-        builder.AppendLine();
     }
 
-    private static void Ctor(ref SrcBuilder builder, in GenInfo info)
+    private static void ExpectEnum(SrcBuilder text, in GenInfo info, in EnumDeclInfo current)
     {
-        // Declaration
-        builder.AppendIndent(); builder.Append($"private {info.EnumValueName}(");
-
-        builder.Append($"in {info.EnumName} value");
-        foreach (var e in info.Members)
+        using (text.Decl($"public {current.TypeName} Expect{current.Name}(string? message)"))
         {
-            if (e.IsDataEnum)
+            using (text.If($"this.Is{current.Name}"))
             {
-                builder.Append($", in {e.TypeName} {e.NameLower}");
+                text.Stmt($"return this.{current.Name}Unchecked;");
             }
+            text.Stmt("throw new InvalidOperationException(message);");
         }
-        builder.Append(')'); builder.AppendLine();
-        builder.BlockStart();
-
-        builder.AppendLine("this.Value = value;");
-
-        CtorSwitch(ref builder, in info);
-        builder.BlockEnd();
     }
 
-    private static void CtorSwitch(ref SrcBuilder builder, in GenInfo info)
+    private static void EqualsEnum(SrcBuilder text, in GenInfo info)
     {
-        builder.StartSwitchBlock("value");
-
-        // Branches for each DataEnum
-        foreach (var e in info.Members)
+        text.Stmt("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
+        using (text.Decl($"public bool Equals({info.EnumName} other)"))
         {
-            if (e.IsDataEnum)
+            text.Stmt("return this.Value == other;");
+        }
+    }
+
+    private static void EqualsOther(SrcBuilder text, in GenInfo info)
+    {
+        using (text.Decl($"public bool Equals({info.EnumName}Value other)"))
+        {
+            using (text.If("this.Value != other.Value"))
             {
-                CtorSwitchCase(ref builder, in info, in e);
+                text.Stmt("return false;");
             }
-        }
 
-        // Default
-        builder.CaseStart();
-        foreach (var e in info.Members)
+            text.Switch("this.Value", in info, info.DataMembers,
+                static (ctx, current) => $"{ctx.EnumName}.{current.Name}",
+                static (t, _, current) =>
+                {
+                    t.Stmt($"return EqualityComparer<{current.TypeName}>.Default.Equals(this.{current.Name}Unchecked, other.{current.Name}Unchecked);");
+                    return true;
+                });
+
+            text.Stmt("return true;");
+        }
+    }
+
+    private static void EqualsObj(SrcBuilder text, in GenInfo info)
+    {
+        using (text.Decl("public override bool Equals(object? obj)"))
         {
-            if (e.IsDataEnum)
+            using (text.If($"obj is {info.EnumName}Value other"))
             {
-                builder.AppendLine($"this.{e.NameUnchecked} = default!;");
+                text.Stmt("return this.Equals(other);");
             }
-        }
-        builder.CaseEnd();
-        builder.BlockEnd();
-    }
 
-    private static void CtorSwitchCase(ref SrcBuilder builder, in GenInfo info, in EnumDeclInfo current)
-    {
-        builder.AppendLine($"case {info.EnumName}.{current.Name}:"); builder.Indent();
-        foreach (var e in info.Members)
-        {
-            if (e.IsDataEnum && e != current)
+            using (text.If($"obj is {info.EnumName} value"))
             {
-                builder.AppendLine($"this.{e.NameUnchecked} = {e.NameLower};");
+                text.Stmt("return this.Equals(value);");
             }
+
+            text.Stmt("return false;");
         }
-        builder.AppendLine();
-        builder.AppendLine($"this.{current.NameUnchecked} = {current.NameLower};");
-        builder.AppendLine("break;"); builder.Outdent();
     }
 
-    private static void Factory(ref SrcBuilder builder, in GenInfo info, in EnumDeclInfo current)
+    private static void HashCode(SrcBuilder text, in GenInfo info)
     {
-        builder.AppendLine("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
-        builder.AppendIndent(); builder.Append($"public static {info.EnumValueName} {current.Name}(");
-        if (current.IsDataEnum)
+        using (text.Decl("public override int GetHashCode()"))
         {
-            builder.Append($"in {current.TypeName} value");
+            text.Stmt("HashCode hash = new HashCode();")
+                .Stmt("hash.Add(this.Value);");
+
+            text.Switch("this.Value", in info, info.DataMembers,
+                static (ctx, current) => $"{ctx.EnumName}.{current.Name}",
+                static (t, _, current) =>
+                {
+                    t.Stmt($"hash.Add(this.{current.Name}Unchecked);");
+                });
+
+            text.Stmt("return hash.ToHashCode();");
         }
-        builder.Append(')'); builder.AppendLine();
+    }
 
-        builder.BlockStart();
-        builder.AppendIndent(); builder.Append($"return new {info.EnumValueName}({info.EnumName}.{current.Name}");
-
-        foreach (var e in info.Members)
+    private static void SerCtor(SrcBuilder text, in GenInfo info)
+    {
+        using (text.Decl($"private {info.EnumName}Value(SerializationInfo info, StreamingContext context)"))
         {
-            if (e.IsDataEnum)
-            {
-                builder.Append(e != current ? ", default!" : ", value");
-            }
+            text.Stmt($"this.Value = ({info.EnumName})info.GetValue(\"Value\", typeof({info.EnumName}))!;");
+            text.Switch("this.Value", in info, info.DataMembers,
+                static (ctx, current) => $"{ctx.EnumName}.{current.Name}",
+                static (t, ctx, current) =>
+                {
+                    foreach (var e in ctx.DataMembers)
+                    {
+                        if (e != current)
+                        {
+                            t.Stmt($"this.{e.Name}Unchecked = default!;");
+                        }
+                    }
+                    t.NL().Stmt($"this.{current.Name}Unchecked = ({current.TypeName})info.GetValue(\"{current.Name}Unchecked\", typeof({current.TypeName}))!;");
+                },
+                static (t, ctx) =>
+                {
+                    foreach (var e in ctx.DataMembers)
+                    {
+                        t.Stmt($"this.{e.Name}Unchecked = default!;");
+                    }
+                });
         }
-
-        builder.Append(");"); builder.AppendLine();
-        builder.BlockEnd();
     }
 
-    private static void IsEnum(ref SrcBuilder builder, in GenInfo info, in EnumDeclInfo current)
+    private static void SerGetObjData(SrcBuilder text, in GenInfo info)
     {
-        builder.AppendLine($"public bool Is{current.Name}");
-        builder.BlockStart();
-
-        builder.AppendLine("get");
-        builder.BlockStart();
-
-        builder.Return($"this.Equals({info.EnumName}.{current.Name})");
-        builder.BlockEnd();
-        builder.BlockEnd();
-    }
-
-    private static void TryEnum(ref SrcBuilder builder, in GenInfo info, in EnumDeclInfo current)
-    {
-        builder.AppendLine($"public bool Try{current.Name}(out {current.TypeName} value)");
-        builder.BlockStart();
-
-        builder.StartIfBlock($"this.Is{current.Name}");
-        builder.AppendLine($"value = this.{current.NameUnchecked};");
-        builder.Return("true");
-        builder.BlockEnd();
-
-        builder.AppendLine("value = default!;");
-        builder.Return("false");
-        builder.BlockEnd();
-    }
-
-    private static void ExpectEnum(ref SrcBuilder builder, in GenInfo info, in EnumDeclInfo current)
-    {
-        builder.AppendLine($"public {current.TypeName} Expect{current.Name}(string? message)");
-        builder.BlockStart();
-
-        builder.StartIfBlock($"this.Is{current.Name}");
-        builder.Return($"this.{current.NameUnchecked}");
-        builder.BlockEnd();
-
-        builder.AppendLine("throw new InvalidOperationException(message);");
-        builder.BlockEnd();
-    }
-
-    private static void EqualsEnum(ref SrcBuilder builder, in GenInfo info)
-    {
-        builder.AppendLine("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
-        builder.AppendLine($"public bool Equals({info.EnumName} other)");
-        builder.BlockStart();
-
-        builder.Return("this.Value == other");
-        builder.BlockEnd();
-    }
-
-    private static void EqualsOther(ref SrcBuilder builder, in GenInfo info)
-    {
-        builder.AppendLine($"public bool Equals({info.EnumValueName} other)");
-        builder.BlockStart();
-
-        builder.StartIfBlock("this.Value != other.Value");
-        builder.Return("false");
-        builder.BlockEnd();
-
-        builder.StartSwitchBlock("this.Value");
-
-        foreach (var e in info.Members)
+        using (text.Decl("public void GetObjectData(SerializationInfo info, StreamingContext context)"))
         {
-            if (e.IsDataEnum)
-            {
-                builder.CaseStart($"{info.EnumName}.{e.Name}");
-                builder.Return($"EqualityComparer<{e.TypeName}>.Default.Equals(this.{e.NameUnchecked}, other.{e.NameUnchecked})");
-                builder.CaseEnd();
-            }
+            text.Stmt($"info.AddValue(\"Value\", this.Value, typeof({info.EnumName}));");
+            text.Switch("this.Value", in info, info.DataMembers,
+                static (ctx, e) => $"{ctx.EnumName}.{e.Name}",
+                static (t, _, e) =>
+                {
+                    t.Stmt($"info.AddValue(\"{e.Name}Unchecked\", this.{e.Name}Unchecked, typeof({e.TypeName}));");
+                });
         }
-        builder.BlockEnd();
-
-        builder.Return("true");
-        builder.BlockEnd();
     }
 
-    private static void EqualsObj(ref SrcBuilder builder, in GenInfo info)
+    private static void OperatorEq(SrcBuilder text, in GenInfo info)
     {
-        builder.AppendLine("public override bool Equals(object? obj)");
-        builder.BlockStart();
-
-        builder.StartIfBlock($"obj is {info.EnumValueName} other");
-        builder.Return("this.Equals(other)");
-        builder.BlockEnd();
-
-        builder.StartIfBlock($"obj is {info.EnumName} value");
-        builder.Return("this.Equals(value)");
-        builder.BlockEnd();
-
-        builder.Return("false");
-        builder.BlockEnd();
-    }
-
-    private static void HashCode(ref SrcBuilder builder, in GenInfo info)
-    {
-        builder.AppendLine("public override int GetHashCode()");
-        builder.BlockStart();
-
-        builder.AppendLine("HashCode hash = new HashCode();");
-        builder.AppendLine("hash.Add(this.Value);");
-        builder.AppendLine();
-
-        builder.StartSwitchBlock("this.Value");
-
-        foreach (var e in info.Members)
+        text.Stmt("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
+        using (text.Decl($"public static bool operator ==(in {info.EnumName}Value left, in {info.EnumName}Value right)"))
         {
-            if (e.IsDataEnum)
-            {
-                builder.CaseStart($"{info.EnumName}.{e.Name}"); ;
-                builder.AppendLine($"hash.Add(this.{e.NameUnchecked});");
-                builder.CaseEnd();
-            }
+            text.Stmt("return left.Equals(right);");
         }
-        builder.BlockEnd();
-
-        builder.Return("hash.ToHashCode()");
-        builder.BlockEnd();
     }
 
-    private static void SerCtor(ref SrcBuilder builder, in GenInfo info)
+    private static void OperatorNeq(SrcBuilder text, in GenInfo info)
     {
-        builder.AppendLine($"private {info.EnumValueName}(SerializationInfo info, StreamingContext context)");
-        builder.BlockStart();
-
-        builder.AppendLine($"this.Value = ({info.EnumName})info.GetValue(\"Value\", typeof({info.EnumName}))!;");
-
-        builder.StartSwitchBlock("Value");
-
-        foreach (var e in info.Members)
+        text.Stmt("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
+        using (text.Decl($"public static bool operator !=(in {info.EnumName}Value left, in {info.EnumName}Value right)"))
         {
-            if (e.IsDataEnum)
-            {
-                SerCtorSwitchCase(ref builder, in info, in e);
-            }
+            text.Stmt("return !left.Equals(right);");
         }
+    }
 
-        // Default
-        builder.CaseStart();
-        foreach (var e in info.Members)
+    private static void OperatorEnum(SrcBuilder text, in GenInfo info)
+    {
+        text.Stmt("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
+        using (text.Decl($"public static implicit operator {info.EnumName}(in {info.EnumName}Value value)"))
         {
-            if (e.IsDataEnum)
-            {
-                builder.AppendLine($"this.{e.NameUnchecked} = default!;");
-            }
+            text.Stmt("return value.Value;");
         }
-        builder.CaseEnd();
-        builder.BlockEnd();
-        builder.BlockEnd();
-    }
-
-    private static void SerCtorSwitchCase(ref SrcBuilder builder, in GenInfo info, in EnumDeclInfo current)
-    {
-        builder.CaseStart($"{info.EnumName}.{current.Name}");
-        foreach (var e in info.Members)
-        {
-            if (e.IsDataEnum && e != current)
-            {
-                builder.AppendLine($"this.{e.NameUnchecked} = default!;");
-            }
-        }
-        builder.AppendLine();
-
-        builder.AppendLine($"this.{current.NameUnchecked} = ({current.TypeName})info.GetValue(\"{current.NameUnchecked}\", typeof({current.TypeName}))!;");
-        builder.CaseEnd();
-    }
-
-    private static void SerGetObjData(ref SrcBuilder builder, in GenInfo info)
-    {
-        builder.AppendLine("public void GetObjectData(SerializationInfo info, StreamingContext context)");
-        builder.BlockStart();
-
-        builder.AppendLine($"info.AddValue(\"Value\", this.Value, typeof({info.EnumName}));");
-
-        builder.StartSwitchBlock("Value");
-        foreach (var e in info.Members)
-        {
-            if (e.IsDataEnum)
-            {
-                builder.CaseStart($"{info.EnumName}.{e.Name}");
-                builder.AppendLine($"info.AddValue(\"{e.NameUnchecked}\", this.{e.NameUnchecked}, typeof({e.TypeName}));");
-                builder.CaseEnd();
-            }
-        }
-        builder.BlockEnd();
-        builder.BlockEnd();
-    }
-
-    private static void OperatorEq(ref SrcBuilder builder, in GenInfo info)
-    {
-        builder.AppendLine("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
-        builder.AppendLine($"public static bool operator ==(in {info.EnumValueName} left, in {info.EnumValueName} right)");
-        builder.BlockStart();
-
-        builder.Return("left.Equals(right)");
-        builder.BlockEnd();
-    }
-
-    private static void OperatorNeq(ref SrcBuilder builder, in GenInfo info)
-    {
-        builder.AppendLine("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
-        builder.AppendLine($"public static bool operator !=(in {info.EnumValueName} left, in {info.EnumValueName} right)");
-        builder.BlockStart();
-
-        builder.Return("!left.Equals(right)");
-        builder.BlockEnd();
-    }
-
-    private static void OperatorEnum(ref SrcBuilder builder, in GenInfo info)
-    {
-        builder.AppendLine("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
-        builder.AppendLine($"public static implicit operator {info.EnumName}(in {info.EnumValueName} value)");
-        builder.BlockStart();
-
-        builder.Return("value.Value");
-        builder.BlockEnd();
     }
 }
