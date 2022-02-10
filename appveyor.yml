@@ -1,4 +1,4 @@
-version: "{build}"
+version: "0.5.{build}"
 
 cache:
   - '%LocalAppData%\NuGet\Cache -> **\Rustic*.csproj'
@@ -17,27 +17,38 @@ install:
   - cinst dotnet-sdk --version 6.0.101
 
 artifacts:
-  - path: "./tests/**/coverage*.xml"
   - path: "./src/**/Rustic.*.nupkg"
+  - path: "./tests/**/coverage*.xml"
+
+configuration:
+  - Debug
+
+dotnet_csproj:
+  patch: true
+  file: "./src/**/*.csproj"
+  version: "{version}"
+  package_version: "{version}"
+  assembly_version: "{version}"
+  file_version: "{version}"
+  informational_version: "{version}"
 
 before_build:
-  - ps: $Env:LABEL = if ($Env:APPVEYOR) { "${Env:APPVEYOR_BUILD_NUMBER.PadLeft(5, "0")}-${Env:APPVEYOR_REPO_BRANCH}" } else { "local" }
   - ps: $Env:DOTNET_CLI_TELEMETRY_OPTOUT=1
   - ps: $Env:DOTNET_NOLOGO=1
   - ps: dotnet restore -verbosity:q
 
-build_script:
-  - ps: ./scripts/build.ps1
-
-test_script:
-  - ps: ./scripts/test.ps1
+test:
+  assemblies:
+    only:
+      - "./tests/**/*.Tests.dll"
 
 for:
   - branches: # Only pack and deploy nuget packages for releases
       only:
         - /release-/
-    build_script:
-      - ps: ./scripts/build-release.ps1
+
+    configuration:
+      - Release
 
     deploy:
       - provider: NuGet # Nuget.org
