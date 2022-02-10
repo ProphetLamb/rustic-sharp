@@ -39,7 +39,7 @@ before_build:
 
 build:
   parallel: true
-  verbosity: minimal
+  verbosity: quiet
 
 test:
   assemblies:
@@ -49,6 +49,7 @@ test:
 artifacts:
   - path: 'src\**\Rustic.*.nupkg'
   - path: 'tests\**\coverage*.xml'
+  - path: '**\GeneratorTests.log'
 
 for:
   - branches: # Only pack and deploy nuget packages for releases

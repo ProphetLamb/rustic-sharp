@@ -22,7 +22,7 @@ public class GeneratorTests
 
     public GeneratorTests()
     {
-        _writer = new($"../../../{nameof(GeneratorTests)}.log", true);
+        _writer = new StreamWriter("GeneratorTests.log", true);
         _writer.AutoFlush = true;
         Logger = new Logger(nameof(GeneratorTests), InternalTraceLevel.Debug, _writer);
     }
@@ -38,7 +38,49 @@ public class GeneratorTests
     public void SimpleGeneratorTest()
     {
         // Create the 'input' compilation that the generator will act on
-        Compilation inputCompilation = CreateCompilation(File.ReadAllText("TestFile.cs.test"));
+        Compilation inputCompilation = CreateCompilation(@"
+using System;
+using System.ComponentModel;
+
+namespace Rustic.DataEnumGenerator.Tests.TestAssembly
+{
+    public enum Dummy : byte
+    {
+        [Description(""The default value."")]
+        Default = 0,
+        [Rustic.Attributes.DataEnum(typeof((int, int)))]
+        Minimum = 1,
+        [Rustic.Attributes.DataEnum(typeof((long, long)))]
+        Maximum = 2,
+    }
+
+    public enum NoAttr
+    {
+        [Description(""This is a description."")]
+        This,
+        Is,
+        Sparta,
+    }
+
+    [Flags]
+    public enum NoFlags : byte
+    {
+        Flag = 1 << 0,
+        Enums = 1 << 1,
+        Are = 1 << 2,
+        Not = 1 << 3,
+        Supported = 1 << 4,
+    }
+
+    public static class Program
+    {
+        public static void Main()
+        {
+            DummyValue value = default!;
+        }
+    }
+}
+");
         const int TEST_SOURCES_LEN = 1;
         const int GEN_SOURCES_LEN = 3; // Attribute + Dummy + NoAttr
 
