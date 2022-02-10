@@ -82,6 +82,58 @@ public string Index(ReadOnlySpan<char> format, TinyVec<object> arguments, IEqual
 
 [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
 
+### **Index&lt;T&gt;(ReadOnlySpan&lt;Char&gt;, TinyVec&lt;T&gt;, IEqualityComparer&lt;Char&gt;, IFormatProvider)**
+
+
+
+```csharp
+public string Index<T>(ReadOnlySpan<char> format, TinyVec<T> arguments, IEqualityComparer<char> comparer, IFormatProvider provider)
+```
+
+#### Type Parameters
+
+`T`<br>
+
+#### Parameters
+
+`format` [ReadOnlySpan&lt;Char&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.readonlyspan-1)<br>
+
+`arguments` TinyVec&lt;T&gt;<br>
+
+`comparer` [IEqualityComparer&lt;Char&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.iequalitycomparer-1)<br>
+
+`provider` [IFormatProvider](https://docs.microsoft.com/en-us/dotnet/api/system.iformatprovider)<br>
+
+#### Returns
+
+[String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+
+### **Named&lt;T&gt;(ReadOnlySpan&lt;Char&gt;, IReadOnlyDictionary&lt;String, T&gt;, IEqualityComparer&lt;Char&gt;, IFormatProvider)**
+
+
+
+```csharp
+public string Named<T>(ReadOnlySpan<char> format, IReadOnlyDictionary<string, T> arguments, IEqualityComparer<char> comparer, IFormatProvider provider)
+```
+
+#### Type Parameters
+
+`T`<br>
+
+#### Parameters
+
+`format` [ReadOnlySpan&lt;Char&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.readonlyspan-1)<br>
+
+`arguments` IReadOnlyDictionary&lt;String, T&gt;<br>
+
+`comparer` [IEqualityComparer&lt;Char&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.iequalitycomparer-1)<br>
+
+`provider` [IFormatProvider](https://docs.microsoft.com/en-us/dotnet/api/system.iformatprovider)<br>
+
+#### Returns
+
+[String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+
 ### **Named(ReadOnlySpan&lt;Char&gt;, IReadOnlyDictionary&lt;String, Object&gt;, IEqualityComparer&lt;Char&gt;, IFormatProvider)**
 
 

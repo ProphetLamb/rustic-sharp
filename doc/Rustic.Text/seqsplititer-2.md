@@ -1,11 +1,11 @@
-# SplitIter&lt;T&gt;
+# SeqSplitIter&lt;T, S&gt;
 
-Namespace: Rustic.Text
+Namespace:
 
-Iterates a span in segments determined by separators.
+Iterates a span in segments determined by separator sequences.
 
 ```csharp
-public struct SplitIter<T>
+public struct SeqSplitIter<T, S>
 ```
 
 #### Type Parameters
@@ -13,7 +13,10 @@ public struct SplitIter<T>
 `T`<br>
 The type of an element of the span.
 
-Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) → [ValueType](https://docs.microsoft.com/en-us/dotnet/api/system.valuetype) → [SplitIter&lt;T&gt;](./rustic.text.splititer-1.md)
+`S`<br>
+The type of a sequence of elements.
+
+Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) → [ValueType](https://docs.microsoft.com/en-us/dotnet/api/system.valuetype) → [SeqSplitIter&lt;T, S&gt;](./seqsplititer-2.md)
 
 ## Properties
 
@@ -55,7 +58,7 @@ public int Width { get; }
 
 ### **IncludesSeparator**
 
-Indicates whether the Rustic.Text.SplitIter`1.Current item is terminated by the separator.
+Indicates whether the SeqSplitIter`2.Current item is terminated by the separator.
 
 ```csharp
 public bool IncludesSeparator { get; }
@@ -69,19 +72,19 @@ public bool IncludesSeparator { get; }
 
 ### **GetEnumerator()**
 
-Returns a new [SplitIter&lt;T&gt;](./rustic.text.splititer-1.md) enumerator with the same input in the initial state.
+
 
 ```csharp
-SplitIter<T> GetEnumerator()
+SeqSplitIter<T, S> GetEnumerator()
 ```
 
 #### Returns
 
-[SplitIter&lt;T&gt;](./rustic.text.splititer-1.md)<br>
+[SeqSplitIter&lt;T, S&gt;](./seqsplititer-2.md)<br>
 
 ### **MoveNext()**
 
-Attempts to move the enumerator to the next segment.
+
 
 ```csharp
 bool MoveNext()
@@ -90,11 +93,10 @@ bool MoveNext()
 #### Returns
 
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
- if the enumerator successfully moved to the next segment; otherwise, .
 
 ### **Reset()**
 
-Resets the enumerator to the initial state.
+
 
 ```csharp
 void Reset()
@@ -102,7 +104,7 @@ void Reset()
 
 ### **Dispose()**
 
-Disposes the enumerator.
+
 
 ```csharp
 void Dispose()
