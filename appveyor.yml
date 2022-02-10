@@ -3,7 +3,6 @@ version: "{build}"
 cache:
   - '%LocalAppData%\NuGet\Cache'
   - '%LocalAppData%\NuGet\v3-cache'
-  - '%USERPROFILE%\.nuget\packages'
   - C:\ProgramData\chocolatey\bin -> appveyor.yml
   - C:\ProgramData\chocolatey\lib -> appveyor.yml
 
