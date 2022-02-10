@@ -1,28 +1,29 @@
-version: "0.5.{build}"
+os: Visual Studio 2022
 
-cache:
-  - '%LocalAppData%\NuGet\Cache -> **\Rustic*.csproj'
-  - '%LocalAppData%\NuGet\v3-cache  -> **\Rustic*.csproj'
-  - C:\ProgramData\chocolatey\bin -> appveyor.yml
-  - C:\ProgramData\chocolatey\lib -> appveyor.yml
+init:
+  - ps: $Env:DOTNET_CLI_TELEMETRY_OPTOUT=1
+  - ps: $Env:DOTNET_NOLOGO=1
 
 environment:
   COVERALLS_SERVICE_NAME: appveyor
   COVERALLS_REPO_TOKEN:
     secure: cLqzCAz4DJr0yy9SudBhqMP18FGcZJb9Lzojw8xeog4T+mZ2m9CNwmRQfaxYmuc5
 
-os: Visual Studio 2022
+cache:
+  - '%LocalAppData%\NuGet\Cache -> **\Rustic*.csproj'
+  - '%LocalAppData%\NuGet\v3-cache  -> **\Rustic*.csproj'
+  - C:\ProgramData\chocolatey\bin -> appveyor.yml
+  - C:\ProgramData\chocolatey\lib -> appveyor.yml
+  - '%UserProfile%\.dotnet\tools -> appveyor.yml'
 
 install:
-  # SDK version fix
-  - cinst dotnet-sdk --version 6.0.101
-
-artifacts:
-  - path: 'src\**\Rustic.*.nupkg'
-  - path: 'tests\**\coverage*.xml'
+  - choco install dotnet-sdk --version 6.0.101
+  - dotnet tool install coveralls.net
 
 configuration:
   - Debug
+
+version: "0.5.{build}"
 
 dotnet_csproj:
   patch: true
@@ -34,9 +35,7 @@ dotnet_csproj:
   informational_version: "{version}"
 
 before_build:
-  - ps: $Env:DOTNET_CLI_TELEMETRY_OPTOUT=1
-  - ps: $Env:DOTNET_NOLOGO=1
-  - ps: dotnet restore -verbosity:q
+  - dotnet restore -verbosity:q
 
 build:
   parallel: true
@@ -47,10 +46,14 @@ test:
     only:
       - 'tests\**\*.Tests.dll'
 
+artifacts:
+  - path: 'src\**\Rustic.*.nupkg'
+  - path: 'tests\**\coverage*.xml'
+
 for:
   - branches: # Only pack and deploy nuget packages for releases
       only:
-        - /release-/
+        - /release.*/
 
     configuration:
       - Release
@@ -61,7 +64,7 @@ for:
           secure: wB/TicV9Qsuqfs1X3excsY/wt/pBfqQDb/9kKFWQcCHTL0rQZNHaVqDiEWQ39U6L
         artifact: /.*(\.|\.s)nupkg/
         on:
-          branch: /release-/
+          branch: /release.*/
       - provider: NuGet # Github packages
         server: https://nuget.pkg.github.com/ProphetLamb/index.json
         artifact: /.*\.nupkg/
@@ -69,4 +72,4 @@ for:
         api_key:
           secure: C8xC+nv4MSirvCA8kUoan4sz2B8aFaytWW2m4lrLqXhAnSkOmo6fN90QHiGJoSGI
         on:
-          branch: /release-/
+          branch: /release.*/
