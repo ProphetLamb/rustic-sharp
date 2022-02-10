@@ -46,7 +46,7 @@ build:
   verbosity: quiet
 
 after_test:
-  - ps: coveralls.net.ps1
+  - ps: ./coveralls.net.ps1
 
 test:
   assemblies:
