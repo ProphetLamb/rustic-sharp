@@ -7,7 +7,7 @@ init:
 environment:
   COVERALLS_SERVICE_NAME: appveyor
   COVERALLS_REPO_TOKEN:
-    secure: cLqzCAz4DJr0yy9SudBhqMP18FGcZJb9Lzojw8xeog4T+mZ2m9CNwmRQfaxYmuc5
+    secure: /zeidGSNfAh5zjjmnLcNsS98SbM+h/V+ST7ZZG/1n6LX8GLlMIvj6u4L7ivbtuBS
 
 cache:
   - '%LocalAppData%\NuGet\Cache -> **\Rustic*.csproj'
@@ -46,7 +46,7 @@ build:
   verbosity: quiet
 
 after_test:
-  - ps: foreach ($coverage in Get-ChildItem -Recurse coverage*.xml) { csmacnz.coveralls.exe --opencover -i $coverage.FullName }
+  - ps: coveralls.net.ps1
 
 test:
   assemblies:
