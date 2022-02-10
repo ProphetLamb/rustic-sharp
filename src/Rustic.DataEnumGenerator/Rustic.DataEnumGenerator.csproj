@@ -21,7 +21,7 @@
     <Version>0.5.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Description>Source generator for `DataEnum`s.</Description>
+    <Description>Source generator implementing Rusts DataEnums in C#.</Description>
     <PackageTags>SourceGenerator,Enum</PackageTags>
     <Copyright>Copyright (c) ProphetLamb 2022</Copyright>
     <PackageProjectUrl>https://github.com/ProphetLamb/rustic-sharp</PackageProjectUrl>

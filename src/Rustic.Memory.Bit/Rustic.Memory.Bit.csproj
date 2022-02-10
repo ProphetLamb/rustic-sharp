@@ -21,7 +21,7 @@
     <Version>0.5.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Description>Commonly used collection implementation.</Description>
+    <Description>Packed bit collections. Storing sequences of boolean values in integers.</Description>
     <PackageTags>ArrayPool;Ref;Span;Collections</PackageTags>
     <Copyright>Copyright (c) ProphetLamb 2022</Copyright>
     <PackageProjectUrl>https://github.com/ProphetLamb/rustic-sharp</PackageProjectUrl>

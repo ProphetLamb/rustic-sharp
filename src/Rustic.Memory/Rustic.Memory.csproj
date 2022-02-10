@@ -21,7 +21,7 @@
     <Version>0.5.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Description>Commonly used collection implementation.</Description>
+    <Description>Commonly used collection implementation allowing by-ref access to the storage.</Description>
     <PackageTags>ArrayPool;Ref;Span;Collections</PackageTags>
     <Copyright>Copyright (c) ProphetLamb 2022</Copyright>
     <PackageProjectUrl>https://github.com/ProphetLamb/rustic-sharp</PackageProjectUrl>

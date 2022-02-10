@@ -21,7 +21,7 @@
     <Version>0.5.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Description>Commonly used collection implementation.</Description>
+    <Description>Types and extensions improving string access and formatting functionality.</Description>
     <PackageTags>String,Span,Formatting,Text</PackageTags>
     <Copyright>Copyright (c) ProphetLamb 2022</Copyright>
     <PackageProjectUrl>https://github.com/ProphetLamb/rustic-sharp</PackageProjectUrl>

@@ -22,7 +22,7 @@
     <Version>0.5.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Description>Packages types and functionallity related to extending source generators.</Description>
+    <Description>Packages types and functionality related to extending source generators.</Description>
     <PackageTags>SourceGenerator,Extensions</PackageTags>
     <Copyright>Copyright (c) ProphetLamb 2022</Copyright>
     <PackageProjectUrl>https://github.com/ProphetLamb/rustic-sharp</PackageProjectUrl>

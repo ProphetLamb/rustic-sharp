@@ -22,7 +22,7 @@
     <Version>0.5.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Description>Packages types and functionallity usable across most projects.</Description>
+    <Description>Types and functionality implementing functional concepts.</Description>
     <PackageTags>Arithmetic,Logic,Functional,Text</PackageTags>
     <Copyright>Copyright (c) ProphetLamb 2022</Copyright>
     <PackageProjectUrl>https://github.com/ProphetLamb/rustic-sharp</PackageProjectUrl>
