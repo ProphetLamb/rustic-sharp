@@ -7,9 +7,7 @@ using FluentAssertions;
 
 using NUnit.Framework;
 
-using Rustic.Memory;
-
-namespace Rustic.Memory.Tests.Vector;
+namespace Rustic.Memory.Tests;
 
 [TestFixture]
 public class RefVecTests
