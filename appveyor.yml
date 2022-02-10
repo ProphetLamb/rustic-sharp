@@ -18,8 +18,9 @@ cache:
 
 install:
   - choco install dotnet-sdk --version 6.0.101
-  - dotnet tool install --global coveralls.net
-  - dotnet tool install -g XMLDoc2Markdown
+  - ps: >-
+      dotnet tool install --global coveralls.net
+      dotnet tool install -g XMLDoc2Markdown
 
 configuration:
   - Debug
