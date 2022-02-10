@@ -40,7 +40,7 @@ namespace Rustic.Text.Tests
         public void IterRemoveEmptyTest()
         {
             var arr = Dummy.AsSpan().Split('.', SplitOptions.RemoveEmptyEntries).ToArray();
-            var probe = Dummy.Split('.', StringSplitOptions.RemoveEmptyEntries).ToArray();
+            var probe = Dummy.Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
             Assert.AreEqual(probe, arr);
         }
         [Test]
