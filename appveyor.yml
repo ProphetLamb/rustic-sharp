@@ -1,8 +1,8 @@
 version: "0.5.{build}"
 
 cache:
-  - '%LocalAppData%\NuGet\Cache -> **/Rustic*.csproj'
-  - '%LocalAppData%\NuGet\v3-cache  -> **/Rustic*.csproj'
+  - '%LocalAppData%\NuGet\Cache -> **\Rustic*.csproj'
+  - '%LocalAppData%\NuGet\v3-cache  -> **\Rustic*.csproj'
   - C:\ProgramData\chocolatey\bin -> appveyor.yml
   - C:\ProgramData\chocolatey\lib -> appveyor.yml
 
@@ -17,15 +17,15 @@ install:
   - cinst dotnet-sdk --version 6.0.101
 
 artifacts:
-  - path: "src/**/Rustic.*.nupkg"
-  - path: "tests/**/coverage*.xml"
+  - path: 'src\**\Rustic.*.nupkg'
+  - path: 'tests\**\coverage*.xml'
 
 configuration:
   - Debug
 
 dotnet_csproj:
   patch: true
-  file: "src/**/*.csproj"
+  file: 'src\**\*.csproj'
   version: "{version}"
   package_version: "{version}"
   assembly_version: "{version}"
@@ -40,7 +40,7 @@ before_build:
 test:
   assemblies:
     only:
-      - "tests/**/*.Tests.dll"
+      - 'tests\**\*.Tests.dll'
 
 for:
   - branches: # Only pack and deploy nuget packages for releases
