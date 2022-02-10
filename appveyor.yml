@@ -43,41 +43,41 @@ test_script:
       Pop-Location
 
 for:
-  branches: # Only build and deploy nuget packages for releases
-    only:
-      - /release-/
-  build_script:
-    - ps: >-
-        dotnet restore -verbosity:q
+  - branches: # Only build and deploy nuget packages for releases
+      only:
+        - /release-/
+    build_script:
+      - ps: >-
+          dotnet restore -verbosity:q
 
-        echo "`n========================================================================================================================`n
-        Build and pack libs
-        `n========================================================================================================================`n"
-        Push-Location .\src
+          echo "`n========================================================================================================================`n
+          Build and pack libs
+          `n========================================================================================================================`n"
+          Push-Location .\src
 
-        foreach ($project in Get-ChildItem -Recurse Rustic*.csproj -File) {
-            Push-Location $project.Directory
+          foreach ($project in Get-ChildItem -Recurse Rustic*.csproj -File) {
+              Push-Location $project.Directory
 
-            echo "`n========================================================================================================================`nBuild $project`n"
-            dotnet build -c:Release --no-restore -verbosity:q --version-suffix $Env:LABEL
-            dotnet pack -c:Release --no-restore --no-build -verbosity:q --version-suffix $Env:LABEL
+              echo "`n========================================================================================================================`nBuild $project`n"
+              dotnet build -c:Release --no-restore -verbosity:q --version-suffix $Env:LABEL
+              dotnet pack -c:Release --no-restore --no-build -verbosity:q --version-suffix $Env:LABEL
 
-            Pop-Location
-        }
-        Pop-Location
+              Pop-Location
+          }
+          Pop-Location
 
-  deploy:
-    - provider: NuGet # Nuget.org
-      api_key:
-        secure: wB/TicV9Qsuqfs1X3excsY/wt/pBfqQDb/9kKFWQcCHTL0rQZNHaVqDiEWQ39U6L
-      artifact: /.*(\.|\.s)nupkg/
-      on:
-        branch: /release-/
-    - provider: NuGet # Github packages
-      server: https://nuget.pkg.github.com/ProphetLamb/index.json
-      artifact: /.*\.nupkg/
-      username: ProphetLamb
-      api_key:
-        secure: C8xC+nv4MSirvCA8kUoan4sz2B8aFaytWW2m4lrLqXhAnSkOmo6fN90QHiGJoSGI
-      on:
-        branch: /release-/
+    deploy:
+      - provider: NuGet # Nuget.org
+        api_key:
+          secure: wB/TicV9Qsuqfs1X3excsY/wt/pBfqQDb/9kKFWQcCHTL0rQZNHaVqDiEWQ39U6L
+        artifact: /.*(\.|\.s)nupkg/
+        on:
+          branch: /release-/
+      - provider: NuGet # Github packages
+        server: https://nuget.pkg.github.com/ProphetLamb/index.json
+        artifact: /.*\.nupkg/
+        username: ProphetLamb
+        api_key:
+          secure: C8xC+nv4MSirvCA8kUoan4sz2B8aFaytWW2m4lrLqXhAnSkOmo6fN90QHiGJoSGI
+        on:
+          branch: /release-/
