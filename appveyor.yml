@@ -18,7 +18,7 @@ cache:
 
 install:
   - choco install dotnet-sdk --version 6.0.101
-  - dotnet tool --global install coveralls.net
+  - dotnet tool install --global coveralls.net
 
 configuration:
   - Debug
