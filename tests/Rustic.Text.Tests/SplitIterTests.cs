@@ -13,6 +13,14 @@ namespace Rustic.Text.Tests
         public static readonly string Dummy = "I hate code that is not working as intended... I am clearly in the wrong profession!";
 
         [Test]
+        public void IterEmpty()
+        {
+            string? v = null;
+            var arr = v.AsSpan().Split(' ').ToArray();
+            Assert.AreEqual(Array.Empty<string>(), arr);
+        }
+
+        [Test]
         public void IterSoloTest()
         {
             var arr = Dummy.AsSpan().Split(' ').ToArray();
@@ -23,7 +31,14 @@ namespace Rustic.Text.Tests
         [Test]
         public void IterDoubleTest()
         {
-            var arr = Dummy.AsSpan().Split(" .".AsSpan()).ToArray();
+            var sep = Dummy.AsSpan().Split(" .".AsSpan());
+            using Rustic.Memory.PoolBufWriter<string> buf = new();
+            while (sep.MoveNext())
+            {
+                buf.Add(sep.Current.ToString());
+            }
+
+            var arr = buf.ToArray();
             var probe = Dummy.Split(' ', '.').ToArray();
             Assert.AreEqual(probe, arr);
         }

@@ -25,13 +25,24 @@ public class Fmt
 
     public string Index(ReadOnlySpan<char> format, TinyVec<object?> arguments, IEqualityComparer<char>? comparer = null, IFormatProvider? provider = null)
     {
-        return Format(format, new IdxDef(arguments, provider), comparer);
+        return Format(format, new IdxDef<object?>(arguments, provider), comparer);
+    }
+
+    public string Index<T>(ReadOnlySpan<char> format, TinyVec<T> arguments, IEqualityComparer<char>? comparer = null, IFormatProvider? provider = null)
+    {
+        return Format(format, new IdxDef<T>(arguments, provider), comparer);
+    }
+
+    public string Named<T>(ReadOnlySpan<char> format, IReadOnlyDictionary<string, T> arguments,
+        IEqualityComparer<char>? comparer = null, IFormatProvider? provider = null)
+    {
+        return Format(format, new NamedDef<T>(arguments, provider), comparer);
     }
 
     public string Named(ReadOnlySpan<char> format, IReadOnlyDictionary<string, object?> arguments,
         IEqualityComparer<char>? comparer = null, IFormatProvider? provider = null)
     {
-        return Format(format, new NamedDef(arguments, provider), comparer);
+        return Format(format, new NamedDef<object?>(arguments, provider), comparer);
     }
 }
 
@@ -112,14 +123,14 @@ public interface IFmtDef
     bool TryGetValue(in ReadOnlySpan<char> key, out ReadOnlySpan<char> value);
 }
 
-public readonly struct IdxDef : IFmtDef
+public readonly struct IdxDef<T> : IFmtDef
 {
-    public IdxDef(TinyVec<object?> arguments, IFormatProvider? format = null)
+    public IdxDef(TinyVec<T> arguments, IFormatProvider? format = null)
         : this(String.Empty, arguments, format)
     {
     }
 
-    public IdxDef(string prefix, TinyVec<object?> arguments, IFormatProvider? format = null)
+    public IdxDef(string prefix, TinyVec<T> arguments, IFormatProvider? format = null)
     {
         Prefix = prefix;
         Arguments = arguments;
@@ -136,7 +147,7 @@ public readonly struct IdxDef : IFmtDef
 
     public bool NextTextEnd(ref Tokenizer<char> tokenizer)
     {
-        while ((Prefix.Length == 0 || tokenizer.ReadSequence(Prefix.AsSpan())) && tokenizer.ReadUntil('{') && tokenizer.TryReadNext('{')) ;
+        while ((Prefix.Length == 0 || tokenizer.Read(Prefix.AsSpan())) && tokenizer.ReadUntilAny('{') && tokenizer.TryReadAny('{')) ;
 
         tokenizer.Consume(-Prefix.Length - 1);
         return true;
@@ -149,7 +160,7 @@ public readonly struct IdxDef : IFmtDef
 
     public bool NextHoleEnd(ref Tokenizer<char> tokenizer)
     {
-        while (tokenizer.ReadUntil('}') && tokenizer.TryReadNext('}')) ;
+        while (tokenizer.ReadUntilAny('}') && tokenizer.TryReadAny('}')) ;
 
         tokenizer.Consume(-1);
         return false;
@@ -194,14 +205,14 @@ public readonly struct IdxDef : IFmtDef
     }
 }
 
-public readonly struct NamedDef : IFmtDef
+public readonly struct NamedDef<T> : IFmtDef
 {
-    public NamedDef(IReadOnlyDictionary<string, object?> arguments, IFormatProvider? format)
+    public NamedDef(IReadOnlyDictionary<string, T> arguments, IFormatProvider? format)
         : this(String.Empty, arguments, format)
     {
     }
 
-    public NamedDef(string prefix, IReadOnlyDictionary<string, object?> arguments, IFormatProvider? format)
+    public NamedDef(string prefix, IReadOnlyDictionary<string, T> arguments, IFormatProvider? format)
     {
         Prefix = prefix;
         Arguments = arguments;
@@ -210,7 +221,7 @@ public readonly struct NamedDef : IFmtDef
 
     public string Prefix { get; }
 
-    public IReadOnlyDictionary<string, object?> Arguments { get; }
+    public IReadOnlyDictionary<string, T> Arguments { get; }
 
     public int Count => Arguments.Count;
 
@@ -218,7 +229,7 @@ public readonly struct NamedDef : IFmtDef
 
     public bool NextTextEnd(ref Tokenizer<char> tokenizer)
     {
-        while ((Prefix.Length == 0 || tokenizer.ReadSequence(Prefix.AsSpan())) && tokenizer.ReadNext('{') && tokenizer.TryReadNext('{')) ;
+        while ((Prefix.Length == 0 || tokenizer.Read(Prefix.AsSpan())) && tokenizer.ReadAny('{') && tokenizer.TryReadAny('{')) ;
 
         tokenizer.Consume(-Prefix.Length - 1);
         return true;
@@ -231,7 +242,7 @@ public readonly struct NamedDef : IFmtDef
 
     public bool NextHoleEnd(ref Tokenizer<char> tokenizer)
     {
-        while (tokenizer.ReadUntil('}') && tokenizer.TryReadNext('}')) ;
+        while (tokenizer.ReadUntilAny('}') && tokenizer.TryReadAny('}')) ;
 
         tokenizer.Consume(-1);
         return false;

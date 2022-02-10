@@ -25,7 +25,7 @@ public ref struct Tokenizer<T>
 {
     private ReadOnlySpan<T> _source;
     private IEqualityComparer<T>? _comparer;
-    private int _index;
+    private int _pos;
     private int _tokenLength;
 
     /// <summary>
@@ -37,11 +37,13 @@ public ref struct Tokenizer<T>
     {
         _source = input;
         _comparer = comparer;
-        _index = 0;
+        _pos = 0;
         _tokenLength = 0;
     }
 
     public ReadOnlySpan<T> Raw => _source;
+
+    public IEqualityComparer<T>? Comparer => _comparer;
 
     /// <summary>
     ///     Defines the current position of the iterator.
@@ -49,21 +51,47 @@ public ref struct Tokenizer<T>
     public int Head
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _index + _tokenLength;
+        get => _pos + _tokenLength;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
             value.ValidateArgRange(value >= 0 && value <= Length);
 
-            if (value > _index)
+            if (value > _pos)
             {
-                _tokenLength += value - _index;
+                _tokenLength += value - _pos;
             }
             else
             {
-                _index = value;
+                _pos = value;
                 _tokenLength = 0;
             }
+        }
+    }
+
+    /// <summary>Represents the zero-based start-index of the current token inside the span.</summary>
+    public int Position
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _pos;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        set
+        {
+            value.ValidateArgRange(value >= 0 && value <= Length - Width);
+            _pos = value;
+        }
+    }
+
+    /// <summary>Represents the length of the current token.</summary>
+    public int Width
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _tokenLength;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        set
+        {
+            value.ValidateArgRange(value >= 0 && value <= Length - Position);
+            _tokenLength = value;
         }
     }
 
@@ -71,15 +99,15 @@ public ref struct Tokenizer<T>
     public int Length => _source.Length;
 
     /// <summary>Represents the token currently being built.</summary>
-    public ReadOnlySpan<T> Token => _source.Slice(_index, _tokenLength);
+    public ReadOnlySpan<T> Token => _source.Slice(_pos, _tokenLength);
 
-    public ref readonly T Current => ref _source[_index];
+    public ref readonly T Current => ref _source[_pos];
 
-    /// <summary>Represents the zero-based start-index of the current token inside the span.</summary>
-    public int TokenIndex => _index;
-
-    /// <summary>Represents the length of the current token.</summary>
-    public int TokenLength => _tokenLength;
+    /// <summary>Represents the token at an offset relative to the <see cref="Head"/>.</summary>
+    public ref readonly T Offset(int offset)
+    {
+        return ref this[Head + offset];
+    }
 
     public ref readonly T this[int index]
     {
@@ -94,7 +122,7 @@ public ref struct Tokenizer<T>
     /// <returns><see langword="true"/> if the element could be consumed; otherwise, <see langword="false"/>.</returns>
     public bool Consume()
     {
-        if (_index != _source.Length - _tokenLength)
+        if (_pos != _source.Length - _tokenLength)
         {
             _tokenLength += 1;
             return true;
@@ -109,14 +137,14 @@ public ref struct Tokenizer<T>
     {
         amount.ValidateArgRange(amount <= _tokenLength);
 
-        if (_index < Length - _tokenLength - amount)
+        if (_pos < Length - _tokenLength - amount)
         {
             _tokenLength += amount;
             return true;
         }
 
         // Move to end.
-        _tokenLength = Length - _index;
+        _tokenLength = Length - _pos;
         return false;
     }
 
@@ -134,9 +162,15 @@ public ref struct Tokenizer<T>
     public ReadOnlySpan<T> FinalizeToken()
     {
         var token = Token;
-        _index += _tokenLength;
+        _pos += _tokenLength;
         _tokenLength = 0;
         return token;
+    }
+
+    /// <summary>Discards the current token &amp; resets the iterator to the start of the token.</summary>
+    public void Discard()
+    {
+        _tokenLength = 0;
     }
 
     /// <summary>
@@ -183,15 +217,145 @@ public ref struct Tokenizer<T>
         return false;
     }
 
+    #region Sequence
+
+    /// <summary>
+    ///     Consumes elements until the specified sequence of elements has been encountered.
+    /// </summary>
+    /// <param name="expectedSequence">The expected sequence.</param>
+    /// <param name="len">The length of the sequence.</param>
+    /// <returns><see langword="true"/> if the remaining elements contain the sequence of elements; otherwise, <see langword="false"/>.</returns>
+    /// <typeparam name="S">The type of the sequence.</typeparam>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool Read<S>(in S expectedSequence, out int len)
+        where S : IEnumerable<T>
+    {
+        var success = Peek(expectedSequence, out var head, out len);
+        Head = head;
+        return success;
+    }
+
+    /// <summary>
+    ///     Returns whether the remaining span contains the sequence, consumes the elements only if it does.
+    /// </summary>
+    /// <param name="expectedSequence">The sequence of elements.</param>
+    /// <param name="len">The length of the sequence.</param>
+    /// <returns><see langword="true"/> if the remaining elements contain the sequence of elements; otherwise, <see langword="false"/>.</returns>
+    /// <typeparam name="S">The type of the sequence.</typeparam>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool TryRead<S>(in S expectedSequence, out int len)
+        where S : IEnumerable<T>
+    {
+        if (Peek(expectedSequence, out var head, out len))
+        {
+            Head = head;
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    ///     Returns whether the remaining span contains the sequence.
+    /// </summary>
+    /// <param name="expectedSequence">The sequence of elements.</param>
+    /// <param name="head">The position of the element after the sequence.</param>
+    /// <param name="len">The length of the sequence.</param>
+    /// <returns><see langword="true"/> if the remaining elements contain the sequence of elements; otherwise, <see langword="false"/>.</returns>
+    /// <typeparam name="S">The type of the sequence.</typeparam>
+    [Pure]
+    public bool Peek<S>(in S expectedSequence, out int head, out int len)
+        where S : IEnumerable<T>
+    {
+        head = Head;
+        if (head == _source.Length)
+        {
+            len = 0;
+            return false;
+        }
+
+        var matched = 0;
+        var comparer = _comparer;
+
+        do
+        {
+            len = 0;
+
+            if (comparer is null)
+            {
+                if (typeof(T).IsValueType)
+                {
+                    foreach (var match in expectedSequence)
+                    {
+                        if (head >= _source.Length)
+                        {
+                            matched = -1;
+                            break;
+                        }
+                        // ValueType: Devirtualize with EqualityComparer<TValue>.Default intrinsic
+                        if (!EqualityComparer<T>.Default.Equals(_source[head], match))
+                        {
+                            matched = 0;
+                        }
+                        else
+                        {
+                            matched += 1;
+                        }
+                        head += 1;
+                        len += 1;
+                    }
+
+                    if (matched == -1)
+                    {
+                        return false;
+                    }
+                    continue;
+                }
+
+                // Object type: Shared Generic, EqualityComparer<TValue>.Default won't devirtualize (https://github.com/dotnet/runtime/issues/10050),
+                // so cache in a local rather than get EqualityComparer per loop iteration.
+                comparer = EqualityComparer<T>.Default;
+            }
+
+            foreach (var match in expectedSequence)
+            {
+                if (head >= _source.Length)
+                {
+                    matched = -1;
+                    break;
+                }
+                if (!comparer.Equals(_source[head], match))
+                {
+                    matched = 0;
+                }
+                else
+                {
+                    matched += 1;
+                }
+                head += 1;
+                len += 1;
+            }
+
+            if (matched == -1)
+            {
+                return false;
+            }
+        } while (matched == 0 && head < _source.Length);
+
+        return matched != 0;
+    }
+
     /// <summary>
     ///     Returns whether the following elements are the sequence, consumes elements.
     /// </summary>
     /// <param name="expectedSequence">The sequence of elements.</param>
     /// <returns><see langword="true"/> if the following elements are equal to the sequence of elements; otherwise, <see langword="false"/>.</returns>
+    /// <typeparam name="S">The type of the sequence.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool ReadNextSequence(in ReadOnlySpan<T> expectedSequence)
+    public bool ReadNext<S>(in S expectedSequence)
+        where S : IEnumerable<T>
     {
-        var success = PeekNextSequence(expectedSequence, out var head);
+        var success = PeekNext(expectedSequence, out var head);
         Head = head;
         return success;
     }
@@ -201,10 +365,12 @@ public ref struct Tokenizer<T>
     /// </summary>
     /// <param name="expectedSequence">The sequence of elements.</param>
     /// <returns><see langword="true"/> if the following elements are equal to the sequence of elements; otherwise, <see langword="false"/>.</returns>
+    /// <typeparam name="S">The type of the sequence.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryReadNextSequence(in ReadOnlySpan<T> expectedSequence)
+    public bool TryReadNext<S>(in S expectedSequence)
+        where S : IEnumerable<T>
     {
-        if (PeekNextSequence(expectedSequence, out var head))
+        if (PeekNext(expectedSequence, out var head))
         {
             Head = head;
             return true;
@@ -219,8 +385,10 @@ public ref struct Tokenizer<T>
     /// <param name="expectedSequence">The sequence of elements.</param>
     /// <param name="head">The position of the element after the sequence.</param>
     /// <returns><see langword="true"/> if the following elements are equal to the sequence of elements; otherwise, <see langword="false"/>.</returns>
+    /// <typeparam name="S">The type of the sequence.</typeparam>
     [Pure]
-    public bool PeekNextSequence(in ReadOnlySpan<T> expectedSequence, out int head)
+    public bool PeekNext<S>(in S expectedSequence, out int head)
+        where S : IEnumerable<T>
     {
         head = Head;
         if (head == _source.Length)
@@ -228,27 +396,32 @@ public ref struct Tokenizer<T>
             return false;
         }
 
-        var matched = 0;
         var comparer = _comparer;
+        var matched = 0;
 
         if (comparer is null)
         {
             if (typeof(T).IsValueType)
             {
-                do
+                foreach (var match in expectedSequence)
                 {
-                    // ValueType: Devirtualize with EqualityComparer<TValue>.Default intrinsic
-                    if (EqualityComparer<T>.Default.Equals(_source[head], expectedSequence[matched]))
-                    {
-                        matched += 1;
-                    }
-                    else
+                    if (head >= _source.Length)
                     {
                         return false;
                     }
-                } while ((matched != expectedSequence.Length) & (++head < _source.Length));
+                    // ValueType: Devirtualize with EqualityComparer<TValue>.Default intrinsic
+                    if (EqualityComparer<T>.Default.Equals(_source[head], match))
+                    {
+                        matched += 1;
+                        head += 1;
+                    }
+                    else
+                    {
+                        matched = 0;
+                    }
+                }
 
-                return matched == expectedSequence.Length;
+                return true;
             }
 
             // Object type: Shared Generic, EqualityComparer<TValue>.Default won't devirtualize (https://github.com/dotnet/runtime/issues/10050),
@@ -256,20 +429,29 @@ public ref struct Tokenizer<T>
             comparer = EqualityComparer<T>.Default;
         }
 
-        do
+        foreach (var match in expectedSequence)
         {
-            if (comparer.Equals(_source[head], expectedSequence[matched]))
-            {
-                matched += 1;
-            }
-            else
+            if (head >= _source.Length)
             {
                 return false;
             }
-        } while ((matched != expectedSequence.Length) && (++head < _source.Length));
+            if (comparer.Equals(_source[head], match))
+            {
+                matched += 1;
+                head += 1;
+            }
+            else
+            {
+                matched = 0;
+            }
+        }
 
-        return matched == expectedSequence.Length;
+        return true;
     }
+
+    #endregion
+
+    #region Span
 
     /// <summary>
     ///     Consumes elements until the specified sequence of elements has been encountered.
@@ -277,9 +459,9 @@ public ref struct Tokenizer<T>
     /// <param name="expectedSequence">The expected sequence.</param>
     /// <returns><see langword="true"/> if the remaining elements contain the sequence of elements; otherwise, <see langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool ReadSequence(in ReadOnlySpan<T> expectedSequence)
+    public bool Read(in ReadOnlySpan<T> expectedSequence)
     {
-        var success = PeekSequence(expectedSequence, out var head);
+        var success = Peek(expectedSequence, out var head);
         Head = head;
         return success;
     }
@@ -290,9 +472,9 @@ public ref struct Tokenizer<T>
     /// <param name="expectedSequence">The sequence of elements.</param>
     /// <returns><see langword="true"/> if the remaining elements contain the sequence of elements; otherwise, <see langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryReadSequence(in ReadOnlySpan<T> expectedSequence)
+    public bool TryRead(in ReadOnlySpan<T> expectedSequence)
     {
-        if (PeekSequence(expectedSequence, out var head))
+        if (Peek(expectedSequence, out var head))
         {
             Head = head;
             return true;
@@ -308,7 +490,7 @@ public ref struct Tokenizer<T>
     /// <param name="head">The position of the element after the sequence.</param>
     /// <returns><see langword="true"/> if the remaining elements contain the sequence of elements; otherwise, <see langword="false"/>.</returns>
     [Pure]
-    public bool PeekSequence(in ReadOnlySpan<T> expectedSequence, out int head)
+    public bool Peek(in ReadOnlySpan<T> expectedSequence, out int head)
     {
         head = Head;
         if (head == _source.Length)
@@ -359,7 +541,97 @@ public ref struct Tokenizer<T>
         return matched == expectedSequence.Length;
     }
 
-    #region Next & Until with TinySpan
+    /// <summary>
+    ///     Returns whether the following elements are the sequence, consumes elements.
+    /// </summary>
+    /// <param name="expectedSequence">The sequence of elements.</param>
+    /// <returns><see langword="true"/> if the following elements are equal to the sequence of elements; otherwise, <see langword="false"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool ReadNext(in ReadOnlySpan<T> expectedSequence)
+    {
+        var success = PeekNext(expectedSequence, out var head);
+        Head = head;
+        return success;
+    }
+
+    /// <summary>
+    ///     Returns whether the following elements are the sequence, consumes elements only if the successful.
+    /// </summary>
+    /// <param name="expectedSequence">The sequence of elements.</param>
+    /// <returns><see langword="true"/> if the following elements are equal to the sequence of elements; otherwise, <see langword="false"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool TryReadNext(in ReadOnlySpan<T> expectedSequence)
+    {
+        if (PeekNext(expectedSequence, out var head))
+        {
+            Head = head;
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    ///     Returns whether the following elements are the sequence.
+    /// </summary>
+    /// <param name="expectedSequence">The sequence of elements.</param>
+    /// <param name="head">The position of the element after the sequence.</param>
+    /// <returns><see langword="true"/> if the following elements are equal to the sequence of elements; otherwise, <see langword="false"/>.</returns>
+    [Pure]
+    public bool PeekNext(in ReadOnlySpan<T> expectedSequence, out int head)
+    {
+        head = Head;
+        if (head == _source.Length)
+        {
+            return false;
+        }
+
+        var matched = 0;
+        var comparer = _comparer;
+
+        if (comparer is null)
+        {
+            if (typeof(T).IsValueType)
+            {
+                do
+                {
+                    // ValueType: Devirtualize with EqualityComparer<TValue>.Default intrinsic
+                    if (EqualityComparer<T>.Default.Equals(_source[head], expectedSequence[matched]))
+                    {
+                        matched += 1;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                } while ((matched != expectedSequence.Length) & (++head < _source.Length));
+
+                return matched == expectedSequence.Length;
+            }
+
+            // Object type: Shared Generic, EqualityComparer<TValue>.Default won't devirtualize (https://github.com/dotnet/runtime/issues/10050),
+            // so cache in a local rather than get EqualityComparer per loop iteration.
+            comparer = EqualityComparer<T>.Default;
+        }
+
+        do
+        {
+            if (comparer.Equals(_source[head], expectedSequence[matched]))
+            {
+                matched += 1;
+            }
+            else
+            {
+                return false;
+            }
+        } while ((matched != expectedSequence.Length) && (++head < _source.Length));
+
+        return matched == expectedSequence.Length;
+    }
+
+    #endregion
+
+    #region Any
 
     /// <summary>
     ///     Consumes one element, and returns whether the element matches one of the expected elements.
@@ -367,9 +639,9 @@ public ref struct Tokenizer<T>
     /// <param name="expected">The expected elements.</param>
     /// <returns><see langword="true"/> if the element is as expected; otherwise, <see langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool ReadNext(in TinySpan<T> expected)
+    public bool ReadAny(in TinySpan<T> expected)
     {
-        var success = PeekNext(expected);
+        var success = PeekAny(expected);
         Head += 1;
         return success;
     }
@@ -380,9 +652,9 @@ public ref struct Tokenizer<T>
     /// <param name="expected">The expected elements.</param>
     /// <returns><see langword="true"/> if the element is as expected; otherwise, <see langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryReadNext(in TinySpan<T> expected)
+    public bool TryReadAny(in TinySpan<T> expected)
     {
-        if (PeekNext(expected))
+        if (PeekAny(expected))
         {
             Head += 1;
             return true;
@@ -397,7 +669,7 @@ public ref struct Tokenizer<T>
     /// <param name="expected">The expected elements.</param>
     /// <returns><see langword="true"/> if the element is as expected; otherwise, <see langword="false"/>.</returns>
     [Pure]
-    public bool PeekNext(in TinySpan<T> expected)
+    public bool PeekAny(in TinySpan<T> expected)
     {
         var head = Head;
         if (head == _source.Length)
@@ -410,7 +682,7 @@ public ref struct Tokenizer<T>
 
         if (comparer is null)
         {
-            for (var i = 0; i < expected.Length; i++)
+            for (var i = 0; i < expected.Length; i += 1)
             {
                 // If ValueType: Devirtualize with EqualityComparer<TValue>.Default intrinsic
                 if (!EqualityComparer<T>.Default.Equals(expected[i], current))
@@ -423,7 +695,7 @@ public ref struct Tokenizer<T>
         }
         else
         {
-            for (var i = 0; i < expected.Length; i++)
+            for (var i = 0; i < expected.Length; i += 1)
             {
                 if (!comparer.Equals(expected[i], current))
                 {
@@ -443,9 +715,9 @@ public ref struct Tokenizer<T>
     /// <param name="expected">The expected elements.</param>
     /// <returns><see langword="true"/> if one or more of the expected elements occur in the remaining elements; otherwise, <see langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool ReadUntil(in TinySpan<T> expected)
+    public bool ReadUntilAny(in TinySpan<T> expected)
     {
-        var success = PeekUntil(expected, out var head);
+        var success = PeekUntilAny(expected, out var head);
         Head = head;
         return success;
     }
@@ -456,9 +728,9 @@ public ref struct Tokenizer<T>
     /// <param name="expected">The expected elements.</param>
     /// <returns><see langword="true"/> if one or more of the expected elements occur in the remaining elements; otherwise, <see langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryReadUntil(in TinySpan<T> expected)
+    public bool TryReadUntilAny(in TinySpan<T> expected)
     {
-        if (PeekUntil(expected, out var head))
+        if (PeekUntilAny(expected, out var head))
         {
             Head = head;
             return true;
@@ -474,7 +746,7 @@ public ref struct Tokenizer<T>
     /// <param name="head">The position at which the expected element occured.</param>
     /// <returns><see langword="true"/> if one or more of the expected elements occur in the remaining elements; otherwise, <see langword="false"/>.</returns>
     [Pure]
-    public bool PeekUntil(in TinySpan<T> expected, out int head)
+    public bool PeekUntilAny(in TinySpan<T> expected, out int head)
     {
         head = Head;
         if (head == _source.Length)
@@ -533,299 +805,5 @@ public ref struct Tokenizer<T>
         return !consumeNext;
     }
 
-    #endregion Next & Until with TinySpan
-
-    #region Next & Until with one arg
-
-    /// <summary>
-    ///     Consumes one element, and returns whether the element matches one of the expected elements.
-    /// </summary>
-    /// <param name="expected">The expected elements.</param>
-    /// <returns><see langword="true"/> if the element is as expected; otherwise, <see langword="false"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool ReadNext(in T expected)
-    {
-        var success = PeekNext(expected);
-        Head += 1;
-        return success;
-    }
-
-    /// <summary>
-    ///     Returns whether the element matches one of the expected elements, and consumes the element only if it does.
-    /// </summary>
-    /// <param name="expected">The expected elements.</param>
-    /// <returns><see langword="true"/> if the element is as expected; otherwise, <see langword="false"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryReadNext(in T expected)
-    {
-        if (PeekNext(expected))
-        {
-            Head += 1;
-            return true;
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    ///     Returns whether the element matches one of the expected elements.
-    /// </summary>
-    /// <param name="expected">The expected elements.</param>
-    /// <returns><see langword="true"/> if the element is as expected; otherwise, <see langword="false"/>.</returns>
-    [Pure]
-    public bool PeekNext(in T expected)
-    {
-        var head = Head;
-        if (head == _source.Length)
-        {
-            return false;
-        }
-
-        var current = _source[head];
-        var comparer = _comparer;
-
-        if (comparer is null)
-        {
-            return EqualityComparer<T>.Default.Equals(expected, current);
-        }
-
-        return comparer.Equals(expected, current);
-    }
-
-    /// <summary>
-    ///     Consumes elements until one of the expected elements occur.
-    /// </summary>
-    /// <param name="expected">The expected elements.</param>
-    /// <returns><see langword="true"/> if one or more of the expected elements occur in the remaining elements; otherwise, <see langword="false"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool ReadUntil(in T expected)
-    {
-        var success = PeekUntil(expected, out var head);
-        Head = head;
-        return success;
-    }
-
-    /// <summary>
-    ///     Returns whether the remaining span contains one of the expected elements, and consumes the elements only if it does.
-    /// </summary>
-    /// <param name="expected">The expected elements.</param>
-    /// <returns><see langword="true"/> if one or more of the expected elements occur in the remaining elements; otherwise, <see langword="false"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryReadUntil(in T expected)
-    {
-        if (PeekUntil(expected, out var head))
-        {
-            Head = head;
-            return true;
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    ///     Returns whether the remaining span contains one of the expected elements.
-    /// </summary>
-    /// <param name="expected">The expected elements.</param>
-    /// <param name="head">The position at which the expected element occured.</param>
-    /// <returns><see langword="true"/> if one or more of the expected elements occur in the remaining elements; otherwise, <see langword="false"/>.</returns>
-    [Pure]
-    public bool PeekUntil(in T expected, out int head)
-    {
-        head = Head;
-        if (head == _source.Length)
-        {
-            return false;
-        }
-
-        var comparer = _comparer;
-
-        if (comparer is null)
-        {
-            if (typeof(T).IsValueType)
-            {
-                do
-                {
-                    // ValueType: Devirtualize with EqualityComparer<TValue>.Default intrinsic
-                    if (!EqualityComparer<T>.Default.Equals(expected, _source[head]))
-                    {
-                        continue;
-                    }
-
-                    return true;
-                } while (++head < _source.Length);
-
-                return false;
-            }
-
-            // Object type: Shared Generic, EqualityComparer<TValue>.Default won't devirtualize (https://github.com/dotnet/runtime/issues/10050),
-            // so cache in a local rather than get EqualityComparer per loop iteration.
-            comparer = EqualityComparer<T>.Default;
-        }
-
-        do
-        {
-            if (!comparer.Equals(expected, _source[head]))
-            {
-                continue;
-            }
-
-            return true;
-        } while (++head < _source.Length);
-
-        return false;
-    }
-
-    #endregion Next & Until with one arg
-
-    #region Next & Until with two args
-
-    /// <summary>
-    ///     Consumes one element, and returns whether the element matches one of the expected elements.
-    /// </summary>
-    /// <param name="expected0">The the expected element.</param>
-    /// <param name="expected1">The the other expected element.</param>
-    /// <returns><see langword="true"/> if the element is as expected; otherwise, <see langword="false"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool ReadNext(in T expected0, in T expected1)
-    {
-        var success = PeekNext(expected0, expected1);
-        Head += 1;
-        return success;
-    }
-
-    /// <summary>
-    ///     Returns whether the element matches one of the expected elements, and consumes the element only if it does.
-    /// </summary>
-    /// <param name="expected0">The the expected element.</param>
-    /// <param name="expected1">The the other expected element.</param>
-    /// <returns><see langword="true"/> if the element is as expected; otherwise, <see langword="false"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryReadNext(in T expected0, in T expected1)
-    {
-        if (PeekNext(expected0, expected1))
-        {
-            Head += 1;
-            return true;
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    ///     Returns whether the element matches one of the expected elements.
-    /// </summary>
-    /// <param name="expected0">The the expected element.</param>
-    /// <param name="expected1">The the other expected element.</param>
-    /// <returns><see langword="true"/> if the element is as expected; otherwise, <see langword="false"/>.</returns>
-    [Pure]
-    public bool PeekNext(in T expected0, in T expected1)
-    {
-        var head = Head;
-        if (head == _source.Length)
-        {
-            return false;
-        }
-
-        var current = _source[head];
-        var comparer = _comparer;
-
-        if (comparer is null)
-        {
-            return EqualityComparer<T>.Default.Equals(expected0, current)
-                || EqualityComparer<T>.Default.Equals(expected1, current);
-        }
-
-        return comparer.Equals(expected0, current)
-            || comparer.Equals(expected1, current);
-    }
-
-    /// <summary>
-    ///     Consumes elements until one of the expected elements occur.
-    /// </summary>
-    /// <param name="expected0">The the expected element.</param>
-    /// <param name="expected1">The the other expected element.</param>
-    /// <returns><see langword="true"/> if one or more of the expected elements occur in the remaining elements; otherwise, <see langword="false"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool ReadUntil(in T expected0, in T expected1)
-    {
-        var success = PeekUntil(expected0, expected1, out var head);
-        Head = head;
-        return success;
-    }
-
-    /// <summary>
-    ///     Returns whether the remaining span contains one of the expected elements, and consumes the elements only if it does.
-    /// </summary>
-    /// <param name="expected0">The the expected element.</param>
-    /// <param name="expected1">The the other expected element.</param>
-    /// <returns><see langword="true"/> if one or more of the expected elements occur in the remaining elements; otherwise, <see langword="false"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryReadUntil(in T expected0, in T expected1)
-    {
-        if (PeekUntil(expected0, expected1, out var head))
-        {
-            Head = head;
-            return true;
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    ///     Returns whether the remaining span contains one of the expected elements.
-    /// </summary>
-    /// <param name="expected0">The the expected element.</param>
-    /// <param name="expected1">The the other expected element.</param>
-    /// <param name="head">The position at which the expected element occured.</param>
-    /// <returns><see langword="true"/> if one or more of the expected elements occur in the remaining elements; otherwise, <see langword="false"/>.</returns>
-    [Pure]
-    public bool PeekUntil(in T expected0, in T expected1, out int head)
-    {
-        head = Head;
-        if (head == _source.Length)
-        {
-            return false;
-        }
-
-        var comparer = _comparer;
-
-        if (comparer is null)
-        {
-            if (typeof(T).IsValueType)
-            {
-                do
-                {
-                    // ValueType: Devirtualize with EqualityComparer<TValue>.Default intrinsic
-                    if (!EqualityComparer<T>.Default.Equals(expected0, _source[head])
-                     && !EqualityComparer<T>.Default.Equals(expected1, _source[head]))
-                    {
-                        continue;
-                    }
-
-                    return true;
-                } while (++head < _source.Length);
-
-                return false;
-            }
-
-            // Object type: Shared Generic, EqualityComparer<TValue>.Default won't devirtualize (https://github.com/dotnet/runtime/issues/10050),
-            // so cache in a local rather than get EqualityComparer per loop iteration.
-            comparer = EqualityComparer<T>.Default;
-        }
-
-        do
-        {
-            if (!comparer.Equals(expected0, _source[head])
-             && !comparer.Equals(expected1, _source[head]))
-            {
-                continue;
-            }
-
-            return true;
-        } while (++head < _source.Length);
-
-        return false;
-    }
-
-    #endregion Next & Until with two args
+    #endregion Any
 }
