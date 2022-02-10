@@ -11,9 +11,9 @@ using Microsoft.CodeAnalysis.CSharp;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 
-using Rustic.DataEnumGenerator;
+using Rustic.DataEnumGen;
 
-namespace Rustic.Memory.Tests;
+namespace Rustic.DataEnumGen.Tests;
 
 [TestFixture]
 public class GeneratorTests
@@ -22,7 +22,7 @@ public class GeneratorTests
 
     public GeneratorTests()
     {
-        _writer = new StreamWriter("GeneratorTests.log", true);
+        _writer = new StreamWriter($"GeneratorTests-{typeof(string).Assembly.ImageRuntimeVersion}.log", true);
         _writer.AutoFlush = true;
         Logger = new Logger(nameof(GeneratorTests), InternalTraceLevel.Debug, _writer);
     }
@@ -42,15 +42,17 @@ public class GeneratorTests
 using System;
 using System.ComponentModel;
 
-namespace Rustic.DataEnumGenerator.Tests.TestAssembly
+using Rustic;
+
+namespace Rustic.DataEnumGen.Tests.TestAssembly
 {
     public enum Dummy : byte
     {
         [Description(""The default value."")]
         Default = 0,
-        [Rustic.Attributes.DataEnum(typeof((int, int)))]
+        [Rustic.DataEnum(typeof((int, int)))]
         Minimum = 1,
-        [Rustic.Attributes.DataEnum(typeof((long, long)))]
+        [Rustic.DataEnum(typeof((long, long)))]
         Maximum = 2,
     }
 
@@ -130,7 +132,8 @@ namespace Rustic.DataEnumGenerator.Tests.TestAssembly
             Logger.Debug("SyntaxTree\nName=\"{0}\",\nText=\"{1}\"", tree.FilePath, tree.ToString());
         }
 
-        foreach (var diag in comp.GetDiagnostics())
+        var d = comp.GetDiagnostics();
+        foreach (var diag in d)
         {
             Logger.Debug("Diagnostics {0}", diag.ToString());
         }

@@ -1,6 +1,6 @@
 using Rustic.Source;
 
-namespace Rustic.DataEnumGenerator;
+namespace Rustic.DataEnumGen;
 
 internal static class JsonConvertClass
 {

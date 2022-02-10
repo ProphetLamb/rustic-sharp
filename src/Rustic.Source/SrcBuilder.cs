@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
 
+using Rustic.Text;
+
 namespace Rustic.Source;
 
 public class SrcBuilder
@@ -68,6 +70,20 @@ public class SrcBuilder
         if (!String.IsNullOrEmpty(text))
         {
             Builder.Append(text);
+        }
+        return this;
+    }
+
+    public SrcBuilder Append(ReadOnlySpan<char> text)
+    {
+        if (!text.IsEmpty)
+        {
+#if NETSTANDARD2_1_OR_GREATER || NETSTANDARD2_1
+            Builder.Append(text);
+#else
+            Builder.Append(text.ToString());
+#endif
+
         }
         return this;
     }
@@ -210,7 +226,7 @@ public class SrcBuilder
 
     #endregion Source file
 
-    #region Language specific
+    #region Csharp
 
     public SrcBuilder StartIfBlock(string condition)
     {
@@ -631,5 +647,110 @@ public class SrcBuilder
         }
     }
 
-    #endregion Language specific
+    #endregion Csharp
+
+    #region XML
+
+    public SrcBuilder AppendDoc()
+    {
+        return AppendIndent("/// ");
+    }
+
+    public SrcBuilder AppendDoc(ReadOnlySpan<char> text)
+    {
+        if (text.IsEmpty)
+        {
+            return AppendDoc();
+        }
+
+        foreach (var element in text.Split("\r\n", "\n"))
+        {
+            AppendIndent("/// ").Append(text);
+        }
+
+        return this;
+    }
+
+    public SrcBuilder AppendDoc(char text)
+    {
+        return AppendIndent("/// ").Append(text);
+    }
+
+    public SrcBuilder AppendDoc(string? text)
+    {
+        if (String.IsNullOrEmpty(text))
+        {
+            return AppendDoc();
+        }
+
+        return AppendDoc(text.AsSpan());
+    }
+
+    public SrcBuilder DocStart(string elementName, string? attributes)
+    {
+        if (String.IsNullOrEmpty(attributes))
+        {
+            return AppendDoc($"<{elementName}>");
+        }
+
+        return AppendDoc($"<{elementName} {attributes}>");
+    }
+
+    public SrcBuilder DocEnd(string elementName)
+    {
+        return Append($"<{elementName}/>");
+    }
+
+    public SrcBuilder DocInline(string elementName, string? attributes = null, string? content = null)
+    {
+        if (String.IsNullOrEmpty(attributes))
+        {
+            Append('<').Append(elementName);
+        }
+        else
+        {
+            Append('<').Append(elementName).Append(' ').Append(attributes);
+        }
+
+        if (!String.IsNullOrEmpty(content))
+        {
+            Append('>').Append(content).Append('<').Append(elementName);
+        }
+        return Append("/>");
+    }
+
+    public SrcDoc Doc(string elementName, string? attributes = null)
+    {
+        return new SrcDoc(this, elementName, attributes);
+    }
+
+    public struct SrcDoc : IDisposable
+    {
+        private bool _disposed;
+
+        public SrcBuilder Builder { get; }
+        public string ElementName { get; }
+        public string? Attributes { get; }
+
+        public SrcDoc(SrcBuilder builder, string elementName, string? attributes)
+        {
+            _disposed = false;
+            Builder = builder;
+            ElementName = elementName;
+            Attributes = attributes;
+
+            Builder.DocStart(ElementName, Attributes);
+        }
+
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                Builder.DocEnd(ElementName).NL();
+            }
+            _disposed = true;
+        }
+    }
+
+    #endregion XML
 }

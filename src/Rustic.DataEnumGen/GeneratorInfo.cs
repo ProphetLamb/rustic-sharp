@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 using Rustic.Source;
 
-namespace Rustic.DataEnumGenerator;
+namespace Rustic.DataEnumGen;
 
 internal readonly struct GenInfo
 {
@@ -35,37 +35,43 @@ internal readonly struct GenInfo
 
     public const string FlagsSymbol = "System.FlagsAttribute";
 
-    public const string DataEnumSymbol = "Rustic.Attributes.DataEnumAttribute";
+    public const string DataEnumSymbol = "Rustic.DataEnumAttribute";
 
     public const string DescriptionSymbol = "System.ComponentModel.DescriptionAttribute";
 
-    public const string DataEnumSource = @"#nullable enable
-namespace Rustic.Attributes
+    public const string DataEnumSyntax = @"#nullable enable
+using System;
+
+namespace Rustic
 {
     /// <summary>Allows a enum member to ship with additional data.</summary>
     [System.AttributeUsage(System.AttributeTargets.Field)]
-    public sealed class DataEnumAttribute : System.Attribute
+    public sealed class DataEnumAttribute : Attribute
     {
-        public DataEnumAttribute(System.Type data)
+        public DataEnumAttribute(Type data)
         {
             Data = data;
         }
 
-        public System.Type Data { get; }
+        public Type Data { get; }
     }
 }
-#nullable restore";
+#nullable restore
+";
 
     public static void Generate(SrcBuilder text, in GenInfo info)
     {
         using (text.InNullable())
         {
-            text.AppendIndent("using System;")
+            text.Stmt("using System;")
                 .Stmt("using System.ComponentModel;")
                 .Stmt("using System.Collections.Generic;")
                 .Stmt("using System.Runtime.CompilerServices;")
                 .Stmt("using System.Runtime.Serialization;")
                 .Stmt("using System.Runtime.InteropServices;")
+                .NL()
+                .Stmt("using Rustic;")
+                .NL()
                 .NL();
 
             using (text.Decl($"namespace {info.Namespace}"))

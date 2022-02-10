@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Rustic.Attributes\Rustic.Attributes.csproj" />
+    <ProjectReference Include="..\Rustic.Text\Rustic.Text.csproj" />
   </ItemGroup>
 
 </Project>

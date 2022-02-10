@@ -1,11 +1,15 @@
 using Rustic.Source;
 
-namespace Rustic.DataEnumGenerator;
+namespace Rustic.DataEnumGen;
 
 internal static class EnumExtensionsClass
 {
     public static void Generate(SrcBuilder text, in GenInfo info)
     {
+        using (text.Doc("summary"))
+        {
+            text.Append($"Collection of extensions for the {info.EnumName} Enum.");
+        }
         using (text.Decl($"{info.Modifiers} static class {info.EnumName}Extensions"))
         {
             Name(text, in info);
@@ -16,6 +20,10 @@ internal static class EnumExtensionsClass
 
     private static void Name(SrcBuilder text, in GenInfo info)
     {
+        using (text.Doc("summary"))
+        {
+            text.Append($"Returns the name of the <see cref=\"{info.EnumName}\" value.");
+        }
         using (text.Decl($"public static string Name(this {info.EnumName} value)"))
         {
             text.Switch("value", in info, info.Members,
@@ -35,6 +43,10 @@ internal static class EnumExtensionsClass
 
     private static void Description(SrcBuilder text, in GenInfo info)
     {
+        using (text.Doc("summary"))
+        {
+            text.Append($"Returns the value of the <see cref=\"System.ComponentModel.DescriptionAttribute\"/> of <see cref=\"{info.EnumName}\" value.");
+        }
         using (text.Decl($"public static string? Description(this {info.EnumName} value)"))
         {
             text.Switch("value", in info, info.Members,
@@ -54,6 +66,10 @@ internal static class EnumExtensionsClass
 
     private static void Values(SrcBuilder text, in GenInfo info)
     {
+        using (text.Doc("summary"))
+        {
+            text.Append($"Returns the span of all possible values of <see cref=\"{info.EnumName}\".");
+        }
         using (text.Decl($"public static ReadOnlySpan<{info.EnumName}> Values"))
         {
             text.Stmt("[MethodImpl(MethodImplOptions.AggressiveInlining)]");

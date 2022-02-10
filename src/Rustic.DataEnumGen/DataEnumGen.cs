@@ -9,15 +9,15 @@ using Microsoft.CodeAnalysis.Text;
 
 using Rustic.Source;
 
-namespace Rustic.DataEnumGenerator;
+namespace Rustic.DataEnumGen;
 
-[Generator]
+[Generator(LanguageNames.CSharp)]
 [CLSCompliant(false)]
 public class DataEnumGen : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        context.RegisterPostInitializationOutput(ctx => ctx.AddSource($"{GenInfo.DataEnumSymbol}.g.cs", SourceText.From(GenInfo.DataEnumSource, Encoding.UTF8)));
+        context.RegisterPostInitializationOutput(ctx => ctx.AddSource($"{GenInfo.DataEnumSymbol}.g.cs", SourceText.From(GenInfo.DataEnumSyntax, Encoding.UTF8)));
 
         var enumDecls = context.SyntaxProvider.CreateSyntaxProvider(
                 static (s, _) => IsEnumDecl(s),
@@ -27,8 +27,7 @@ public class DataEnumGen : IIncrementalGenerator
 
         var compilationEnumDeclUnion = context.CompilationProvider.Combine(enumDecls.Collect());
 
-        context.RegisterSourceOutput(compilationEnumDeclUnion, static (spc, source) => Generate(source.Left, source.Right, spc));
-
+        context.RegisterSourceOutput(compilationEnumDeclUnion, static (spc, source) => Generate(source.Right, spc));
     }
 
     private static bool IsEnumDecl(SyntaxNode node)
@@ -98,7 +97,7 @@ public class DataEnumGen : IIncrementalGenerator
         return GenInfo.DescriptionSymbol.Equals(ctx.SemanticModel.GetTypeInfo(s).Type?.ToDisplayString());
     }
 
-    private static void Generate(Compilation compilation, ImmutableArray<GenInfo> members, SourceProductionContext context)
+    private static void Generate(ImmutableArray<GenInfo> members, SourceProductionContext context)
     {
         if (members.IsDefaultOrEmpty)
         {

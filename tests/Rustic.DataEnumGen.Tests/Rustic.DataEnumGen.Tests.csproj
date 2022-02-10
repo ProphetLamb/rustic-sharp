@@ -1,12 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net48;netcoreapp3.1;net50;net60</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1;net50;net60</TargetFrameworks>
     <LangVersion>10.0</LangVersion>
-
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsPackable>false</IsPackable>
-
-    <RootNamespace>Rustic.Memory.Tests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,8 +21,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Rustic.DataEnumGenerator\Rustic.DataEnumGenerator.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\..\src\Rustic.DataEnumGen\Rustic.DataEnumGen.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\..\src\Rustic.Common\Rustic.Common.csproj" />
+    <ProjectReference Include="..\..\src\Rustic.Attributes\Rustic.Attributes.csproj" />
   </ItemGroup>
 
   <ItemGroup>
