@@ -1,10 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
-    <LangVersion>10.0</LangVersion>
-    <Nullable>enable</Nullable>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;netcoreapp3.1;net50;net60</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup Label="Assembly Info">
@@ -16,19 +13,8 @@
   <PropertyGroup Label="Nuget Package Info">
     <PackageId>Rustic.Memory.Bit</PackageId>
     <Title>Rustic.Memory.Bit</Title>
-    <Authors>ProphetLamb</Authors>
-    <Owners>ProhetLamb</Owners>
-    <Version>0.5.0</Version>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <Description>Packed bit collections. Storing sequences of boolean values in integers.</Description>
     <PackageTags>ArrayPool;Ref;Span;Collections</PackageTags>
-    <Copyright>Copyright (c) ProphetLamb 2022</Copyright>
-    <PackageProjectUrl>https://github.com/ProphetLamb/rustic-sharp</PackageProjectUrl>
-    <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/ProphetLamb/rustic-sharp.git</RepositoryUrl>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>$([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)/../../RELEASENOTES.md"))</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Label="Nuget Pack Options">
@@ -37,6 +23,7 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <DebugType>embedded</DebugType>
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup Label="Nuget Pack Source Link">

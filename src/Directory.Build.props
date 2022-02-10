@@ -1,28 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
+<Project>
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
     <LangVersion>10.0</LangVersion>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <PropertyGroup Label="Assembly Info">
-    <AssemblyName>Rustic.Reflect</AssemblyName>
-    <AssemblyTitle>Rustic.Reflect</AssemblyTitle>
-    <AssemblyVersion>0.5.0</AssemblyVersion>
-  </PropertyGroup>
-
   <PropertyGroup Label="Nuget Package Info">
-    <PackageId>Rustic.Reflect</PackageId>
-    <Title>Rustic.Reflect</Title>
     <Authors>ProphetLamb</Authors>
     <Owners>ProhetLamb</Owners>
     <Version>0.5.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Description>Il based delegate emitter and commonly used reflection utility.</Description>
-    <PackageTags>Reflection,IL</PackageTags>
     <Copyright>Copyright (c) ProphetLamb 2022</Copyright>
     <PackageProjectUrl>https://github.com/ProphetLamb/rustic-sharp</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
@@ -37,12 +25,8 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <DebugType>embedded</DebugType>
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-    <DeterministicSourcePaths Condition="'$(EnableSourceLink)' == ''">false</DeterministicSourcePaths>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
-
-  <ItemGroup Label="Nuget Pack Source Link">
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-  </ItemGroup>
 
   <ItemGroup>
     <None Include="..\..\.editorconfig" Link=".editorconfig" />
@@ -50,9 +34,8 @@
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Rustic.Memory\Rustic.Memory.csproj" />
-    <ProjectReference Include="..\Rustic.Common\Rustic.Common.csproj" />
+  <ItemGroup Label="Nuget Pack Source Link">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
