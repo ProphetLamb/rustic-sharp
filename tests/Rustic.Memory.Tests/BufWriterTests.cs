@@ -8,9 +8,8 @@ using FluentAssertions;
 using NUnit.Framework;
 
 using Rustic.Memory;
-using Rustic.Memory.IO;
 
-namespace Rustic.Memory.Tests.IO;
+namespace Rustic.Memory.Tests;
 
 [TestFixture]
 public class BufWriterTests
