@@ -1,8 +1,8 @@
 version: "{build}"
 
 cache:
-  - '%LocalAppData%\NuGet\Cache'
-  - '%LocalAppData%\NuGet\v3-cache'
+  - '%LocalAppData%\NuGet\Cache -> **\Rustic*.csproj'
+  - '%LocalAppData%\NuGet\v3-cache  -> **\Rustic*.csproj'
   - C:\ProgramData\chocolatey\bin -> appveyor.yml
   - C:\ProgramData\chocolatey\lib -> appveyor.yml
 
@@ -22,6 +22,8 @@ artifacts:
 
 test_script:
   - ps: >-
+      dotnet restore -verbosity:q
+
       $target_frameworks = [String[]] 'netstandard2.1', 'netcoreapp3.1', 'net5.0', 'net6.0'
 
       echo "`n========================================================================================================================`n
