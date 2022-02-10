@@ -18,9 +18,7 @@ cache:
 
 install:
   - choco install dotnet-sdk --version 6.0.101
-  - ps: >-
-      "& dotnet tool install --global coveralls.net"
-      "& dotnet tool install -g XMLDoc2Markdown"
+  - ps: ./tooling.ps1
 
 configuration:
   - Debug
@@ -44,7 +42,7 @@ build:
   verbosity: quiet
 
 after_test:
-  - ps: ./coveralls.net.ps1
+  - ps: ./coverage.ps1
 
 test:
   assemblies:
