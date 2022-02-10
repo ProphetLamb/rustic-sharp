@@ -36,6 +36,7 @@ dotnet_csproj:
 before_build:
   - ps: $Env:DOTNET_CLI_TELEMETRY_OPTOUT=1
   - ps: $Env:DOTNET_NOLOGO=1
+  - ps: dotnet restore -verbosity:q
 
 build:
   parallel: true
