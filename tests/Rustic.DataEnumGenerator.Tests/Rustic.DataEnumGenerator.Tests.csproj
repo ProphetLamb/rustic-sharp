@@ -30,8 +30,4 @@
     <None Include="..\..\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Include=".\TestFile.cs.test" CopyToOutputDirectory="Always" />
-  </ItemGroup>
-
 </Project>
