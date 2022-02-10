@@ -29,7 +29,7 @@ artifacts:
 deploy:
   - provider: NuGet # Nuget.org
     api_key:
-      - secure: wB/TicV9Qsuqfs1X3excsY/wt/pBfqQDb/9kKFWQcCHTL0rQZNHaVqDiEWQ39U6L
+      secure: wB/TicV9Qsuqfs1X3excsY/wt/pBfqQDb/9kKFWQcCHTL0rQZNHaVqDiEWQ39U6L
     artifact: /.*(\.|\.s)nupkg/
     on:
       - branch: /release-/
@@ -38,6 +38,6 @@ deploy:
     artifact: /.*\.nupkg/
     username: ProphetLamb
     api_key:
-      - secure: C8xC+nv4MSirvCA8kUoan4sz2B8aFaytWW2m4lrLqXhAnSkOmo6fN90QHiGJoSGI
+      secure: C8xC+nv4MSirvCA8kUoan4sz2B8aFaytWW2m4lrLqXhAnSkOmo6fN90QHiGJoSGI
     on:
       - branch: /release-/
