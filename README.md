@@ -1,6 +1,8 @@
 # Rustic
 
-# Packages
+## [Releasenotes](RELEASENOTES.md)
+
+## Packages
 
 | Name                                                                | Description                                                                    | Nuget                                                                                                                              | CLI                                           |
 | ------------------------------------------------------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
@@ -14,14 +16,14 @@
 | [`Rustic.Source`](doc/Rustic.Source/index.md)                       | Packages types and functionality related to extending source generators.       | [![NuGet Badge](https://buildstats.info/nuget/Rustic.Source)](https://www.nuget.org/packages/Rustic.Source/)                       | `dotnet add package Rustic.Source`            |
 | [`Rustic.Text`](doc/Rustic.Text/index.md)                           | Types and extensions improving string access and formatting functionality.     | [![NuGet Badge](https://buildstats.info/nuget/Rustic.Text)](https://www.nuget.org/packages/Rustic.Text/)                           | `dotnet add package Rustic.Source`            |
 
-# Continues Integration
+## Continues Integration
 
 | Build                                                                                                                                                                                              | Test                                                                                                                                                                          | Coverage                                                                                                                                                                                          | Code quality                                                                                                                                                                                                                                                                                       |
 | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | <sup>Appveyor</sup> [![Build status](https://ci.appveyor.com/api/projects/status/26phbh7xqhxet8fn/branch/master?svg=true)](https://ci.appveyor.com/project/ProphetLamb/rustic-sharp/branch/master) | <sup>Appveyor</sup> ![[AppVeyor tests](https://ci.appveyor.com/project/ProphetLamb/rustic-sharp/build/tests)](https://img.shields.io/appveyor/tests/ProphetLamb/rustic-sharp) | <sup>Coveralls</sup> [![Coverage Status](https://coveralls.io/repos/github/ProphetLamb/rustic-sharp/badge.svg?branch=master)](https://coveralls.io/github/ProphetLamb/rustic-sharp?branch=master) | <sup>Codacy</sup> [![Codacy Badge](https://app.codacy.com/project/badge/Grade/316ddf1a416949c290607666c875b861)](https://www.codacy.com/gh/ProphetLamb/rustic-sharp/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ProphetLamb/rustic-sharp&amp;utm_campaign=Badge_Grade) |
 | ![Build history](https://buildstats.info/appveyor/chart/ProphetLamb/rustic-sharp/?branch=master)                                                                                                   |                                                                                                                                                                               |                                                                                                                                                                                                   |                                                                                                                                                                                                                                                                                                    |
 
-# Source acknowledgements
+## Source acknowledgements
 
 | Source                                                                                                                                                          | License |
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |

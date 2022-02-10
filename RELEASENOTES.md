@@ -1,3 +1,8 @@
+# Version 0.5
+
+- Build pipeline
+- Enum source generator
+
 # Version 0.4.1
 
 - Validate null checks
