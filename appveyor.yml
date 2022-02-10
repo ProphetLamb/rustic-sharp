@@ -32,7 +32,7 @@ deploy:
       secure: wB/TicV9Qsuqfs1X3excsY/wt/pBfqQDb/9kKFWQcCHTL0rQZNHaVqDiEWQ39U6L
     artifact: /.*(\.|\.s)nupkg/
     on:
-      - branch: /release-/
+      branch: /release-/
   - provider: NuGet # Github packages
     server: https://nuget.pkg.github.com/ProphetLamb/index.json
     artifact: /.*\.nupkg/
@@ -40,4 +40,4 @@ deploy:
     api_key:
       secure: C8xC+nv4MSirvCA8kUoan4sz2B8aFaytWW2m4lrLqXhAnSkOmo6fN90QHiGJoSGI
     on:
-      - branch: /release-/
+      branch: /release-/
