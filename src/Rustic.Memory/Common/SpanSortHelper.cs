@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Rustic.Memory.Common;
 
-#if !NET5_0_OR_GREATER
+#if !(NET5_0_OR_GREATER || NET5_0)
 
 // Source: https://source.dot.net/#System.Private.CoreLib/ArraySortHelper.cs
 /// <summary>Provides the function <see cref="SpanSortHelper{T}.Sort"/> with which a <see cref="Span{T}"/> can be sorted.</summary>
@@ -138,7 +138,7 @@ public static class SpanSortHelper<T>
             var p = PickPivotAndPartition(keys.Slice(0, partitionSize), comparer);
 
             // Note we've already partitioned around the pivot and do not have to move the pivot again.
-            IntroSort(keys.Slice(p + 1, partitionSize), depthLimit, comparer);
+            IntroSort(keys.Slice(p + 1, partitionSize - (p + 1)), depthLimit, comparer);
             partitionSize = p;
         }
     }

@@ -46,7 +46,7 @@ public static class MemoryExtensions
     /// <param name="span">The <see cref="Span{T}"/> to sort.</param>
     /// <param name="comparison">The <see cref="Comparison{T}"/> to use when comparing elements.</param>
     /// <typeparam name="T">The type of the elements of the span.</typeparam>
-    public static void Sort<T>(this Span<T> span, Comparison<T>? comparison)
+    public static void Sort<T>(this Span<T> span, Comparison<T> comparison)
     {
         comparison.ValidateArgNotNull();
         if (span.Length > 1)
