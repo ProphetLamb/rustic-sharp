@@ -73,6 +73,7 @@ for:
       - provider: NuGet # Github packages
         server: https://nuget.pkg.github.com/ProphetLamb/index.json
         artifact: /.*\.nupkg/
+        draft: true
         username: ProphetLamb
         api_key:
           secure: C8xC+nv4MSirvCA8kUoan4sz2B8aFaytWW2m4lrLqXhAnSkOmo6fN90QHiGJoSGI
