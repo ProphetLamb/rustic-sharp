@@ -19,8 +19,8 @@ cache:
 install:
   - choco install dotnet-sdk --version 6.0.101
   - ps: >-
-      dotnet tool install --global coveralls.net
-      dotnet tool install -g XMLDoc2Markdown
+      & dotnet tool install --global coveralls.net
+      & dotnet tool install -g XMLDoc2Markdown
 
 configuration:
   - Debug
@@ -38,9 +38,6 @@ dotnet_csproj:
 
 before_build:
   - dotnet restore -verbosity:q
-
-after_build:
-  - ps: ./gendoc.ps1
 
 build:
   parallel: true

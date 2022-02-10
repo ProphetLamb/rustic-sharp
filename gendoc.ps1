@@ -10,5 +10,5 @@ foreach ($project in Get-ChildItem -Path src/ -Recurse -File *.csproj) {
         $name=$Matches[0]
     }
 
-    xmldoc2md "$dir/bin/Debug/net50/$name.dll" "doc/$name"
+    & xmldoc2md "$dir/bin/Debug/net50/$name.dll" "doc/$name"
 }
