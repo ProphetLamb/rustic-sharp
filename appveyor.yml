@@ -39,11 +39,14 @@ before_build:
   - dotnet restore -verbosity:q
 
 after_build:
-  - ps: gendoc.ps1
+  - ps: ./gendoc.ps1
 
 build:
   parallel: true
   verbosity: quiet
+
+after_test:
+  - ps: foreach ($coverage in Get-ChildItem -Recurse coverage*.xml) { csmacnz.coveralls.exe --opencover -i $coverage.FullName }
 
 test:
   assemblies:
