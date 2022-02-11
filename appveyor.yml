@@ -41,7 +41,7 @@ build:
   verbosity: quiet
 
 after_build:
-  - ps: dotnet pack --configuration $Env:CONFIGURATION
+  - ps: dotnet pack --no-restore --no-build -verbosity:q --configuration $Env:CONFIGURATION
 
 after_test:
   - ps: ./coverage.ps1
@@ -73,7 +73,7 @@ deploy:
       branch: /release/
 
 for:
-  - branches: # Only pack and deploy nuget packages for releases
+  - branches:
       only:
         - /release/
 
