@@ -17,6 +17,7 @@ public class SrcBuilder
     public SrcBuilder(int initialCap, int indentSize = 4)
     {
         Builder = new StringBuilder(initialCap);
+        _indent = String.Empty;
         SetIndent(indentSize, 0);
     }
 
@@ -67,7 +68,7 @@ public class SrcBuilder
 
     public SrcBuilder Append(string? text)
     {
-        if (!String.IsNullOrEmpty(text))
+        if (!text.IsEmpty())
         {
             Builder.Append(text);
         }
@@ -97,7 +98,7 @@ public class SrcBuilder
     public SrcBuilder AppendLine(string? text)
     {
         AppendIndent();
-        if (!String.IsNullOrEmpty(text))
+        if (!text.IsEmpty())
         {
             Builder.AppendLine(text);
         }
@@ -125,7 +126,7 @@ public class SrcBuilder
 
     public SrcBuilder NoIndentLine(string? text)
     {
-        if (!String.IsNullOrEmpty(text))
+        if (!text.IsEmpty())
         {
             Builder.AppendLine(text);
         }
@@ -147,7 +148,7 @@ public class SrcBuilder
     {
         Builder.AppendLine();
         AppendIndent();
-        if (!String.IsNullOrEmpty(text))
+        if (!text.IsEmpty())
         {
             Builder.AppendLine(text);
         }
@@ -678,7 +679,7 @@ public class SrcBuilder
 
     public SrcBuilder AppendDoc(string? text)
     {
-        if (String.IsNullOrEmpty(text))
+        if (text.IsEmpty())
         {
             return AppendDoc();
         }
@@ -688,7 +689,7 @@ public class SrcBuilder
 
     public SrcBuilder DocStart(string elementName, string? attributes)
     {
-        if (String.IsNullOrEmpty(attributes))
+        if (attributes.IsEmpty())
         {
             return AppendDoc($"<{elementName}>");
         }
@@ -703,7 +704,7 @@ public class SrcBuilder
 
     public SrcBuilder DocInline(string elementName, string? attributes = null, string? content = null)
     {
-        if (String.IsNullOrEmpty(attributes))
+        if (attributes.IsEmpty())
         {
             Append('<').Append(elementName);
         }
@@ -712,7 +713,7 @@ public class SrcBuilder
             Append('<').Append(elementName).Append(' ').Append(attributes);
         }
 
-        if (!String.IsNullOrEmpty(content))
+        if (!content.IsEmpty())
         {
             Append('>').Append(content).Append('<').Append(elementName);
         }

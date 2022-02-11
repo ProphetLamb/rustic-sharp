@@ -248,7 +248,7 @@ public ref struct StrBuilder
     /// <param name="value">The string to insert.</param>
     public void Insert(int index, string? value)
     {
-        if (String.IsNullOrEmpty(value))
+        if (value.IsEmpty())
         {
             return;
         }
@@ -296,7 +296,7 @@ public ref struct StrBuilder
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Append(string? value)
     {
-        if (String.IsNullOrEmpty(value))
+        if (value.IsEmpty())
         {
             return;
         }
