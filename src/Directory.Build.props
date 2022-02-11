@@ -3,12 +3,9 @@
     <LangVersion>10.0</LangVersion>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <CodeAnalysisRuleSet>..\..\ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
-    <EnablePackageValidation>true</EnablePackageValidation>
     <Features>strict</Features>
+
+    <CodeAnalysisRuleSet>..\..\ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <PropertyGroup Label="Nuget Package Info">
