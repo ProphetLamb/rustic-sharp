@@ -55,27 +55,27 @@ artifacts:
   - path: '**\GeneratorTests.log'
   - path: 'doc\'
 
+deploy:
+  - provider: NuGet # Nuget.org
+    api_key:
+      secure: wB/TicV9Qsuqfs1X3excsY/wt/pBfqQDb/9kKFWQcCHTL0rQZNHaVqDiEWQ39U6L
+    artifact: /.*(\.|\.s)nupkg/
+    on:
+      branch: /release/
+  - provider: NuGet # Github packages
+    server: https://nuget.pkg.github.com/ProphetLamb/index.json
+    artifact: /.*\.nupkg/
+    draft: true
+    username: ProphetLamb
+    api_key:
+      secure: C8xC+nv4MSirvCA8kUoan4sz2B8aFaytWW2m4lrLqXhAnSkOmo6fN90QHiGJoSGI
+    on:
+      branch: /release/
+
 for:
   - branches: # Only pack and deploy nuget packages for releases
       only:
-        - /release.*/
+        - /release/
 
     configuration:
       - Release
-
-    deploy:
-      - provider: NuGet # Nuget.org
-        api_key:
-          secure: wB/TicV9Qsuqfs1X3excsY/wt/pBfqQDb/9kKFWQcCHTL0rQZNHaVqDiEWQ39U6L
-        artifact: /.*(\.|\.s)nupkg/
-        on:
-          branch: /release.*/
-      - provider: NuGet # Github packages
-        server: https://nuget.pkg.github.com/ProphetLamb/index.json
-        artifact: /.*\.nupkg/
-        draft: true
-        username: ProphetLamb
-        api_key:
-          secure: C8xC+nv4MSirvCA8kUoan4sz2B8aFaytWW2m4lrLqXhAnSkOmo6fN90QHiGJoSGI
-        on:
-          branch: /release.*/
