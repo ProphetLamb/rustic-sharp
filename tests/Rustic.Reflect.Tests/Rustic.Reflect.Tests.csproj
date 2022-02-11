@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net48;net48;net50;net60</TargetFrameworks>
+    <TargetFrameworks>net48;netcoreapp31;net50;net60</TargetFrameworks>
     <LangVersion>10.0</LangVersion>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Rustic.Memory\Rustic.Memory.csproj" />
+    <ProjectReference Include="..\..\src\Rustic.Reflect\Rustic.Reflect.csproj" />
     <ProjectReference Include="..\..\src\Rustic.Common\Rustic.Common.csproj" />
   </ItemGroup>
 

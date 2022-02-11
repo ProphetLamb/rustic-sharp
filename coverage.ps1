@@ -1,5 +1,5 @@
 # We need to run the tests again, bc Appveyor doesnt use dotnet cli for testing, and I cant get the AppveyorTestlogger to work.
-dotnet test --no-restore --no-build -verbosity:m /p:AltCover="true" /p:AltCoverAssemblyExcludeFilter="NUnit|AltCover"
+dotnet test --no-restore --no-build -verbosity:m /p:AltCover="true" /p:AltCoverAssemblyExcludeFilter="NUnit|AltCover" /p:AltCoverAssemblyFilter="Rustic\."
 
 $commitID = & git rev-parse HEAD
 $commitBranch = & git rev-parse --abbrev-ref HEAD
