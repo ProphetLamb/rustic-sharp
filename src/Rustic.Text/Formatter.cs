@@ -147,8 +147,7 @@ public readonly struct IdxDef<T> : IFmtDef
 
     public bool NextTextEnd(ref Tokenizer<char> tokenizer)
     {
-        while ((Prefix.Length == 0 || tokenizer.Read(Prefix.AsSpan())) && tokenizer.ReadUntilAny('{') && tokenizer.TryReadAny('{')) ;
-
+        while ((Prefix.Length == 0 || tokenizer.Read(Prefix.AsSpan())) && tokenizer.ReadUntilAny('{') && tokenizer.TryReadNext('{')) ;
         tokenizer.Consume(-Prefix.Length - 1);
         return true;
     }
@@ -160,7 +159,7 @@ public readonly struct IdxDef<T> : IFmtDef
 
     public bool NextHoleEnd(ref Tokenizer<char> tokenizer)
     {
-        while (tokenizer.ReadUntilAny('}') && tokenizer.TryReadAny('}')) ;
+        while (tokenizer.ReadUntilAny('}') && tokenizer.TryReadNext('}')) ;
 
         tokenizer.Consume(-1);
         return false;
@@ -229,7 +228,7 @@ public readonly struct NamedDef<T> : IFmtDef
 
     public bool NextTextEnd(ref Tokenizer<char> tokenizer)
     {
-        while ((Prefix.Length == 0 || tokenizer.Read(Prefix.AsSpan())) && tokenizer.ReadAny('{') && tokenizer.TryReadAny('{')) ;
+        while ((Prefix.Length == 0 || tokenizer.Read(Prefix.AsSpan())) && tokenizer.ReadAny('{') && tokenizer.TryReadNext('{')) ;
 
         tokenizer.Consume(-Prefix.Length - 1);
         return true;
@@ -242,7 +241,7 @@ public readonly struct NamedDef<T> : IFmtDef
 
     public bool NextHoleEnd(ref Tokenizer<char> tokenizer)
     {
-        while (tokenizer.ReadUntilAny('}') && tokenizer.TryReadAny('}')) ;
+        while (tokenizer.ReadUntilAny('}') && tokenizer.TryReadNext('}')) ;
 
         tokenizer.Consume(-1);
         return false;

@@ -470,7 +470,7 @@ public static class VectorTraits
         public int GetHashCode(T obj)
         {
             Debug.Fail("Comparison cannot compute a hashcode. Fallback to obj.GetHashCode()");
-            return obj.GetHashCode();
+            return obj is null ? 0 : obj.GetHashCode();
         }
     }
 }

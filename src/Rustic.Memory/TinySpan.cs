@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Rustic.Memory;
 
@@ -192,18 +193,19 @@ public static class TinySpan
         var count = args.Length;
         return new(args.ToSegment());
     }
+
 }
 
 /// <summary>A structure representing a immutable sequence of function parameters.</summary>
 /// <typeparam name="T"></typeparam>
-[DebuggerDisplay("{GetDebuggerDisplay(),nq}")]
+[StructLayout(LayoutKind.Sequential), DebuggerDisplay("{GetDebuggerDisplay(),nq}")]
 public readonly ref struct TinySpan<T>
 {
-    private readonly int _length;
     [AllowNull] private readonly T _arg0;
     [AllowNull] private readonly T _arg1;
     [AllowNull] private readonly T _arg2;
     [AllowNull] private readonly T _arg3;
+    private readonly int _length;
     private readonly ReadOnlySpan<T> _values;
 
     /// <summary>Initializes a new parameter span with values.</summary>
@@ -302,7 +304,7 @@ public readonly ref struct TinySpan<T>
     {
         if (!_values.IsEmpty)
         {
-            return _values.TryCopyTo(destination); ;
+            return _values.TryCopyTo(destination);
         }
         else if ((uint)_length <= (uint)destination.Length)
         {
