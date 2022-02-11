@@ -91,6 +91,17 @@ public static class Option
     }
 
     #endregion TAP
+
+    public static IEnumerable<U> FilterMap<T, U>(this IEnumerable<T> sequence, Func<T, Option<U>> filterMap)
+    {
+        foreach (var element in sequence)
+        {
+            if (filterMap(element).TrySome(out U value))
+            {
+                yield return value;
+            }
+        }
+    }
 }
 
 /// <summary>Represents an optional value. Every <see cref="Option{T}"/> is either <see cref="Some{T}"/> or <see cref="None{T}"/>.</summary>
