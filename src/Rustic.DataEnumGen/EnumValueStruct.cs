@@ -4,7 +4,7 @@ namespace Rustic.DataEnumGen;
 
 internal static class EnumValueStruct
 {
-    public static void Generate(SrcBuilder text, in GenInfo info)
+    public static void Generate(SrcBuilder text, in GenContext info)
     {
         using (text.Stmt("[Serializable]")
                 .Stmt("[StructLayout(LayoutKind.Explicit)]")
@@ -60,7 +60,7 @@ internal static class EnumValueStruct
         }
     }
 
-    private static void Fields(SrcBuilder text, in GenInfo info)
+    private static void Fields(SrcBuilder text, in GenContext info)
     {
         text.Stmt("[FieldOffset(0)]")
             .Stmt($"public readonly {info.EnumName} Value;");
@@ -72,9 +72,9 @@ internal static class EnumValueStruct
         }
     }
 
-    private static void Ctor(SrcBuilder text, in GenInfo info)
+    private static void Ctor(SrcBuilder text, in GenContext info)
     {
-        using (text.Decl($"private {info.EnumName}Value", in info, (in GenInfo ctx, ref SrcBuilder.SrcColl p) =>
+        using (text.Decl($"private {info.EnumName}Value", in info, (in GenContext ctx, ref SrcBuilder.SrcColl p) =>
         {
             p.Add($"in {ctx.EnumName} value");
             foreach (var e in ctx.DataMembers)
@@ -88,7 +88,7 @@ internal static class EnumValueStruct
         }
     }
 
-    private static void CtorSwitch(SrcBuilder text, in GenInfo info)
+    private static void CtorSwitch(SrcBuilder text, in GenContext info)
     {
         text.Switch("value", in info, info.DataMembers,
             static (ctx, current) => $"{ctx.EnumName}.{current.Name}",
@@ -112,10 +112,10 @@ internal static class EnumValueStruct
             });
     }
 
-    private static void Factory(SrcBuilder text, in GenInfo info, in EnumDeclInfo current)
+    private static void Factory(SrcBuilder text, in GenContext info, in EnumContext current)
     {
         using (text.Stmt("[MethodImpl(MethodImplOptions.AggressiveInlining)]")
-            .Decl($"public static {info.EnumName}Value {current.Name}", current, (in EnumDeclInfo ctx, ref SrcBuilder.SrcColl parameters) =>
+            .Decl($"public static {info.EnumName}Value {current.Name}", current, (in EnumContext ctx, ref SrcBuilder.SrcColl parameters) =>
         {
             if (ctx.IsDataEnum)
             {
@@ -132,7 +132,7 @@ internal static class EnumValueStruct
         }
     }
 
-    private static void IsEnum(SrcBuilder text, in GenInfo info, in EnumDeclInfo current)
+    private static void IsEnum(SrcBuilder text, in GenContext info, in EnumContext current)
     {
         using (text.Decl($"public bool Is{current.Name}"))
         {
@@ -144,7 +144,7 @@ internal static class EnumValueStruct
         }
     }
 
-    private static void TryEnum(SrcBuilder text, in GenInfo info, in EnumDeclInfo current)
+    private static void TryEnum(SrcBuilder text, in GenContext info, in EnumContext current)
     {
         using (text.Decl($"public bool Try{current.Name}(out {current.TypeName} value)"))
         {
@@ -159,7 +159,7 @@ internal static class EnumValueStruct
         }
     }
 
-    private static void ExpectEnum(SrcBuilder text, in GenInfo info, in EnumDeclInfo current)
+    private static void ExpectEnum(SrcBuilder text, in GenContext info, in EnumContext current)
     {
         using (text.Decl($"public {current.TypeName} Expect{current.Name}(string? message)"))
         {
@@ -171,7 +171,7 @@ internal static class EnumValueStruct
         }
     }
 
-    private static void EqualsEnum(SrcBuilder text, in GenInfo info)
+    private static void EqualsEnum(SrcBuilder text, in GenContext info)
     {
         text.Stmt("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
         using (text.Decl($"public bool Equals({info.EnumName} other)"))
@@ -180,7 +180,7 @@ internal static class EnumValueStruct
         }
     }
 
-    private static void EqualsOther(SrcBuilder text, in GenInfo info)
+    private static void EqualsOther(SrcBuilder text, in GenContext info)
     {
         using (text.Decl($"public bool Equals({info.EnumName}Value other)"))
         {
@@ -201,7 +201,7 @@ internal static class EnumValueStruct
         }
     }
 
-    private static void EqualsObj(SrcBuilder text, in GenInfo info)
+    private static void EqualsObj(SrcBuilder text, in GenContext info)
     {
         using (text.Decl("public override bool Equals(object? obj)"))
         {
@@ -219,7 +219,7 @@ internal static class EnumValueStruct
         }
     }
 
-    private static void HashCode(SrcBuilder text, in GenInfo info)
+    private static void HashCode(SrcBuilder text, in GenContext info)
     {
         using (text.Decl("public override int GetHashCode()"))
         {
@@ -237,7 +237,7 @@ internal static class EnumValueStruct
         }
     }
 
-    private static void SerCtor(SrcBuilder text, in GenInfo info)
+    private static void SerCtor(SrcBuilder text, in GenContext info)
     {
         using (text.Decl($"private {info.EnumName}Value(SerializationInfo info, StreamingContext context)"))
         {
@@ -265,7 +265,7 @@ internal static class EnumValueStruct
         }
     }
 
-    private static void SerGetObjData(SrcBuilder text, in GenInfo info)
+    private static void SerGetObjData(SrcBuilder text, in GenContext info)
     {
         using (text.Decl("public void GetObjectData(SerializationInfo info, StreamingContext context)"))
         {
@@ -279,7 +279,7 @@ internal static class EnumValueStruct
         }
     }
 
-    private static void OperatorEq(SrcBuilder text, in GenInfo info)
+    private static void OperatorEq(SrcBuilder text, in GenContext info)
     {
         text.Stmt("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
         using (text.Decl($"public static bool operator ==(in {info.EnumName}Value left, in {info.EnumName}Value right)"))
@@ -288,7 +288,7 @@ internal static class EnumValueStruct
         }
     }
 
-    private static void OperatorNeq(SrcBuilder text, in GenInfo info)
+    private static void OperatorNeq(SrcBuilder text, in GenContext info)
     {
         text.Stmt("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
         using (text.Decl($"public static bool operator !=(in {info.EnumName}Value left, in {info.EnumName}Value right)"))
@@ -297,7 +297,7 @@ internal static class EnumValueStruct
         }
     }
 
-    private static void OperatorEnum(SrcBuilder text, in GenInfo info)
+    private static void OperatorEnum(SrcBuilder text, in GenContext info)
     {
         text.Stmt("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
         using (text.Decl($"public static implicit operator {info.EnumName}(in {info.EnumName}Value value)"))

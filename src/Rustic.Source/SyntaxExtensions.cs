@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Threading;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -7,15 +9,17 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Rustic.Source;
 
+[CLSCompliant(false)]
 public static class SyntaxExtensions
 {
-    public static AttributeSyntax? FindAttribute(this MemberDeclarationSyntax member, GeneratorSyntaxContext context, Func<AttributeSyntax, GeneratorSyntaxContext, bool> selector)
+    public static AttributeSyntax? FindMemAttr<M>(this SynModel<M> member, Func<SynModel<M>, AttributeSyntax, bool> predicate)
+        where M : MemberDeclarationSyntax
     {
-        foreach (var attrListSyntax in member.AttributeLists)
+        foreach (var attrListSyntax in member.Node.AttributeLists)
         {
             foreach (var attrSyntax in attrListSyntax.Attributes)
             {
-                if (selector(attrSyntax, context))
+                if (predicate(member, attrSyntax))
                 {
                     return attrSyntax;
                 }
@@ -25,13 +29,14 @@ public static class SyntaxExtensions
         return null;
     }
 
-    public static AttributeSyntax? FindAttribute(this BaseTypeDeclarationSyntax type, GeneratorSyntaxContext context, Func<AttributeSyntax, GeneratorSyntaxContext, bool> selector)
+    public static AttributeSyntax? FindTypeAttr<T>(this SynModel<T> type, Func<SynModel<T>, AttributeSyntax, bool> predicate)
+        where T : BaseTypeDeclarationSyntax
     {
-        foreach (var attrListSyntax in type.AttributeLists)
+        foreach (var attrListSyntax in type.Node.AttributeLists)
         {
             foreach (var attrSyntax in attrListSyntax.Attributes)
             {
-                if (selector(attrSyntax, context))
+                if (predicate(type, attrSyntax))
                 {
                     return attrSyntax;
                 }
@@ -61,5 +66,32 @@ public static class SyntaxExtensions
         }
 
         throw new InvalidOperationException("No namespace declaration found.");
+    }
+
+    public static IEnumerable<T> CollectSyntax<T>(this GeneratorExecutionContext ctx, Func<SyntaxNode, CancellationToken, bool> predicate, Func<GeneratorExecutionContext, SyntaxNode, CancellationToken, T> transform)
+    {
+        foreach (var tree in ctx.Compilation.SyntaxTrees)
+        {
+            CancellationToken ct = new();
+            if (tree.TryGetRoot(out var root))
+            {
+                foreach (var node in root.ChildNodes())
+                {
+                    if (predicate(node, ct))
+                    {
+                        yield return transform(ctx, node, ct);
+                    }
+
+                    if (ct.IsCancellationRequested)
+                    {
+                        break;
+                    }
+                }
+            }
+            if (ct.IsCancellationRequested)
+            {
+                break;
+            }
+        }
     }
 }

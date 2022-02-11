@@ -4,7 +4,7 @@ namespace Rustic.DataEnumGen;
 
 internal static class EnumExtensionsClass
 {
-    public static void Generate(SrcBuilder text, in GenInfo info)
+    public static void Generate(SrcBuilder text, in GenContext info)
     {
         using (text.Doc("summary"))
         {
@@ -18,7 +18,7 @@ internal static class EnumExtensionsClass
         }
     }
 
-    private static void Name(SrcBuilder text, in GenInfo info)
+    private static void Name(SrcBuilder text, in GenContext info)
     {
         using (text.Doc("summary"))
         {
@@ -41,7 +41,7 @@ internal static class EnumExtensionsClass
         }
     }
 
-    private static void Description(SrcBuilder text, in GenInfo info)
+    private static void Description(SrcBuilder text, in GenContext info)
     {
         using (text.Doc("summary"))
         {
@@ -64,7 +64,7 @@ internal static class EnumExtensionsClass
         }
     }
 
-    private static void Values(SrcBuilder text, in GenInfo info)
+    private static void Values(SrcBuilder text, in GenContext info)
     {
         using (text.Doc("summary"))
         {
