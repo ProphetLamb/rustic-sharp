@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+    <RunAnalyzersDuringLiveAnalysis>false</RunAnalyzersDuringLiveAnalysis>
+    <RunAnalyzers>false</RunAnalyzers>
+    <CodeAnalysisRuleSet>..\..\ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+</Project>

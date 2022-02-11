@@ -194,6 +194,29 @@ public static class TinySpan
         return new(args.ToSegment());
     }
 
+    /// <summary>
+    ///     Determines whether two sequences are equal by comparing the elements.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public static bool SequenceEquals<T>(this TinySpan<T> span, in TinySpan<T> other)
+        where T : IEquatable<T>
+    {
+        // If we have 4 or less elements the == operator performs a sequence equals.
+        // If we have more then 4 elements we compare the pointers of the internal span.
+        if (span == other)
+        {
+            return true;
+        }
+
+        // Internal spans may not be
+        if (span.Length != other.Length || span.Length <= 4)
+        {
+            return false;
+        }
+
+        // The internal spans are not the same, but are present, so the operation is always cheap.
+        return span.ToSpan(true).SequenceEqual(other.ToSpan(true));
+    }
 }
 
 /// <summary>A structure representing a immutable sequence of function parameters.</summary>
@@ -497,33 +520,5 @@ public readonly ref struct TinySpan<T>
         {
             this = default;
         }
-    }
-}
-
-/// <summary>Collection of extensions and utility functionality for <see cref="TinySpan{T}"/>.</summary>
-public static class TinySpanExtensions
-{
-    /// <summary>
-    ///     Determines whether two sequences are equal by comparing the elements.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public static bool SequenceEquals<T>(this TinySpan<T> span, in TinySpan<T> other)
-        where T : IEquatable<T>
-    {
-        // If we have 4 or less elements the == operator performs a sequence equals.
-        // If we have more then 4 elements we compare the pointers of the internal span.
-        if (span == other)
-        {
-            return true;
-        }
-
-        // Internal spans may not be
-        if (span.Length != other.Length || span.Length <= 4)
-        {
-            return false;
-        }
-
-        // The internal spans are not the same, but are present, so the operation is always cheap.
-        return span.ToSpan(true).SequenceEqual(other.ToSpan(true));
     }
 }

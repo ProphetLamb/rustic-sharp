@@ -107,11 +107,11 @@ public static class Option
 /// <summary>Represents an optional value. Every <see cref="Option{T}"/> is either <see cref="Some{T}"/> or <see cref="None{T}"/>.</summary>
 /// <typeparam name="T">The type of the value.</typeparam>
 [Serializable]
-[StructLayout(LayoutKind.Explicit)]
+[StructLayout(LayoutKind.Sequential)]
 public readonly struct Option<T> : IEquatable<Option<T>>
 {
-    [FieldOffset(0)] private readonly byte _flags;
-    [FieldOffset(1)] private readonly T _value;
+    private readonly byte _flags;
+    private readonly T _value;
 
     internal Option(T value)
     {

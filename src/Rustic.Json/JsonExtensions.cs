@@ -15,16 +15,6 @@ public static class JsonExtensions
         return self;
     }
 
-    /// <summary>Configures the <see cref="JsonSerializerOptions"/> for <see cref="Result{T}"/> and <see cref="Result{T,E}"/> structures.</summary>
-    /// <typeparam name="T">The type of the Result.Ok value.</typeparam>
-    /// <typeparam name="E">The type of the Result.Err value.</typeparam>
-    public static JsonSerializerOptions ConfigureResult<T, E>(this JsonSerializerOptions self)
-    {
-        self.Converters.Add(new ResultConverter<T, E>());
-        self.Converters.Add(new ResultConverter<T>());
-        return self;
-    }
-
     /// <summary>Attempts to enumerate the objects in the <see cref="JsonElement"/>.</summary>
     public static bool TryEnumerateObject(in this JsonElement self, [NotNullWhen(true)] out JsonElement.ObjectEnumerator enumerator)
     {

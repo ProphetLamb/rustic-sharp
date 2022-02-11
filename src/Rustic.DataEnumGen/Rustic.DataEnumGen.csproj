@@ -1,8 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard20</TargetFramework>
     <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IsRoslynComponent>true</IsRoslynComponent>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <DefineConstants>$(DefineConstants);FEATURE_INC_SRC_GEN</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Label="Assembly Info">
@@ -19,6 +22,10 @@
 
   <ItemGroup>
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <!--Dependencies are pretty much bricked, so we manually link required files.-->
+    <Compile Include="$(ProjectDir)\..\Rustic.Source\SynModel.cs" Link="SynModel.cs"/>
+    <Compile Include="$(ProjectDir)\..\Rustic.Source\SrcBuilder.cs" Link="SrcBuilder.cs"/>
+    <Compile Include="$(ProjectDir)\..\Rustic.Source\SyntaxExtensions.cs" Link="SyntaxExtensions.cs"/>
   </ItemGroup>
 
   <ItemGroup>
@@ -32,12 +39,6 @@
 
   <ItemGroup Condition="!$(DefineConstants.Contains('NET5_0_OR_GREATER'))">
     <PackageReference Include="System.Memory" Version="4.5.4" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Rustic.Common\Rustic.Common.csproj" />
-    <ProjectReference Include="..\Rustic.Source\Rustic.Source.csproj" />
-    <ProjectReference Include="..\Rustic.Functional\Rustic.Functional.csproj" />
   </ItemGroup>
 
 </Project>

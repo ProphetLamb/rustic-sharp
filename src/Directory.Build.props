@@ -5,6 +5,12 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <CodeAnalysisRuleSet>..\..\ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
+    <EnablePackageValidation>true</EnablePackageValidation>
+    <Features>strict</Features>
+  </PropertyGroup>
+
   <PropertyGroup Label="Nuget Package Info">
     <Authors>ProphetLamb</Authors>
     <Owners>ProhetLamb</Owners>

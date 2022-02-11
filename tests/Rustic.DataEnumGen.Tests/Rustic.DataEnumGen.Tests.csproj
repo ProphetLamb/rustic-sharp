@@ -24,6 +24,7 @@
     <ProjectReference Include="..\..\src\Rustic.DataEnumGen\Rustic.DataEnumGen.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\..\src\Rustic.Common\Rustic.Common.csproj" />
     <ProjectReference Include="..\..\src\Rustic.Attributes\Rustic.Attributes.csproj" />
+    <ProjectReference Include="..\..\src\Rustic.Source\Rustic.Source.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -11,23 +11,18 @@ using Microsoft.CodeAnalysis.CSharp;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 
+using Rustic.Source;
+
 namespace Rustic.DataEnumGen.Tests;
 
 [TestFixture]
 public class GeneratorTests
 {
-    private readonly StreamWriter _writer;
-
     public GeneratorTests()
     {
-        _writer = new StreamWriter($"GeneratorTests-{typeof(string).Assembly.ImageRuntimeVersion}.log", true);
-        _writer.AutoFlush = true;
-        Logger = new Logger(nameof(GeneratorTests), InternalTraceLevel.Debug, _writer);
-    }
-
-    ~GeneratorTests()
-    {
-        _writer.Dispose();
+        var writer = new StreamWriter($"GeneratorTests-{typeof(string).Assembly.ImageRuntimeVersion}.log", true);
+        writer.AutoFlush = true;
+        Logger = new Logger(nameof(GeneratorTests), InternalTraceLevel.Debug, writer);
     }
 
     internal Logger Logger { get; }
@@ -82,7 +77,7 @@ namespace Rustic.DataEnumGen.Tests.TestAssembly
 }
 ");
         const int TEST_SOURCES_LEN = 1;
-        const int GEN_SOURCES_LEN = 3; // Attribute + Dummy + NoAttr
+        const int GEN_SOURCES_LEN = 4; // Attribute + Dummy + NoAttr + NoFlags
         DataEnumGen generator = new();
 
         GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
@@ -90,9 +85,9 @@ namespace Rustic.DataEnumGen.Tests.TestAssembly
 
         Logging(outputCompilation, diagnostics);
 
-        Debug.Assert(diagnostics.IsEmpty); // there were no diagnostics created by the generators
+        Debug.Assert(!diagnostics.AnyWarning()); // there were no diagnostics created by the generators
         Debug.Assert(outputCompilation.SyntaxTrees.Count() == TEST_SOURCES_LEN + GEN_SOURCES_LEN); // we have two syntax trees, the original 'user' provided one, and two added by the generator
-        Debug.Assert(!outputCompilation.GetDiagnostics().Any(static (d) => d.Severity >= DiagnosticSeverity.Error)); // verify the compilation with the added source has no diagnostics
+        Debug.Assert(!outputCompilation.GetDiagnostics().AnyError()); // verify the compilation with the added source has no diagnostics
 
         GeneratorDriverRunResult runResult = driver.GetRunResult();
 
@@ -139,6 +134,7 @@ namespace Rustic.DataEnumGen.Tests.TestAssembly
                 MetadataReference.CreateFromFile(typeof(System.Runtime.Serialization.ISerializable).GetTypeInfo().Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(System.Runtime.InteropServices.StructLayoutAttribute).GetTypeInfo().Assembly.Location),
                 MetadataReference.CreateFromFile(@"C:\Program Files (x86)\dotnet\shared\Microsoft.NETCore.App\6.0.1\System.Runtime.dll"),
+                MetadataReference.CreateFromFile(typeof(HashCode).GetTypeInfo().Assembly.Location),
             },
             new CSharpCompilationOptions(OutputKind.ConsoleApplication));
 }

@@ -9,28 +9,27 @@ using Microsoft.CodeAnalysis.Text;
 
 using Rustic.Source;
 
-using static Rustic.Option;
-
 namespace Rustic.DataEnumGen;
 
 #if !FEATURE_INC_SRC_GEN
 
-[Generator(LanguageNames.CSharp)]
+[Generator]
 [CLSCompliant(false)]
 public class DataEnumGen : ISourceGenerator
 {
     public void Initialize(GeneratorInitializationContext context)
     {
         context.RegisterForPostInitialization(static (ctx) =>
-            ctx.AddSource($"{GenContext.DataEnumSymbol}.g.cs", SourceText.From(GenContext.DataEnumSyntax, Encoding.UTF8)));
+           ctx.AddSource($"{GenContext.DataEnumSymbol}.g.cs", SourceText.From(GenContext.DataEnumSyntax, Encoding.UTF8)));
     }
 
     public void Execute(GeneratorExecutionContext context)
     {
-        var enumDecls = context.CollectSyntax(
+        var enumDecls = context.Compilation.CollectSyntax(
                  static (s, _) => s is EnumDeclarationSyntax,
-                 static (ctx, s, _) => GenContext.CollectEnumDeclInfo(ctx.Compilation.GetSemCtx(s)))
-             .FilterMap(static (m) => m);
+                 static (ctx, s, _) => GenContext.CollectDeclInfo(ctx.GetSynModel(s)))
+            .Where(static (ctx) => ctx.HasValue)
+            .Select(static (ctx) => ctx!.Value);
 
         Generate(context, enumDecls.ToImmutableArray());
     }
@@ -42,7 +41,7 @@ public class DataEnumGen : ISourceGenerator
             return;
         }
 
-        foreach (var info in members.Distinct())
+        foreach (var info in members)
         {
             SrcBuilder text = new(2048);
             GenContext.Generate(text, in info);
@@ -53,7 +52,7 @@ public class DataEnumGen : ISourceGenerator
 
 #else
 
-[Generator(LanguageNames.CSharp)]
+[Generator]
 [CLSCompliant(false)]
 public class DataEnumGen : IIncrementalGenerator
 {
@@ -64,9 +63,9 @@ public class DataEnumGen : IIncrementalGenerator
 
         var enumDecls = context.SyntaxProvider.CreateSyntaxProvider(
                 static (s, _) => s is EnumDeclarationSyntax,
-                static (ctx, _) => GenContext.CollectEnumDeclInfo(ctx))
-            .Where(static (m) => m.IsSome)
-            .Select(static (m, _) => m.SomeUnchecked());
+                static (ctx, _) => GenContext.CollectDeclInfo(ctx))
+            .Where(static (m) => m.HasValue)
+            .Select(static (m, _) => m!.Value);
 
         context.RegisterSourceOutput(enumDecls.Collect(), static (ctx, src) => Generate(ctx, src));
     }
@@ -89,7 +88,6 @@ public class DataEnumGen : IIncrementalGenerator
 
 #endif
 
-[CLSCompliant(false)]
 internal readonly struct GenContext
 {
     public readonly NamespaceDeclarationSyntax Ns;
@@ -141,16 +139,15 @@ namespace Rustic
 #nullable restore
 ";
 
-    public static Option<GenContext> CollectEnumDeclInfo(SynModel model)
+    public static GenContext? CollectDeclInfo(SynModel model)
     {
-        if (!model.As<EnumDeclarationSyntax>().TrySome(out var enumModel))
+        if (!model.Is<EnumDeclarationSyntax>(out var enumModel))
         {
             return default;
         }
 
         if (enumModel.FindTypeAttr(static (m, _) => m.GetTypeName() == FlagsSymbol) is not null)
         {
-            // Flags enum are not allowed!
             return default;
         }
 
@@ -160,17 +157,17 @@ namespace Rustic
         {
             if (memberSyntax is EnumMemberDeclarationSyntax memberDecl)
             {
-                members.Add(CollectEnumDeclInfo(enumModel));
+                members.Add(CollectMemberInfo(model.Sub(memberDecl)));
             }
         }
 
         var (nsDecl, nestingDecls) = enumDecl.GetHierarchy<BaseTypeDeclarationSyntax>();
-        return Some(new GenContext(nsDecl, nestingDecls, enumDecl, members.MoveToImmutable()));
+        return new GenContext(nsDecl, nestingDecls, enumDecl, members.MoveToImmutable());
     }
 
-    public static EnumContext CollectEnumDeclInfo(SynModel<EnumDeclarationSyntax> model)
+    public static EnumContext CollectMemberInfo(SynModel<EnumMemberDeclarationSyntax> model)
     {
-        var dataEnumAttr = model.FindMemAttr(static (m, _) => m.GetTypeName() == DataEnumSymbol);
+        var dataEnumAttr = model.FindMemAttr(static (m, a) => m.Model.GetTypeName(a) == DataEnumSymbol);
         TypeSyntax? dataType = null;
         var typeArg = dataEnumAttr?.ArgumentList?.Arguments[0];
         if (typeArg?.Expression is TypeOfExpressionSyntax tof)
@@ -178,7 +175,7 @@ namespace Rustic
             dataType = tof.Type;
         }
 
-        var descrAttr = model.FindMemAttr(static (m, _) => m.GetTypeName() == DescriptionSymbol);
+        var descrAttr = model.FindMemAttr(static (m, a) => m.Model.GetTypeName(a) == DescriptionSymbol);
         string? descr = null;
         var descrArg = descrAttr?.ArgumentList?.Arguments[0];
         if (descrArg?.Expression is LiteralExpressionSyntax literal)
@@ -222,7 +219,7 @@ namespace Rustic
 [CLSCompliant(false)]
 public readonly struct EnumContext : IEquatable<EnumContext>
 {
-    public readonly SynModel<EnumDeclarationSyntax> Enum;
+    public readonly SynModel<EnumMemberDeclarationSyntax> Enum;
     public readonly TypeSyntax? TypeNode;
     public readonly string? Description;
 
@@ -230,7 +227,7 @@ public readonly struct EnumContext : IEquatable<EnumContext>
     public readonly string NameLower;
     public readonly string? TypeName;
 
-    public EnumContext(SynModel<EnumDeclarationSyntax> enumModel, TypeSyntax? typeNode, string? description)
+    public EnumContext(SynModel<EnumMemberDeclarationSyntax> enumModel, TypeSyntax? typeNode, string? description)
     {
         Enum = enumModel;
         TypeNode = typeNode;

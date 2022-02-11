@@ -7,8 +7,6 @@ using System.Threading;
 
 using Microsoft.CodeAnalysis;
 
-using static Rustic.Option;
-
 namespace Rustic.Source;
 
 [CLSCompliant(false)]
@@ -20,21 +18,26 @@ public static class SemCtxExtensions
         return Unsafe.As<SynModel, GeneratorSyntaxContext>(ref ctx);
     }
 
-    /// <summary>Returns the <see cref="SynModel"/> for the node in the <see cref="Compilation"/>.</summary>
-    public static SynModel GetSemCtx(this Compilation comp, SyntaxNode node)
-    {
-        return new(node, comp.GetSemanticModel(node.SyntaxTree));
-    }
-
     public static string? GetTypeName(this SynModel model)
     {
-        return model.GetTypeInfo().Type?.ToDisplayString();
+       return model.Model.GetTypeName(model.Node);
     }
 
     public static string? GetTypeName<N>(this SynModel<N> model)
         where N : SyntaxNode
     {
-        return model.GetTypeInfo().Type?.ToDisplayString();
+        return model.Model.GetTypeName(model.Node);
+    }
+
+    public static SynModel GetSynModel(this Compilation comp, SyntaxNode node)
+    {
+        return new(node, comp.GetSemanticModel(node.SyntaxTree));
+    }
+
+    public static SynModel<N> GetSynModel<N>(this Compilation comp, N node)
+        where N : SyntaxNode
+    {
+        return new(node, comp.GetSemanticModel(node.SyntaxTree));
     }
 }
 
@@ -56,10 +59,24 @@ public readonly struct SynModel
 
     /// <summary>Casts the strong-typed <see cref="SynModel"/> to the weak-typed equivalent.</summary>
     /// <typeparam name="N">The type of the <see cref="SyntaxNode"/>.</typeparam>
-    public Option<SynModel<N>> As<N>()
+    public bool Is<N>(out SynModel<N> model)
         where N : SyntaxNode
     {
-        return Node is N n ? Some(new SynModel<N>(n, Model)) : default;
+        if (Node is N n)
+        {
+
+            model = new SynModel<N>(n, Model);
+            return true;
+        }
+
+        model = default!;
+        return false;
+    }
+
+    public SynModel<N> Sub<N>(N node)
+        where N : SyntaxNode
+    {
+        return new SynModel<N>(node, Model);
     }
 
     /// <inheritdoc cref="ModelExtensions.GetDeclaredSymbol"/>
@@ -107,6 +124,12 @@ public readonly struct SynModel<N>
 
     /// <summary>The <see cref="SemanticModel"/> that can be queried to obtain information about <see cref="Node"/>.</summary>
     public SemanticModel Model { get; }
+
+    public SynModel<O> Sub<O>(O node)
+        where O : SyntaxNode
+    {
+        return new SynModel<O>(node, Model);
+    }
 
     /// <inheritdoc cref="ModelExtensions.GetDeclaredSymbol"/>
     public ISymbol? GetDeclaredSymbol(CancellationToken ct = default)

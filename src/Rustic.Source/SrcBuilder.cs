@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
 
-using Rustic.Text;
-
 namespace Rustic.Source;
 
 public class SrcBuilder
@@ -68,7 +66,7 @@ public class SrcBuilder
 
     public SrcBuilder Append(string? text)
     {
-        if (!text.IsEmpty())
+        if (!String.IsNullOrEmpty(text))
         {
             Builder.Append(text);
         }
@@ -98,7 +96,7 @@ public class SrcBuilder
     public SrcBuilder AppendLine(string? text)
     {
         AppendIndent();
-        if (!text.IsEmpty())
+        if (!String.IsNullOrEmpty(text))
         {
             Builder.AppendLine(text);
         }
@@ -126,7 +124,7 @@ public class SrcBuilder
 
     public SrcBuilder NoIndentLine(string? text)
     {
-        if (!text.IsEmpty())
+        if (!String.IsNullOrEmpty(text))
         {
             Builder.AppendLine(text);
         }
@@ -148,7 +146,7 @@ public class SrcBuilder
     {
         Builder.AppendLine();
         AppendIndent();
-        if (!text.IsEmpty())
+        if (!String.IsNullOrEmpty(text))
         {
             Builder.AppendLine(text);
         }
@@ -254,7 +252,7 @@ public class SrcBuilder
         }
         else
         {
-            Builder.Append("case ").Append(constant).Append(":");
+            Builder.Append("case ").Append(constant).Append(':');
         }
         IndentString();
         NL();
@@ -657,21 +655,6 @@ public class SrcBuilder
         return AppendIndent("/// ");
     }
 
-    public SrcBuilder AppendDoc(ReadOnlySpan<char> text)
-    {
-        if (text.IsEmpty)
-        {
-            return AppendDoc();
-        }
-
-        foreach (var element in text.Split("\r\n", "\n"))
-        {
-            AppendIndent("/// ").Append(text);
-        }
-
-        return this;
-    }
-
     public SrcBuilder AppendDoc(char text)
     {
         return AppendIndent("/// ").Append(text);
@@ -679,17 +662,17 @@ public class SrcBuilder
 
     public SrcBuilder AppendDoc(string? text)
     {
-        if (text.IsEmpty())
+        if (String.IsNullOrEmpty(text))
         {
             return AppendDoc();
         }
 
-        return AppendDoc(text.AsSpan());
+        return AppendIndent("/// ").Append(text);
     }
 
     public SrcBuilder DocStart(string elementName, string? attributes)
     {
-        if (attributes.IsEmpty())
+        if (String.IsNullOrEmpty(attributes))
         {
             return AppendDoc($"<{elementName}>");
         }
@@ -704,7 +687,7 @@ public class SrcBuilder
 
     public SrcBuilder DocInline(string elementName, string? attributes = null, string? content = null)
     {
-        if (attributes.IsEmpty())
+        if (String.IsNullOrEmpty(attributes))
         {
             Append('<').Append(elementName);
         }
@@ -713,7 +696,7 @@ public class SrcBuilder
             Append('<').Append(elementName).Append(' ').Append(attributes);
         }
 
-        if (!content.IsEmpty())
+        if (!String.IsNullOrEmpty(content))
         {
             Append('>').Append(content).Append('<').Append(elementName);
         }

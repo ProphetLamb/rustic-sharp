@@ -68,29 +68,55 @@ public static class SyntaxExtensions
         throw new InvalidOperationException("No namespace declaration found.");
     }
 
-    public static IEnumerable<T> CollectSyntax<T>(this GeneratorExecutionContext ctx, Func<SyntaxNode, CancellationToken, bool> predicate, Func<GeneratorExecutionContext, SyntaxNode, CancellationToken, T> transform)
+    public static string? GetTypeName(this SemanticModel model, SyntaxNode node)
     {
-        foreach (var tree in ctx.Compilation.SyntaxTrees)
+        // Are we a type?
+        var typeInfo = model.GetTypeInfo(node);
+        if (typeInfo.Type is not null)
+        {
+            return typeInfo.Type.ToDisplayString();
+        }
+
+        var decl = model.GetDeclaredSymbol(node);
+        // Are we of a type?
+        if (decl?.ContainingType is not null)
+        {
+            return decl.ContainingType.ToDisplayString();
+        }
+        // Do we have any symbol at all?
+        return decl?.ToDisplayString();
+    }
+
+    public static IEnumerable<T> CollectSyntax<T>(this Compilation comp, Func<SyntaxNode, CancellationToken, bool> predicate, Func<Compilation, SyntaxNode, CancellationToken, T> transform)
+    {
+        foreach (var tree in comp.SyntaxTrees)
         {
             CancellationToken ct = new();
             if (tree.TryGetRoot(out var root))
             {
-                foreach (var node in root.ChildNodes())
+                Stack<SyntaxNode> stack = new(64);
+                stack.Push(root);
+
+                SyntaxNode node;
+                while ((node = stack.Pop()) is not null)
                 {
-                    if (predicate(node, ct))
+                    foreach (var child in node.ChildNodesAndTokens())
                     {
-                        yield return transform(ctx, node, ct);
+                        if (child.IsNode)
+                        {
+                            stack.Push((SyntaxNode)child!);
+                        }
                     }
 
+                    if (predicate(node, ct))
+                    {
+                        yield return transform(comp, node, ct);
+                    }
                     if (ct.IsCancellationRequested)
                     {
                         break;
                     }
                 }
-            }
-            if (ct.IsCancellationRequested)
-            {
-                break;
             }
         }
     }

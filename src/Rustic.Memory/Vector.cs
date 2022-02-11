@@ -6,6 +6,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 
+using static Rustic.Option;
+
 namespace Rustic.Memory;
 
 /// <summary>Represents a strongly typed vector of object that can be accessed by ref. Provides a similar interface as <see cref="List{T}"/>.</summary>
@@ -446,6 +448,20 @@ public static class VectorTraits
     public static void Reverse<T>(this IVector<T> self)
     {
         self.Reverse(0, self.Count);
+    }
+
+    /// <summary>Removes to topmost element from the stack.</summary>
+    /// <returns>Returns <see cref="Option.Some{T}"/> if an element was removed; otherwise, returns <see cref="Option.None{T}"/>.</returns>
+    public static Option<T> Pop<T>(this IVector<T> self)
+    {
+        if (!self.IsEmpty)
+        {
+            var last = self.Count - 1;
+            T value = self[last];
+            self.RemoveAt(last);
+            return Some(value);
+        }
+        return default;
     }
 
     private struct ComparisonCmp<T> : IComparer<T>, IEqualityComparer<T>
