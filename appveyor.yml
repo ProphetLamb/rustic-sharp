@@ -17,7 +17,6 @@ cache:
   - '%UserProfile%\.dotnet\tools -> appveyor.yml'
 
 install:
-  - choco install dotnet-sdk --version 6.0.101
   - ps: ./tooling.ps1
 
 configuration:
@@ -41,6 +40,9 @@ build:
   parallel: true
   verbosity: quiet
 
+after_build:
+  - ps: dotnet pack --configuration $Env:CONFIGURATION
+
 after_test:
   - ps: ./coverage.ps1
 
@@ -51,9 +53,7 @@ test:
 
 artifacts:
   - path: 'src\**\Rustic.*.nupkg'
-  - path: 'tests\**\coverage*.xml'
   - path: '**\GeneratorTests.log'
-  - path: 'doc\'
 
 deploy:
   - provider: NuGet # Nuget.org
