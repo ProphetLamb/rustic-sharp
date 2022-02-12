@@ -43,17 +43,11 @@ build:
 after_build:
   - ps: dotnet pack --no-restore --no-build -verbosity:q --configuration $Env:CONFIGURATION
 
-after_test:
-  - ps: ./coverage.ps1
-
-test:
-  assemblies:
-    only:
-      - 'tests\**\*.Tests.dll'
+test_script:
+  - ps: ./test.ps1
 
 artifacts:
   - path: 'src\**\Rustic.*.nupkg'
-  - path: '**\GeneratorTests.log'
 
 deploy:
   - provider: NuGet # Nuget.org
