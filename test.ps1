@@ -1,4 +1,4 @@
-dotnet test --no-restore --no-build --test-adapter-path:. --logger:Appveyor /p:AltCover="true"
+dotnet test --no-restore --no-build --test-adapter-path:. --logger:Appveyor /p:AltCover="true" /p:AltCoverAssemblyExcludeFilter='^(?!Rustic\..*).*|.*Tests$'
 
 $commitID = & git rev-parse HEAD
 $commitBranch = & git rev-parse --abbrev-ref HEAD
