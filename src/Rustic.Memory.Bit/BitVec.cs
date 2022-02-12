@@ -51,14 +51,12 @@ public ref struct BitVec
     {
         get
         {
-            index.ValidateArgRange(index >= 0);
-            index.ValidateArgRange(index < Count);
+            index.ValidateArgRange(index >= 0 && index < Count);
             return _raw.IsMarked(index);
         }
         set
         {
-            index.ValidateArgRange(index >= 0);
-            index.ValidateArgRange(index < Count);
+            index.ValidateArgRange(index >= 0 && index < Count);
             _raw.Set(index, Convert.ToInt32(value));
         }
     }

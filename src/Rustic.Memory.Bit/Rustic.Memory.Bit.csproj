@@ -7,34 +7,11 @@
   <PropertyGroup Label="Assembly Info">
     <AssemblyName>Rustic.Memory.Bit</AssemblyName>
     <AssemblyTitle>Rustic.Memory.Bit</AssemblyTitle>
-    <AssemblyVersion>0.5.0</AssemblyVersion>
-  </PropertyGroup>
-
-  <PropertyGroup Label="Nuget Package Info">
     <PackageId>Rustic.Memory.Bit</PackageId>
     <Title>Rustic.Memory.Bit</Title>
     <Description>Packed bit collections. Storing sequences of boolean values in integers.</Description>
     <PackageTags>ArrayPool;Ref;Span;Collections</PackageTags>
   </PropertyGroup>
-
-  <PropertyGroup Label="Nuget Pack Options">
-    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb;.xml</AllowedOutputExtensionsInPackageBuildOutputFolder>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <DebugType>embedded</DebugType>
-    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
-
-  <ItemGroup Label="Nuget Pack Source Link">
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\..\.editorconfig" Link=".editorconfig" />
-    <Compile Include="..\AssemblyInfo.cs" Link="AssemblyInfo.cs" />
-    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
-  </ItemGroup>
 
   <ItemGroup Condition="!$(DefineConstants.Contains('NET5_0_OR_GREATER'))">
     <PackageReference Include="System.Memory" Version="4.5.4" />
