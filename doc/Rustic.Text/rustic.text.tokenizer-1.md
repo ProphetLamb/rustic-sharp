@@ -412,17 +412,17 @@ The position of the element after the sequence.
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
  if the following elements are equal to the sequence of elements; otherwise, .
 
-### **Read(ReadOnlySpan`1&)**
+### **Read(TinySpan`1&)**
 
 Consumes elements until the specified sequence of elements has been encountered.
 
 ```csharp
-bool Read(ReadOnlySpan`1& expectedSequence)
+bool Read(TinySpan`1& expectedSequence)
 ```
 
 #### Parameters
 
-`expectedSequence` ReadOnlySpan`1&<br>
+`expectedSequence` TinySpan`1&<br>
 The expected sequence.
 
 #### Returns
@@ -430,17 +430,17 @@ The expected sequence.
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
  if the remaining elements contain the sequence of elements; otherwise, .
 
-### **TryRead(ReadOnlySpan`1&)**
+### **TryRead(TinySpan`1&)**
 
 Returns whether the remaining span contains the sequence, consumes the elements only if it does.
 
 ```csharp
-bool TryRead(ReadOnlySpan`1& expectedSequence)
+bool TryRead(TinySpan`1& expectedSequence)
 ```
 
 #### Parameters
 
-`expectedSequence` ReadOnlySpan`1&<br>
+`expectedSequence` TinySpan`1&<br>
 The sequence of elements.
 
 #### Returns
@@ -448,17 +448,17 @@ The sequence of elements.
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
  if the remaining elements contain the sequence of elements; otherwise, .
 
-### **Peek(ReadOnlySpan`1&, Int32&)**
+### **Peek(TinySpan`1&, Int32&)**
 
 Returns whether the remaining span contains the sequence.
 
 ```csharp
-bool Peek(ReadOnlySpan`1& expectedSequence, Int32& head)
+bool Peek(TinySpan`1& expectedSequence, Int32& head)
 ```
 
 #### Parameters
 
-`expectedSequence` ReadOnlySpan`1&<br>
+`expectedSequence` TinySpan`1&<br>
 The sequence of elements.
 
 `head` [Int32&](https://docs.microsoft.com/en-us/dotnet/api/system.int32&)<br>
@@ -469,17 +469,17 @@ The position of the element after the sequence.
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
  if the remaining elements contain the sequence of elements; otherwise, .
 
-### **ReadNext(ReadOnlySpan`1&)**
+### **ReadNext(TinySpan`1&)**
 
 Returns whether the following elements are the sequence, consumes elements.
 
 ```csharp
-bool ReadNext(ReadOnlySpan`1& expectedSequence)
+bool ReadNext(TinySpan`1& expectedSequence)
 ```
 
 #### Parameters
 
-`expectedSequence` ReadOnlySpan`1&<br>
+`expectedSequence` TinySpan`1&<br>
 The sequence of elements.
 
 #### Returns
@@ -487,17 +487,17 @@ The sequence of elements.
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
  if the following elements are equal to the sequence of elements; otherwise, .
 
-### **TryReadNext(ReadOnlySpan`1&)**
+### **TryReadNext(TinySpan`1&)**
 
 Returns whether the following elements are the sequence, consumes elements only if the successful.
 
 ```csharp
-bool TryReadNext(ReadOnlySpan`1& expectedSequence)
+bool TryReadNext(TinySpan`1& expectedSequence)
 ```
 
 #### Parameters
 
-`expectedSequence` ReadOnlySpan`1&<br>
+`expectedSequence` TinySpan`1&<br>
 The sequence of elements.
 
 #### Returns
@@ -505,17 +505,17 @@ The sequence of elements.
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
  if the following elements are equal to the sequence of elements; otherwise, .
 
-### **PeekNext(ReadOnlySpan`1&, Int32&)**
+### **PeekNext(TinySpan`1&, Int32&)**
 
 Returns whether the following elements are the sequence.
 
 ```csharp
-bool PeekNext(ReadOnlySpan`1& expectedSequence, Int32& head)
+bool PeekNext(TinySpan`1& expectedSequence, Int32& head)
 ```
 
 #### Parameters
 
-`expectedSequence` ReadOnlySpan`1&<br>
+`expectedSequence` TinySpan`1&<br>
 The sequence of elements.
 
 `head` [Int32&](https://docs.microsoft.com/en-us/dotnet/api/system.int32&)<br>

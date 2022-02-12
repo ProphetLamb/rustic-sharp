@@ -8,4 +8,6 @@
 
 [StrBuilder](./rustic.strbuilder.md)
 
+[StringExtensions](./rustic.stringextensions.md)
+
 [ThrowHelper](./rustic.throwhelper.md)
