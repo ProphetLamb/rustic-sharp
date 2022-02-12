@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net60</TargetFramework>
+    <TargetFrameworks>net48;netcoreapp31;net50;net60</TargetFrameworks>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
 
@@ -16,6 +16,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Rustic.DataEnumGen\Rustic.DataEnumGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\src\Rustic.Common\Rustic.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="!$(DefineConstants.Contains('NET5_0_OR_GREATER'))">
+    <PackageReference Include="System.Memory" Version="4.5.4" />
   </ItemGroup>
 
 </Project>

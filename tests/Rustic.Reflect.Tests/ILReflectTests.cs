@@ -25,7 +25,7 @@ public class ILReflectTests
     public void Can_Get_Property_Getter()
     {
         var propertyInfo = typeof(TestObject).GetProperty("SomeProperty");
-        MemberGetter<object, object>? getter = null;
+        MemberGetter<object, object> getter = null;
 
         Assert.DoesNotThrow(() => { getter = propertyInfo.DelegateForGet(); });
         Assert.IsNotNull(getter);
@@ -45,7 +45,7 @@ public class ILReflectTests
     public void Can_Get_Property_Setter()
     {
         var propertyInfo = typeof(TestObject).GetProperty("SomeProperty");
-        MemberSetter<object, object>? setter = null;
+        MemberSetter<object, object> setter = null;
 
         Assert.DoesNotThrow(() => { setter = propertyInfo.DelegateForSet(); });
         Assert.IsNotNull(setter);
@@ -68,7 +68,7 @@ public class ILReflectTests
     public void Can_Get_Field_Getter()
     {
         var fieldInfo = typeof(TestObject).GetField("SomeField");
-        MemberGetter<object, object>? getter = null;
+        MemberGetter<object, object> getter = null;
 
         Assert.DoesNotThrow(() => { getter = fieldInfo.DelegateForGet(); });
         Assert.IsNotNull(getter);
@@ -88,7 +88,7 @@ public class ILReflectTests
     public void Can_Get_Field_Setter()
     {
         var fieldInfo = typeof(TestObject).GetField("SomeField");
-        MemberSetter<object, object>? setter = null;
+        MemberSetter<object, object> setter = null;
 
         Assert.DoesNotThrow(() => { setter = fieldInfo.DelegateForSet(); });
         Assert.IsNotNull(setter);
@@ -111,7 +111,7 @@ public class ILReflectTests
     public void Can_Get_Readonly_Field_Getter()
     {
         var fieldInfo = typeof(TestObject).GetField("SomeReadonlyField");
-        MemberGetter<object, object>? getter = null;
+        MemberGetter<object, object> getter = null;
 
         Assert.DoesNotThrow(() => { getter = fieldInfo.DelegateForGet(); });
         Assert.IsNotNull(getter);
@@ -131,7 +131,7 @@ public class ILReflectTests
     public void Can_Get_Const_Field_Getter()
     {
         var fieldInfo = typeof(TestObject).GetField("SomeConstField");
-        MemberGetter<object, object>? getter = null;
+        MemberGetter<object, object> getter = null;
 
         Assert.DoesNotThrow(() => { getter = fieldInfo.DelegateForGet(); });
         Assert.IsNotNull(getter);
@@ -159,7 +159,7 @@ public class ILReflectTests
     public void Can_Get_Readonly_Backing_Field_Getter()
     {
         var propertyInfo = typeof(TestObject).GetProperty("SomeReadonlyProperty");
-        MemberGetter<object, object>? getter = null;
+        MemberGetter<object, object> getter = null;
 
         Assert.DoesNotThrow(() => { getter = propertyInfo.DelegateForGet(); });
         Assert.IsNotNull(getter);

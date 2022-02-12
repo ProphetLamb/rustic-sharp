@@ -1,5 +1,7 @@
 <Project>
   <PropertyGroup>
+    <LangVersion>10.0</LangVersion>
+
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
     <RunAnalyzersDuringLiveAnalysis>false</RunAnalyzersDuringLiveAnalysis>
     <RunAnalyzers>false</RunAnalyzers>
