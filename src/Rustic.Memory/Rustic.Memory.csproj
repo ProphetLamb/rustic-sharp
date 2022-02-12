@@ -8,10 +8,6 @@
   <PropertyGroup Label="Assembly Info">
     <AssemblyName>Rustic.Memory</AssemblyName>
     <AssemblyTitle>Rustic.Memory</AssemblyTitle>
-    <AssemblyVersion>0.5.0</AssemblyVersion>
-  </PropertyGroup>
-
-  <PropertyGroup Label="Nuget Package Info">
     <PackageId>Rustic.Memory</PackageId>
     <Title>Rustic.Memory</Title>
     <Description>Commonly used collection implementation allowing by-ref access to the storage.</Description>

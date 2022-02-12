@@ -8,10 +8,6 @@
   <PropertyGroup Label="Assembly Info">
     <AssemblyName>Rustic.Attributes</AssemblyName>
     <AssemblyTitle>Rustic.Attributes</AssemblyTitle>
-    <AssemblyVersion>0.5.0</AssemblyVersion>
-  </PropertyGroup>
-
-  <PropertyGroup Label="Nuget Package Info">
     <PackageId>Rustic.Attributes</PackageId>
     <Title>Rustic.Attributes</Title>
     <Description>Attributes not delivered with the mscorelib.</Description>

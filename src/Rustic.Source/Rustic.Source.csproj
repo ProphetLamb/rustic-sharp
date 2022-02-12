@@ -7,10 +7,6 @@
   <PropertyGroup Label="Assembly Info">
     <AssemblyName>Rustic.Source</AssemblyName>
     <AssemblyTitle>Rustic.Source</AssemblyTitle>
-    <AssemblyVersion>0.5.0</AssemblyVersion>
-  </PropertyGroup>
-
-  <PropertyGroup Label="Nuget Package Info">
     <PackageId>Rustic.Source</PackageId>
     <Title>Rustic.Source</Title>
     <Description>Packages types and functionality related to extending source generators.</Description>

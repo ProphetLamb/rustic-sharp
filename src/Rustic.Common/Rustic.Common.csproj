@@ -8,10 +8,6 @@
   <PropertyGroup Label="Assembly Info">
     <AssemblyName>Rustic.Common</AssemblyName>
     <AssemblyTitle>Rustic.Common</AssemblyTitle>
-    <AssemblyVersion>0.5.0</AssemblyVersion>
-  </PropertyGroup>
-
-  <PropertyGroup Label="Nuget Package Info">
     <PackageId>Rustic.Common</PackageId>
     <Title>Rustic.Common</Title>
     <Description>Packages types and functionality usable across most projects.</Description>

@@ -8,10 +8,6 @@
   <PropertyGroup Label="Assembly Info">
     <AssemblyName>Rustic.Json</AssemblyName>
     <AssemblyTitle>Rustic.Json</AssemblyTitle>
-    <AssemblyVersion>0.5.0</AssemblyVersion>
-  </PropertyGroup>
-
-  <PropertyGroup Label="Nuget Package Info">
     <PackageId>Rustic.Json</PackageId>
     <Title>Rustic.Json</Title>
     <Description>Json converters &amp; reader, writer utility functionality.</Description>
