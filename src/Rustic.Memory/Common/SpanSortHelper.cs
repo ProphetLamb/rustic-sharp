@@ -40,6 +40,7 @@ public static class SpanSortHelper<T>
         }
     }
 
+#nullable disable
     internal static int InternalBinarySearch(T[] array, int index, int length, T value, Comparison<T> comparer)
     {
         Debug.Assert(array is not null, "Check the values in the caller!");
@@ -242,6 +243,7 @@ public static class SpanSortHelper<T>
             keys[j + 1] = t;
         }
     }
+#nullable restore
 }
 
 #endif

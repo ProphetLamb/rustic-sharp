@@ -76,7 +76,7 @@ public class DataEnumGen : IIncrementalGenerator
     }
 }
 
-public static class Const
+internal static class Const
 {
     public const string MethodInlineAttr = "[MethodImpl(MethodImplOptions.AggressiveInlining)]";
 
@@ -299,10 +299,10 @@ internal readonly struct EnumDataGen
 
     private void Ctor(in GenContext ctx)
     {
-        using (Text.Decl($"private {ctx.EnumDataSymbol}", in ctx, (in GenContext ctx, ref SrcBuilder.SrcColl p) =>
+        using (Text.Decl($"private {ctx.EnumDataSymbol}", in ctx, (in GenContext context, ref SrcBuilder.SrcColl p) =>
         {
-            p.Add($"in {ctx.Symbol} value");
-            foreach (var mem in ctx.GetDataMembers())
+            p.Add($"in {context.Symbol} value");
+            foreach (var mem in context.GetDataMembers())
             {
                 p.Add($"in {mem.Mem.TypeName} {mem.Mem.NameLower}");
             }

@@ -87,7 +87,9 @@ public class SrcBuilder
 #if NETSTANDARD2_1_OR_GREATER || NETSTANDARD2_1
             Builder.Append(text);
 #else
+#pragma warning disable CS1503,CA1830
             Builder.Append(text.ToString());
+#pragma warning restore CS1503,CA1830
 #endif
 
         }

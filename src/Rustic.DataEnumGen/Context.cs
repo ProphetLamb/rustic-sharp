@@ -12,13 +12,13 @@ using Rustic.Source;
 namespace Rustic.DataEnumGen;
 
 [Flags]
-public enum EnumDeclFlags
+internal enum EnumDeclFlags
 {
     FlagsEnum = 1 << 0,
 }
 
 [DebuggerDisplay("{Symbol}")]
-public readonly struct GenContext
+internal readonly struct GenContext
 {
     public readonly EnumDeclFlags Flags;
     public readonly NamespaceDeclarationSyntax Ns;
@@ -115,7 +115,7 @@ public readonly struct GenContext
     }
 }
 
-public struct MemberIter : IEnumerator<MemberContext>, IEnumerable<MemberContext>
+internal struct MemberIter : IEnumerator<MemberContext>, IEnumerable<MemberContext>
 {
     private GenContext _gen;
     private bool _dataMembersOnly;
@@ -168,7 +168,7 @@ public struct MemberIter : IEnumerator<MemberContext>, IEnumerable<MemberContext
 }
 
 [DebuggerDisplay("{Symbol}")]
-public readonly struct EnumContext
+internal readonly struct EnumContext
 {
     public readonly SynModel<EnumMemberDeclarationSyntax> Enum;
     public readonly TypeSyntax? TypeNode;
@@ -195,7 +195,7 @@ public readonly struct EnumContext
 }
 
 [DebuggerDisplay("{Gen.Symbol}.{Mem.Symbol}")]
-public readonly struct MemberContext
+internal readonly struct MemberContext
 {
     public readonly GenContext Gen;
     public readonly EnumContext Mem;

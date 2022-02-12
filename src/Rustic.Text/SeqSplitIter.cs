@@ -5,7 +5,8 @@ using System.Runtime.CompilerServices;
 
 using Rustic;
 using Rustic.Memory;
-using Rustic.Text;
+
+namespace Rustic.Text;
 
 /// <summary>Collection of extensions and utility functionality related to <see cref="SplitIter{T}"/>.</summary>
 public static class SeqSplitIterExtensions
