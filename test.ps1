@@ -1,4 +1,4 @@
-dotnet test --no-restore --no-build --test-adapter-path:. --logger:Appveyor /p:AltCover="true" /p:AltCoverPathFilter=[tT]ests
+dotnet test --no-restore --no-build --test-adapter-path:. --logger:Appveyor /p:AltCover="true"
 
 $commitID = & git rev-parse HEAD
 $commitBranch = & git rev-parse --abbrev-ref HEAD
