@@ -79,6 +79,11 @@ public readonly struct SynModel
         return new SynModel<N>(node, Model);
     }
 
+    public bool Eq(in SynModel other)
+    {
+        return Node.IsEquivalentTo(other.Node) && Model.Equals(other.Model);
+    }
+
     /// <inheritdoc cref="ModelExtensions.GetDeclaredSymbol"/>
     public ISymbol? GetDeclaredSymbol(CancellationToken ct = default)
     {
@@ -129,6 +134,16 @@ public readonly struct SynModel<N>
         where O : SyntaxNode
     {
         return new SynModel<O>(node, Model);
+    }
+
+    public bool Eq(in SynModel other)
+    {
+        return other.Is<N>(out var model) && Eq(in model);
+    }
+
+    public bool Eq(in SynModel<N> other)
+    {
+        return Node.Equals(other.Node) && Model.Equals(other.Model);
     }
 
     /// <inheritdoc cref="ModelExtensions.GetDeclaredSymbol"/>

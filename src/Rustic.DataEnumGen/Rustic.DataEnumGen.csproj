@@ -23,9 +23,9 @@
   <ItemGroup>
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <!--Dependencies are pretty much bricked, so we manually link required files.-->
-    <Compile Include="$(ProjectDir)\..\Rustic.Source\SynModel.cs" Link="SynModel.cs"/>
-    <Compile Include="$(ProjectDir)\..\Rustic.Source\SrcBuilder.cs" Link="SrcBuilder.cs"/>
-    <Compile Include="$(ProjectDir)\..\Rustic.Source\SyntaxExtensions.cs" Link="SyntaxExtensions.cs"/>
+    <Compile Include="$(ProjectDir)\..\Rustic.Source\SynModel.cs" Link="SynModel.cs" />
+    <Compile Include="$(ProjectDir)\..\Rustic.Source\SrcBuilder.cs" Link="SrcBuilder.cs" />
+    <Compile Include="$(ProjectDir)\..\Rustic.Source\SyntaxExtensions.cs" Link="SyntaxExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>

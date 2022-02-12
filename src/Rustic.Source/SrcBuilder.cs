@@ -6,6 +6,13 @@ using System.Text;
 
 namespace Rustic.Source;
 
+[Flags]
+public enum CaseStyle
+{
+    None = 0,
+    NoBreak = 1 << 0,
+}
+
 public class SrcBuilder
 {
     private int _size;
@@ -333,18 +340,19 @@ public class SrcBuilder
         return Block();
     }
 
-    public void Switch<T>(string value, ImmutableArray<T> branchSource, Func<T, string?> caseConstant, Func<SrcBuilder, T, bool> caseBlock, Func<SrcBuilder, bool>? defaultBlock = null)
+    public void Switch<S, T>(string value, in S source, Func<T, string?> caseConstant, Func<SrcBuilder, T, CaseStyle> caseBlock, Func<SrcBuilder, S, CaseStyle>? defaultBlock = null)
+        where S : IEnumerable<T>
     {
         using (Switch(value))
         {
-            foreach (var b in branchSource)
+            foreach (var b in source)
             {
                 string? constant = caseConstant(b);
                 if (constant is not null)
                 {
                     using var c = Case(constant);
                     var returned = caseBlock(this, b);
-                    if (returned)
+                    if ((returned & CaseStyle.NoBreak) != 0)
                     {
                         c.Returned();
                     }
@@ -353,8 +361,8 @@ public class SrcBuilder
             if (defaultBlock is not null)
             {
                 using var c = Case(default);
-                var returned = defaultBlock(this);
-                if (returned)
+                var returned = defaultBlock(this, source);
+                if ((returned & CaseStyle.NoBreak) != 0)
                 {
                     c.Returned();
                 }
@@ -362,40 +370,12 @@ public class SrcBuilder
         }
     }
 
-    public void Switch<T, C>(string value, in C ctx, ImmutableArray<T> branchSource, Func<C, T, string?> caseConstant, Func<SrcBuilder, C, T, bool> caseBlock, Func<SrcBuilder, C, bool>? defaultBlock = null)
+    public void Switch<S, T>(string value, in S source, Func<T, string?> caseConstant, Action<SrcBuilder, T> caseBlock, Action<SrcBuilder, S>? defaultBlock = null)
+        where S : IEnumerable<T>
     {
         using (Switch(value))
         {
-            foreach (var b in branchSource)
-            {
-                string? constant = caseConstant(ctx, b);
-                if (constant is not null)
-                {
-                    using var c = Case(constant);
-                    bool returned = caseBlock(this, ctx, b);
-                    if (returned)
-                    {
-                        c.Returned();
-                    }
-                }
-            }
-            if (defaultBlock is not null)
-            {
-                using var c = Case(default);
-                var returned = defaultBlock(this, ctx);
-                if (returned)
-                {
-                    c.Returned();
-                }
-            }
-        }
-    }
-
-    public void Switch<T>(string value, ImmutableArray<T> branchSource, Func<T, string?> caseConstant, Action<SrcBuilder, T> caseBlock, Action<SrcBuilder>? defaultBlock = null)
-    {
-        using (Switch(value))
-        {
-            foreach (var b in branchSource)
+            foreach (var b in source)
             {
                 string? constant = caseConstant(b);
                 if (constant is not null)
@@ -410,32 +390,7 @@ public class SrcBuilder
             {
                 using (Case(default))
                 {
-                    defaultBlock(this);
-                }
-            }
-        }
-    }
-
-    public void Switch<T, C>(string value, in C ctx, ImmutableArray<T> branchSource, Func<C, T, string?> caseConstant, Action<SrcBuilder, C, T> caseBlock, Action<SrcBuilder, C>? defaultBlock = null)
-    {
-        using (Switch(value))
-        {
-            foreach (var b in branchSource)
-            {
-                string? constant = caseConstant(ctx, b);
-                if (constant is not null)
-                {
-                    using (Case(constant))
-                    {
-                        caseBlock(this, ctx, b);
-                    }
-                }
-            }
-            if (defaultBlock is not null)
-            {
-                using (Case(default))
-                {
-                    defaultBlock(this, ctx);
+                    defaultBlock(this, source);
                 }
             }
         }
@@ -475,12 +430,12 @@ public class SrcBuilder
             static (b) => b.Append(");").NL());
     }
 
-    public SrcPre InRegion(string name)
+    public SrcPre Region(string name)
     {
         return new SrcPre(this, $"#region {name}", $"#endregion {name}");
     }
 
-    public SrcPre InNullable()
+    public SrcPre NullableEnable()
     {
         return new SrcPre(this, "#nullable enable", "#nullable restore");
     }

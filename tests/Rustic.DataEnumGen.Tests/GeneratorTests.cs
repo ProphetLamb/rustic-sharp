@@ -5,6 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
+using FluentAssertions;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -18,15 +20,6 @@ namespace Rustic.DataEnumGen.Tests;
 [TestFixture]
 public class GeneratorTests
 {
-    public GeneratorTests()
-    {
-        var writer = new StreamWriter($"GeneratorTests-{typeof(string).Assembly.ImageRuntimeVersion}.log", true);
-        writer.AutoFlush = true;
-        Logger = new Logger(nameof(GeneratorTests), InternalTraceLevel.Debug, writer);
-    }
-
-    internal Logger Logger { get; }
-
     [Test]
     public void SimpleGeneratorTest()
     {
@@ -39,6 +32,9 @@ using Rustic;
 
 namespace Rustic.DataEnumGen.Tests.TestAssembly
 {
+    using static PreferThis;
+    using static DummyData;
+
     public enum Dummy : byte
     {
         [Description(""The default value."")]
@@ -67,58 +63,51 @@ namespace Rustic.DataEnumGen.Tests.TestAssembly
         Supported = 1 << 4,
     }
 
+    internal enum PreferThisEnum
+    {
+        [DataEnum(typeof(string))]
+        Symbol,
+        IsPreferThis,
+    }
+
     public static class Program
     {
         public static void Main()
         {
-            DummyValue value = default!;
+            // Extension classes
+            Type dummyExType = typeof(DummyExtensions);
+            Type NoAttrExType = typeof(NoAttrExtensions);
+            Type NoFlagsExType = typeof(NoFlagsExtensions);
+            // Data structs
+            DummyData appenedTheDataSuffix = default!;
+            PreferThis removedTheEnumSuffix = Symbol(""Jannis"");
         }
     }
 }
 ");
         const int TEST_SOURCES_LEN = 1;
-        const int GEN_SOURCES_LEN = 4; // Attribute + Dummy + NoAttr + NoFlags
+        const int GEN_SOURCES_LEN = 5; // Attribute + Dummy + NoAttr + NoFlags + PreferThisEnum
         DataEnumGen generator = new();
 
         GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-        driver = driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out var outputCompilation, out var diagnostics);
+        driver = driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out var outputCompilation, out var generatorDiagnostics);
 
-        Logging(outputCompilation, diagnostics);
+        generatorDiagnostics.Should().NotContain(d => d.Severity == DiagnosticSeverity.Warning);
+        outputCompilation.SyntaxTrees.Count().Should().Be(TEST_SOURCES_LEN + GEN_SOURCES_LEN);
 
-        Debug.Assert(!diagnostics.AnyWarning()); // there were no diagnostics created by the generators
-        Debug.Assert(outputCompilation.SyntaxTrees.Count() == TEST_SOURCES_LEN + GEN_SOURCES_LEN); // we have two syntax trees, the original 'user' provided one, and two added by the generator
-        Debug.Assert(!outputCompilation.GetDiagnostics().AnyError()); // verify the compilation with the added source has no diagnostics
+        var analyzerDiagnostics = outputCompilation.GetDiagnostics();
+        analyzerDiagnostics.Should().NotContain(d => d.Severity == DiagnosticSeverity.Error);
 
         GeneratorDriverRunResult runResult = driver.GetRunResult();
 
-        Debug.Assert(runResult.GeneratedTrees.Length == GEN_SOURCES_LEN);
-        Debug.Assert(runResult.Diagnostics.IsEmpty);
+        runResult.GeneratedTrees.Length.Should().Be(GEN_SOURCES_LEN);
+        Assert.IsTrue(runResult.Diagnostics.IsEmpty);
 
         GeneratorRunResult generatorResult = runResult.Results[0];
-        Debug.Assert(generatorResult.Generator.GetGeneratorType() == generator.GetType()); // Allow for IncrementalGeneratorWrapper
-        Debug.Assert(generatorResult.Diagnostics.IsEmpty);
-        Debug.Assert(generatorResult.GeneratedSources.Length == GEN_SOURCES_LEN);
-        Debug.Assert(generatorResult.Exception is null);
-    }
-
-    private void Logging(Compilation comp, ImmutableArray<Diagnostic> diagnostics)
-    {
-
-        foreach (var diag in diagnostics)
-        {
-            Logger.Debug("Initial diagnostics {0}", diag.ToString());
-        }
-
-        foreach (var tree in comp.SyntaxTrees)
-        {
-            Logger.Debug("SyntaxTree\nName=\"{0}\",\nText=\"{1}\"", tree.FilePath, tree.ToString());
-        }
-
-        var d = comp.GetDiagnostics();
-        foreach (var diag in d)
-        {
-            Logger.Debug("Diagnostics {0}", diag.ToString());
-        }
+        Assert.IsTrue(generatorResult.Generator.GetGeneratorType() == generator.GetType());
+        Assert.IsTrue(generatorResult.Diagnostics.IsEmpty);
+        generatorResult.GeneratedSources.Length.Should().Be(GEN_SOURCES_LEN);
+        generatorResult.Exception.Should().BeNull();
     }
 
     private static Compilation CreateCompilation(string source)

@@ -11,7 +11,7 @@ using DescriptionAttribute = System.ComponentModel.DescriptionAttribute;
 
 namespace Rustic.DataEnumGen.Run.Tests
 {
-    using static DummyValue;
+    using static DummyData;
 
     public enum Dummy : byte
     {
@@ -44,7 +44,11 @@ namespace Rustic.DataEnumGen.Run.Tests
     [TestFixture]
     public class ExtensionsTests
     {
+        [Test]
+        public void Test()
+        {
 
+        }
     }
 
     [TestFixture]
@@ -53,7 +57,7 @@ namespace Rustic.DataEnumGen.Run.Tests
         [Test]
         public void TestCtorEnumEqNoData()
         {
-            DummyValue defV = Default();
+            DummyData defV = Default();
             Dummy def = defV;
 
             defV.Value.Should().Be(def);
@@ -69,7 +73,7 @@ namespace Rustic.DataEnumGen.Run.Tests
 
             minV.Value.Should().Be(min);
 
-            Assert.IsTrue(minV.Equals(min));
+            minV.Equals(min).Should().BeTrue();
         }
     }
 }

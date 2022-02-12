@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Text;
 
 using Microsoft.CodeAnalysis;
@@ -11,47 +10,6 @@ using Rustic.Source;
 
 namespace Rustic.DataEnumGen;
 
-#if !FEATURE_INC_SRC_GEN
-
-[Generator]
-[CLSCompliant(false)]
-public class DataEnumGen : ISourceGenerator
-{
-    public void Initialize(GeneratorInitializationContext context)
-    {
-        context.RegisterForPostInitialization(static (ctx) =>
-           ctx.AddSource($"{GenContext.DataEnumSymbol}.g.cs", SourceText.From(GenContext.DataEnumSyntax, Encoding.UTF8)));
-    }
-
-    public void Execute(GeneratorExecutionContext context)
-    {
-        var enumDecls = context.Compilation.CollectSyntax(
-                 static (s, _) => s is EnumDeclarationSyntax,
-                 static (ctx, s, _) => GenContext.CollectDeclInfo(ctx.GetSynModel(s)))
-            .Where(static (ctx) => ctx.HasValue)
-            .Select(static (ctx) => ctx!.Value);
-
-        Generate(context, enumDecls.ToImmutableArray());
-    }
-
-    private static void Generate(GeneratorExecutionContext context, ImmutableArray<GenContext> members)
-    {
-        if (members.IsDefaultOrEmpty)
-        {
-            return;
-        }
-
-        foreach (var info in members)
-        {
-            SrcBuilder text = new(2048);
-            GenContext.Generate(text, in info);
-            context.AddSource($"{info.EnumName}Value.g.cs", SourceText.From(text.ToString(), Encoding.UTF8));
-        }
-    }
-}
-
-#else
-
 [Generator]
 [CLSCompliant(false)]
 public class DataEnumGen : IIncrementalGenerator
@@ -59,7 +17,7 @@ public class DataEnumGen : IIncrementalGenerator
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         context.RegisterPostInitializationOutput(static (ctx) =>
-            ctx.AddSource($"{GenContext.DataEnumSymbol}.g.cs", SourceText.From(GenContext.DataEnumSyntax, Encoding.UTF8)));
+            ctx.AddSource($"{Const.DataEnumSymbol}.g.cs", SourceText.From(Const.DataEnumSyntax, Encoding.UTF8)));
 
         var enumDecls = context.SyntaxProvider.CreateSyntaxProvider(
                 static (s, _) => s is EnumDeclarationSyntax,
@@ -70,48 +28,57 @@ public class DataEnumGen : IIncrementalGenerator
         context.RegisterSourceOutput(enumDecls.Collect(), static (ctx, src) => Generate(ctx, src));
     }
 
-    private static void Generate(SourceProductionContext context, ImmutableArray<GenContext> members)
+    private static void Generate(SourceProductionContext context, ImmutableArray<GenContext> declsCtx)
     {
-        if (members.IsDefaultOrEmpty)
+        if (declsCtx.IsDefaultOrEmpty)
         {
             return;
         }
 
-        foreach (var info in members.Distinct())
+        foreach (var ctx in declsCtx)
         {
             SrcBuilder text = new(2048);
-            GenContext.Generate(text, in info);
-            context.AddSource($"{info.EnumName}Value.g.cs", SourceText.From(text.ToString(), Encoding.UTF8));
+            Generate(text, in ctx);
+            context.AddSource($"{ctx.EnumDataSymbol}.g.cs", SourceText.From(text.ToString(), Encoding.UTF8));
+        }
+    }
+
+    private static void Generate(SrcBuilder text, in GenContext ctx)
+    {
+        EnumExtensionsGen ex = new(text);
+        EnumDataGen data = new(text);
+
+        using (text.NullableEnable())
+        {
+            text.Stmt("using System;")
+                .Stmt("using System.ComponentModel;")
+                .Stmt("using System.Collections.Generic;")
+                .Stmt("using System.Runtime.CompilerServices;")
+                .Stmt("using System.Runtime.Serialization;")
+                .Stmt("using System.Runtime.InteropServices;")
+                .NL()
+                .Stmt("using Rustic;")
+                .NL()
+                .NL();
+
+            using (text.Decl($"namespace {ctx.Namespace}"))
+            {
+                ex.Generate(in ctx);
+
+                // Only if there is any DataEnum member.
+                if (ctx.GetDataMembers().MoveNext())
+                {
+                    text.NL();
+                    data.Generate(in ctx);
+                }
+            }
         }
     }
 }
 
-#endif
-
-internal readonly struct GenContext
+public static class Const
 {
-    public readonly NamespaceDeclarationSyntax Ns;
-    public readonly ImmutableArray<BaseTypeDeclarationSyntax> Nesting;
-    public readonly EnumDeclarationSyntax EnumDecl;
-    public readonly ImmutableArray<EnumContext> Members;
-    public readonly ImmutableArray<EnumContext> DataMembers;
-
-    public readonly string Namespace;
-    public readonly string Modifiers;
-    public readonly string EnumName;
-
-    public GenContext(NamespaceDeclarationSyntax ns, ImmutableArray<BaseTypeDeclarationSyntax> nesting,
-        EnumDeclarationSyntax enumDecl, ImmutableArray<EnumContext> members)
-    {
-        Ns = ns;
-        Nesting = nesting;
-        EnumDecl = enumDecl;
-        Members = members;
-        DataMembers = members.Where(m => m.IsDataEnum).ToImmutableArray();
-        Namespace = Ns.Name.ToString();
-        Modifiers = EnumDecl.Modifiers.ToString();
-        EnumName = EnumDecl.Identifier.Text;
-    }
+    public const string MethodInlineAttr = "[MethodImpl(MethodImplOptions.AggressiveInlining)]";
 
     public const string FlagsSymbol = "System.FlagsAttribute";
 
@@ -138,131 +105,429 @@ namespace Rustic
 }
 #nullable restore
 ";
+}
 
-    public static GenContext? CollectDeclInfo(SynModel model)
+internal readonly struct EnumExtensionsGen
+{
+    internal readonly SrcBuilder Text;
+
+    public EnumExtensionsGen(SrcBuilder text)
     {
-        if (!model.Is<EnumDeclarationSyntax>(out var enumModel))
-        {
-            return default;
-        }
+        Text = text;
+    }
 
-        if (enumModel.FindTypeAttr(static (m, _) => m.GetTypeName() == FlagsSymbol) is not null)
+    public void Generate(in GenContext ctx)
+    {
+        using (Text.Doc("summary"))
         {
-            return default;
+            Text.Append($"Collection of extensions for the {ctx.Symbol} Enum.");
         }
-
-        var enumDecl = enumModel.Node;
-        var members = ImmutableArray.CreateBuilder<EnumContext>(enumDecl.Members.Count);
-        foreach (var memberSyntax in enumDecl.Members)
+        using (Text.Decl($"{ctx.Modifiers} static class {ctx.Symbol}Extensions"))
         {
-            if (memberSyntax is EnumMemberDeclarationSyntax memberDecl)
+            Name(in ctx);
+            Description(in ctx);
+            Values(in ctx);
+            foreach (var mem in ctx.GetMembers())
             {
-                members.Add(CollectMemberInfo(model.Sub(memberDecl)));
+                Is(mem);
             }
         }
-
-        var (nsDecl, nestingDecls) = enumDecl.GetHierarchy<BaseTypeDeclarationSyntax>();
-        return new GenContext(nsDecl, nestingDecls, enumDecl, members.MoveToImmutable());
     }
 
-    public static EnumContext CollectMemberInfo(SynModel<EnumMemberDeclarationSyntax> model)
+    private void Name(in GenContext ctx)
     {
-        var dataEnumAttr = model.FindMemAttr(static (m, a) => m.Model.GetTypeName(a) == DataEnumSymbol);
-        TypeSyntax? dataType = null;
-        var typeArg = dataEnumAttr?.ArgumentList?.Arguments[0];
-        if (typeArg?.Expression is TypeOfExpressionSyntax tof)
+        using (Text.Doc("summary"))
         {
-            dataType = tof.Type;
+            Text.Append($"Returns the name of the <see cref=\"{ctx.Symbol}\" value.");
         }
-
-        var descrAttr = model.FindMemAttr(static (m, a) => m.Model.GetTypeName(a) == DescriptionSymbol);
-        string? descr = null;
-        var descrArg = descrAttr?.ArgumentList?.Arguments[0];
-        if (descrArg?.Expression is LiteralExpressionSyntax literal)
+        using (Text.Decl($"public static string Symbol(this {ctx.Symbol} value)"))
         {
-            descr = literal.Token.ValueText;
-        }
-
-        return new EnumContext(model, dataType, descr);
-    }
-
-    public static void Generate(SrcBuilder text, in GenContext info)
-    {
-        using (text.InNullable())
-        {
-            text.Stmt("using System;")
-                .Stmt("using System.ComponentModel;")
-                .Stmt("using System.Collections.Generic;")
-                .Stmt("using System.Runtime.CompilerServices;")
-                .Stmt("using System.Runtime.Serialization;")
-                .Stmt("using System.Runtime.InteropServices;")
-                .NL()
-                .Stmt("using Rustic;")
-                .NL()
-                .NL();
-
-            using (text.Decl($"namespace {info.Namespace}"))
-            {
-                EnumExtensionsClass.Generate(text, in info);
-
-                // Only if there is any DataEnum member.
-                if (info.Members.Any(m => m.IsDataEnum))
+            Text.Switch("value", ctx.GetMembers(),
+                static (MemberContext ctx) => ctx.Symbol,
+                static (t, ctx) =>
                 {
-                    text.NL();
-                    EnumValueStruct.Generate(text, in info);
+                    t.Stmt($"return nameof({ctx.Symbol});");
+                    return CaseStyle.NoBreak;
+                },
+                static (t, _) =>
+                {
+                    t.Stmt("return value.ToString();");
+                    return CaseStyle.NoBreak;
+                });
+        }
+    }
+
+    private void Description(in GenContext ctx)
+    {
+        using (Text.Doc("summary"))
+        {
+            Text.Append($"Returns the value of the <see cref=\"System.ComponentModel.DescriptionAttribute\"/> of <see cref=\"{ctx.Symbol}\" value.");
+        }
+        using (Text.Decl($"public static string? Description(this {ctx.Symbol} value)"))
+        {
+            Text.Switch("value", ctx.GetMembers(),
+                static (MemberContext ctx) => ctx.Mem.Description is null ? null : ctx.Symbol,
+                static (t, ctx) =>
+                {
+                    t.Stmt($"return \"{ctx.Mem.Description}\";");
+                    return CaseStyle.NoBreak;
+                },
+                static (t, _) =>
+                {
+                    t.Stmt("return null;");
+                    return CaseStyle.NoBreak;
+                });
+        }
+    }
+
+    private void Values(in GenContext ctx)
+    {
+        using (Text.Doc("summary"))
+        {
+            Text.Append($"Returns the span of all possible values of the <see cref=\"{ctx.Symbol}\".");
+        }
+        using (Text.Decl($"public static ReadOnlySpan<{ctx.Symbol}> Values"))
+        {
+            Text.Stmt(Const.MethodInlineAttr);
+            using (Text.Decl("get"))
+            {
+                using var array = Text.Coll($"return new {ctx.Symbol}[] ");
+                foreach (var mem in ctx.GetMembers())
+                {
+                    array.Add(mem.Symbol);
                 }
             }
         }
     }
+
+    private void Is(in MemberContext ctx)
+    {
+        using (Text.Doc("summary"))
+        {
+            Text.Append($"Returns <c>true</c> if the vlaue is <cee cref=\"{ctx.Symbol}\">; otherwise, returns <c>false</c>.");
+        }
+        Text.Stmt(Const.MethodInlineAttr);
+        using (Text.Decl($"public static bool Is{ctx.Mem.Symbol}(this {ctx.Gen.Symbol} value)"))
+        {
+            Text.Stmt($"return value == {ctx.Symbol};");
+        }
+    }
 }
 
-[CLSCompliant(false)]
-public readonly struct EnumContext : IEquatable<EnumContext>
+internal readonly struct EnumDataGen
 {
-    public readonly SynModel<EnumMemberDeclarationSyntax> Enum;
-    public readonly TypeSyntax? TypeNode;
-    public readonly string? Description;
+    internal readonly SrcBuilder Text;
 
-    public readonly string Name;
-    public readonly string NameLower;
-    public readonly string? TypeName;
-
-    public EnumContext(SynModel<EnumMemberDeclarationSyntax> enumModel, TypeSyntax? typeNode, string? description)
+    public EnumDataGen(SrcBuilder text)
     {
-        Enum = enumModel;
-        TypeNode = typeNode;
-        Description = description;
-
-        Name = enumModel.Node.Identifier.Text;
-        NameLower = Name.ToLower();
-        TypeName = TypeNode?.ToString();
+        Text = text;
     }
 
-    public bool IsDataEnum => TypeNode is not null;
-
-    #region IEquality members
-
-    public bool Equals(EnumContext other)
+    public void Generate(in GenContext ctx)
     {
-        return Enum.Equals(other.Enum) && Equals(TypeNode, other.TypeNode);
-    }
-
-    public override bool Equals(object? obj)
-    {
-        return obj is EnumContext other && Equals(other);
-    }
-
-    public override int GetHashCode()
-    {
-        unchecked
+        // No good for [Flags] enums
+        if (ctx.IsFlags)
         {
-            return (Enum.GetHashCode() * 397) ^ ((TypeNode?.GetHashCode()) ?? 0);
+            return;
+        }
+
+        using (Text.Stmt("[Serializable]")
+                .Stmt("[StructLayout(LayoutKind.Explicit)]")
+                .Decl($"{ctx.Modifiers} readonly struct {ctx.EnumDataSymbol}"))
+        {
+            using (Text.Region("Fields"))
+            {
+                Fields(in ctx);
+            }
+
+            using (Text.Region("Constructor"))
+            {
+                Ctor(in ctx);
+                SerCtor(in ctx);
+                foreach (var mem in ctx.GetMembers())
+                {
+                    Factory(mem);
+                }
+            }
+
+            using (Text.Region("Members"))
+            {
+                foreach (var mem in ctx.GetMembers())
+                {
+                    IsEnum(in mem);
+                }
+                foreach (var mem in ctx.GetDataMembers())
+                {
+                    TryEnum(in mem);
+                }
+                foreach (var mem in ctx.GetDataMembers())
+                {
+                    ExpectEnum(in mem);
+                }
+            }
+
+            using (Text.Region("IEquatable members"))
+            {
+                EqualsEnum(in ctx);
+                EqualsOther(in ctx);
+                EqualsObj(in ctx);
+                HashCode(in ctx);
+                OperatorEq(in ctx);
+                OperatorNeq(in ctx);
+            }
+
+            using (Text.Region("ISerializable"))
+            {
+                SerGetObjData(in ctx);
+            }
+
+            OperatorEnum(in ctx);
         }
     }
 
-    public static bool operator ==(EnumContext left, EnumContext right) => left.Equals(right);
+    private void Fields(in GenContext ctx)
+    {
+        Text.Stmt("[FieldOffset(0)]")
+            .Stmt($"public readonly {ctx.Symbol} Value;");
 
-    public static bool operator !=(EnumContext left, EnumContext right) => !left.Equals(right);
+        foreach (var mem in ctx.GetDataMembers())
+        {
+            Text.Stmt($"[FieldOffset(sizeof({ctx.Symbol}))]")
+                .Stmt($"public readonly {mem.Mem.TypeName} {mem.Mem.Symbol}Unchecked;");
+        }
+    }
 
-    #endregion IEquality members
+    private void Ctor(in GenContext ctx)
+    {
+        using (Text.Decl($"private {ctx.EnumDataSymbol}", in ctx, (in GenContext ctx, ref SrcBuilder.SrcColl p) =>
+        {
+            p.Add($"in {ctx.Symbol} value");
+            foreach (var mem in ctx.GetDataMembers())
+            {
+                p.Add($"in {mem.Mem.TypeName} {mem.Mem.NameLower}");
+            }
+        }))
+        {
+            Text.Stmt("this.Value = value;");
+            CtorSwitch(in ctx);
+        }
+    }
+
+    private void CtorSwitch(in GenContext ctx)
+    {
+        Text.Switch("value", ctx.GetDataMembers(),
+            static (MemberContext ctx) => $"{ctx.Symbol}",
+            static (t, ctx) =>
+            {
+                foreach (var cur in ctx.Gen.GetDataMembers())
+                {
+                    if (!cur.Eq(ctx))
+                    {
+                        t.Stmt($"this.{cur.Mem.Symbol}Unchecked = {cur.Mem.NameLower};");
+                    }
+                }
+                t.NL().Stmt($"this.{ctx.Mem.Symbol}Unchecked = {ctx.Mem.NameLower};");
+            },
+            static (t, ctx) =>
+            {
+                foreach (var mem in ctx.GetEnumerator())
+                {
+                    t.Stmt($"this.{mem.Mem.Symbol}Unchecked = default!;");
+                }
+            });
+    }
+
+    private void Factory(in MemberContext ctx)
+    {
+        using (Text.Stmt(Const.MethodInlineAttr)
+            .Decl($"public static {ctx.Gen.EnumDataSymbol} {ctx.Mem.Symbol}", ctx.Mem, (in EnumContext mem, ref SrcBuilder.SrcColl parameters) =>
+        {
+            if (mem.IsDataEnum)
+            {
+                parameters.Add($"in {mem.TypeName} value");
+            }
+        }))
+        {
+            using var args = Text.Call($"return new {ctx.Gen.EnumDataSymbol}");
+            args.Add(ctx.Symbol);
+            foreach (var e in ctx.Gen.GetDataMembers())
+            {
+                args.Add(e.Eq(ctx) ? "value" : "default!");
+            }
+        }
+    }
+
+    private void IsEnum(in MemberContext ctx)
+    {
+        using (Text.Decl($"public bool Is{ctx.Mem.Symbol}"))
+        {
+            Text.Stmt(Const.MethodInlineAttr);
+            using (Text.Decl("get"))
+            {
+                Text.Stmt($"return this.Equals({ctx.Symbol});");
+            }
+        }
+    }
+
+    private void TryEnum(in MemberContext ctx)
+    {
+        using (Text.Decl($"public bool Try{ctx.Mem.Symbol}(out {ctx.Mem.TypeName} value)"))
+        {
+            using (Text.If($"this.Is{ctx.Mem.Symbol}"))
+            {
+                Text.Stmt($"value = this.{ctx.Mem.Symbol}Unchecked;")
+                    .Stmt("return true;");
+            }
+
+            Text.Stmt("value = default!;")
+                    .Stmt("return false;");
+        }
+    }
+
+    private void ExpectEnum(in MemberContext ctx)
+    {
+        using (Text.Decl($"public {ctx.Mem.TypeName} Expect{ctx.Mem.Symbol}(string? message)"))
+        {
+            using (Text.If($"this.Is{ctx.Mem.Symbol}"))
+            {
+                Text.Stmt($"return this.{ctx.Mem.Symbol}Unchecked;");
+            }
+            Text.Stmt("throw new InvalidOperationException(message);");
+        }
+    }
+
+    private void EqualsEnum(in GenContext ctx)
+    {
+        Text.Stmt(Const.MethodInlineAttr);
+        using (Text.Decl($"public bool Equals({ctx.Symbol} other)"))
+        {
+            Text.Stmt("return this.Value == other;");
+        }
+    }
+
+    private void EqualsOther(in GenContext ctx)
+    {
+        using (Text.Decl($"public bool Equals({ctx.EnumDataSymbol} other)"))
+        {
+            using (Text.If("this.Value != other.Value"))
+            {
+                Text.Stmt("return false;");
+            }
+
+            Text.Switch("this.Value", ctx.GetDataMembers(),
+                static (MemberContext mem) => mem.Symbol,
+                static (t, mem) =>
+                {
+                    t.Stmt($"return EqualityComparer<{mem.Mem.TypeName}>.Default.Equals(this.{mem.Mem.Symbol}Unchecked, other.{mem.Mem.Symbol}Unchecked);");
+                    return CaseStyle.NoBreak;
+                });
+
+            Text.Stmt("return true;");
+        }
+    }
+
+    private void EqualsObj(in GenContext ctx)
+    {
+        using (Text.Decl("public override bool Equals(object? obj)"))
+        {
+            using (Text.If($"obj is {ctx.EnumDataSymbol} other"))
+            {
+                Text.Stmt("return this.Equals(other);");
+            }
+
+            using (Text.If($"obj is {ctx.Symbol} value"))
+            {
+                Text.Stmt("return this.Equals(value);");
+            }
+
+            Text.Stmt("return false;");
+        }
+    }
+
+    private void HashCode(in GenContext ctx)
+    {
+        using (Text.Decl("public override int GetHashCode()"))
+        {
+            Text.Stmt("HashCode hash = new HashCode();")
+                .Stmt("hash.Add(this.Value);");
+
+            Text.Switch("this.Value", ctx.GetDataMembers(),
+                static (MemberContext ctx) => ctx.Symbol,
+                static (t, ctx) =>
+                {
+                    t.Stmt($"hash.Add(this.{ctx.Mem.Symbol}Unchecked);");
+                });
+
+            Text.Stmt("return hash.ToHashCode();");
+        }
+    }
+
+    private void SerCtor(in GenContext ctx)
+    {
+        using (Text.Decl($"private {ctx.EnumDataSymbol}(SerializationInfo info, StreamingContext context)"))
+        {
+            Text.Stmt($"this.Value = ({ctx.Symbol})info.GetValue(\"Value\", typeof({ctx.Symbol}))!;");
+            Text.Switch("this.Value", ctx.GetDataMembers(),
+                static (MemberContext ctx) => ctx.Symbol,
+                static (t, ctx) =>
+                {
+                    foreach (var e in ctx.Gen.GetDataMembers())
+                    {
+                        if (!e.Eq(ctx))
+                        {
+                            t.Stmt($"this.{e.Mem.Symbol}Unchecked = default!;");
+                        }
+                    }
+                    t.NL().Stmt($"this.{ctx.Mem.Symbol}Unchecked = ({ctx.Mem.TypeName})info.GetValue(\"{ctx.Mem.Symbol}Unchecked\", typeof({ctx.Mem.TypeName}))!;");
+                },
+                static (t, ctx) =>
+                {
+                    foreach (var e in ctx.GetEnumerator())
+                    {
+                        t.Stmt($"this.{e.Mem.Symbol}Unchecked = default!;");
+                    }
+                });
+        }
+    }
+
+    private void SerGetObjData(in GenContext ctx)
+    {
+        using (Text.Decl("public void GetObjectData(SerializationInfo info, StreamingContext context)"))
+        {
+            Text.Stmt($"info.AddValue(\"Value\", this.Value, typeof({ctx.Symbol}));");
+            Text.Switch("this.Value", ctx.GetDataMembers(),
+                static (MemberContext ctx) => ctx.Symbol,
+                static (t, ctx) =>
+                {
+                    t.Stmt($"info.AddValue(\"{ctx.Mem.Symbol}Unchecked\", this.{ctx.Mem.Symbol}Unchecked, typeof({ctx.Mem.TypeName}));");
+                });
+        }
+    }
+
+    private void OperatorEq(in GenContext ctx)
+    {
+        Text.Stmt(Const.MethodInlineAttr);
+        using (Text.Decl($"public static bool operator ==(in {ctx.EnumDataSymbol} left, in {ctx.EnumDataSymbol} right)"))
+        {
+            Text.Stmt("return left.Equals(right);");
+        }
+    }
+
+    private void OperatorNeq(in GenContext ctx)
+    {
+        Text.Stmt(Const.MethodInlineAttr);
+        using (Text.Decl($"public static bool operator !=(in {ctx.EnumDataSymbol} left, in {ctx.EnumDataSymbol} right)"))
+        {
+            Text.Stmt("return !left.Equals(right);");
+        }
+    }
+
+    private void OperatorEnum(in GenContext ctx)
+    {
+        Text.Stmt(Const.MethodInlineAttr);
+        using (Text.Decl($"public static implicit operator {ctx.Symbol}(in {ctx.EnumDataSymbol} value)"))
+        {
+            Text.Stmt("return value.Value;");
+        }
+    }
 }
