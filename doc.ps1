@@ -13,8 +13,8 @@ foreach ($project in Get-ChildItem -Path src/ -Recurse -File *.csproj) {
 
     # target framework
     $target = 'net60'
-    $lines | Select-String -Pattern '<TargetFrameworks\>(?:([^;]+;?)+)+</TargetFrameworks\>' | ForEach-Object {
-        $target = $_.Matches.Groups[$_.Matches.Groups.Count - 1].Value
+    $lines | Select-String -Pattern '<TargetFrameworks\>([^;]+).*</TargetFrameworks\>' | ForEach-Object {
+        $target = $_.Matches.Groups[1].Value # use the first target framework
     }
     $lines | Select-String -Pattern '<TargetFramework\>(.*)</TargetFramework\>' | ForEach-Object {
         $target = "" # no sub directory created for single target framework
