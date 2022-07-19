@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Rustic.Memory;
 
-/// <summary>Enables unaligned marking of bits in a memory area.</summary>
+/// <summary>Enables unaligned marking of bits in a fixed size memory area.</summary>
 public readonly ref struct BitSet
 {
     private const int IntSize = sizeof(int) * 8;
@@ -12,7 +12,7 @@ public readonly ref struct BitSet
     private readonly Span<int> _span;
 
     /// <summary>
-    ///     initializes a new instance of <see cref="BitSet"/>.
+    ///     Initializes a new instance of <see cref="BitSet"/>.
     /// </summary>
     /// <param name="span">The span of 32bit integers to be used for marking bits.</param>
     public BitSet(Span<int> span)

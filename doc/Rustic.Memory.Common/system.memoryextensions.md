@@ -12,6 +12,68 @@ Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) 
 
 ## Methods
 
+### **Sort&lt;T&gt;(Span&lt;T&gt;)**
+
+Sorts the elements in the entire [Span&lt;T&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.span-1) using the [IComparable&lt;T&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.icomparable-1) implementation of each element of the [Span&lt;T&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.span-1).
+
+```csharp
+public static void Sort<T>(Span<T> span)
+```
+
+#### Type Parameters
+
+`T`<br>
+The type of the elements of the span.
+
+#### Parameters
+
+`span` Span&lt;T&gt;<br>
+>The  to sort.
+
+### **Sort&lt;T, C&gt;(Span&lt;T&gt;, C)**
+
+Sorts the elements in the entire [Span&lt;T&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.span-1) using the .
+
+```csharp
+public static void Sort<T, C>(Span<T> span, C comparer)
+```
+
+#### Type Parameters
+
+`T`<br>
+The type of the elements of the span.
+
+`C`<br>
+The type of the comparer to use to compare elements.
+
+#### Parameters
+
+`span` Span&lt;T&gt;<br>
+The  to sort.
+
+`comparer` C<br>
+
+### **Sort&lt;T&gt;(Span&lt;T&gt;, Comparison&lt;T&gt;)**
+
+Sorts the elements in the entire [Span&lt;T&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.span-1) using the specified [Comparison&lt;T&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.comparison-1).
+
+```csharp
+public static void Sort<T>(Span<T> span, Comparison<T> comparison)
+```
+
+#### Type Parameters
+
+`T`<br>
+The type of the elements of the span.
+
+#### Parameters
+
+`span` Span&lt;T&gt;<br>
+The  to sort.
+
+`comparison` Comparison&lt;T&gt;<br>
+The  to use when comparing elements.
+
 ### **Union&lt;T&gt;(ReadOnlySpan`1&, ReadOnlySpan`1&, Span`1&)**
 
 Computes the union of two sets.
