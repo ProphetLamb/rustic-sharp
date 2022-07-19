@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net472;net50;net60</TargetFrameworks>
+    <DeterministicSourcePaths Condition="'$(EnableSourceLink)' == ''">false</DeterministicSourcePaths>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Assembly Info">
+    <Product>Rustic.Json</Product>
+    <AssemblyName>$(Product)</AssemblyName>
+    <AssemblyTitle>$(Product)</AssemblyTitle>
+    <PackageId>$(Product)</PackageId>
+    <Title>$(Product)</Title>
+    <Description>Json converters &amp; reader, writer utility functionality.</Description>
+    <PackageTags>Json,Text</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Text.Json" Version="6.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\Functional\Functional.csproj" />
+  </ItemGroup>
+
+</Project>

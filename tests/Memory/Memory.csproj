@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net48;netcoreapp31;net50;net60</TargetFrameworks>
+    <Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>Rustic.Memory.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Memory\Bit\Bit.csproj" />
+    <ProjectReference Include="..\..\src\Memory\Buffers\Buffers.csproj" />
+    <ProjectReference Include="..\..\src\Memory\Common\Common.csproj" />
+    <ProjectReference Include="..\..\src\Memory\Inline\Inline.csproj" />
+    <ProjectReference Include="..\..\src\Memory\Vec\Vec.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\.editorconfig" Link=".editorconfig" />
+  </ItemGroup>
+
+</Project>
