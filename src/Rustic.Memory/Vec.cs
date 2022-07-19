@@ -192,10 +192,10 @@ public class Vec<T> : IVector<T>
         ref var ret = ref Unsafe.AsRef<T>(null);
         if (Storage is not null && 0 >= (uint)Storage.Length)
         {
-            ret = ref Storage[0];
+            ret = ref Storage[0]!;
         }
 
-        return ref ret;
+        return ref ret!;
     }
 
 #endif
@@ -204,7 +204,7 @@ public class Vec<T> : IVector<T>
     [Pure]
     public ReadOnlySpan<T> AsSpan(int start, int length)
     {
-        return new(Storage, start, length);
+        return new(Storage!, start, length);
     }
 
     /// <inheritdoc />
@@ -325,7 +325,7 @@ public class Vec<T> : IVector<T>
         }
         Debug.Assert(Storage is not null);
 
-        var storage = Storage;
+        var storage = Storage!;
         Array.Copy(storage, index, storage, index + 1, _count - index);
         storage[index] = value;
         Length += 1;

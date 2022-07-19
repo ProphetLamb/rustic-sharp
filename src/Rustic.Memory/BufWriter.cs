@@ -226,7 +226,7 @@ public class BufWriter<T> :
             Array.Copy(Buffer!, index + 1, Buffer!, index, remaining);
         }
 
-        Buffer[pos] = default!;
+        Buffer![pos] = default!;
         _index = pos;
     }
 

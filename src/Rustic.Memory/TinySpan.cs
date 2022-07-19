@@ -445,7 +445,7 @@ public readonly ref struct TinySpan<T>
     {
         StrBuilder sb = new();
         sb.Append("Length = ");
-        sb.Append(Length.ToString());
+        sb.Append(Length.ToString(System.Globalization.CultureInfo.CurrentCulture.NumberFormat));
         sb.Append(", Params = {");
 
         var last = _length - 1;

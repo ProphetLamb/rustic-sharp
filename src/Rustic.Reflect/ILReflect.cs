@@ -339,7 +339,7 @@ public static class ILReflect
         }
 
         var type = typeBuilder.CreateType();
-        var target = (T)asmBuilder.CreateInstance(name);
+        var target = (T)asmBuilder.CreateInstance(name)!;
         return (target, type);
     }
 
@@ -471,7 +471,7 @@ public static class ILReflect
                 Emit.ldarg1()
                     .ldc_i4(i)
                     .ldloc(i + localVarStart);
-                if (byRefType.IsValueType)
+                if (byRefType!.IsValueType)
                 {
                     Emit.box(byRefType);
                 }
@@ -536,7 +536,7 @@ public static class ILReflect
 
         unsafe
         {
-            GenMemberGetter<T>(property, property.PropertyType, property.GetGetMethod(true).IsStatic, &EmitGetter);
+            GenMemberGetter<T>(property, property.PropertyType, property.GetGetMethod(true)!.IsStatic, &EmitGetter);
         }
     }
 
@@ -590,7 +590,7 @@ public static class ILReflect
 
         unsafe
         {
-            GenMemberSetter<T>(property, property.PropertyType, property.GetSetMethod(true).IsStatic, &EmitSetter);
+            GenMemberSetter<T>(property, property.PropertyType, property.GetSetMethod(true)!.IsStatic, &EmitSetter);
         }
     }
 
@@ -627,7 +627,7 @@ public static class ILReflect
 
         // we're weakly-typed
         targetType = member.DeclaringType;
-        if (!targetType.IsValueType) // are we a reference-type?
+        if (!targetType!.IsValueType) // are we a reference-type?
         {
             // load and cast target, load and cast value and set
             // ((TargetType)target).member = (MemberType)value;
@@ -718,6 +718,22 @@ public static class ILReflect
         public override int GetHashCode()
         {
             return HashCode.Combine(Caller, Member, Target, Return);
+        }
+
+        /// <summary>
+        /// Returns true if the two keys are equal; otherwise, false.
+        /// </summary>
+        public static bool operator ==(Key left, Key right)
+        {
+            return left.Equals(right);
+        }
+
+        /// <summary>
+        /// Returns true if the two keys are not equal; otherwise, false.
+        /// </summary>
+        public static bool operator !=(Key left, Key right)
+        {
+            return !(left == right);
         }
     }
 

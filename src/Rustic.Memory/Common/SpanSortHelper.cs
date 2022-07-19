@@ -248,7 +248,7 @@ public static class SpanSortHelper<T>
 
 #endif
 
-/// <summary>Provides the function <see cref="SpanSortHelper{T}.Sort"/> whith which a <see cref="Span{T}"/> can be sorted.</summary>
+/// <summary>Provides the function <see cref="SpanSortHelper{K, V}.Sort"/> with which a <see cref="Span{T}"/> can be sorted.</summary>
 /// <typeparam name="K">The type of the keys.</typeparam>
 /// <typeparam name="V">The type of the values.</typeparam>
 internal static class SpanSortHelper<K, V>
