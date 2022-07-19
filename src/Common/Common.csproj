@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;net472;net50;net60</TargetFrameworks>
+    <TargetFrameworks>netstandard1.3;netstandard2.0;netstandard2.1;net472;net60</TargetFrameworks>
     <RootNamespace>Rustic</RootNamespace>
   </PropertyGroup>
 
@@ -20,8 +20,9 @@
     <PackageReference Include="System.Text.Json" Version="6.0.1" />
   </ItemGroup>
 
-  <ItemGroup Condition="!$(DefineConstants.Contains('NET5_0_OR_GREATER'))">
-    <PackageReference Include="System.Memory" Version="4.5.4" />
+  <ItemGroup>
+    <PackageReference Include="System.Memory" Version="4.5.4" Condition="!$(DefineConstants.Contains('NET5_0_OR_GREATER'))" />
+    <PackageReference Include="System.Diagnostics.Contracts" Version="4.3.0" Condition="!$(DefineConstants.Contains('NETSTANDARD1_1_OR_GREATER'))" />
   </ItemGroup>
 
   <ItemGroup>

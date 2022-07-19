@@ -4,7 +4,7 @@ using Rustic;
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if !(NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1 || NETCOREAPP2_1_OR_GREATER)
+#if !(NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER)
 /*
 
 The xxHash32 implementation is based on the code published by Yann Collet:
