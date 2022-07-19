@@ -10,6 +10,10 @@ public static class Arithmetic
 
 Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) → [Arithmetic](./rustic.arithmetic.md)
 
+**Remarks:**
+
+Most functions are ported from https://graphics.stanford.edu/~seander/bithacks.html
+
 ## Fields
 
 ### **IntShift**
@@ -35,6 +39,10 @@ The size of any given 32bit signed integer.
 ```csharp
 public static int IntWidth;
 ```
+
+**Remarks:**
+
+Its 32.
 
 ## Methods
 
@@ -170,9 +178,13 @@ public static ulong GetFastModMultiplier(UInt32& divisor)
 
 [UInt64](https://docs.microsoft.com/en-us/dotnet/api/system.uint64)<br>
 
+**Remarks:**
+
+This should only be used on 64-bit.
+
 ### **FastMod(UInt32&, UInt32&, UInt64&)**
 
-Performs a mod operation using the multiplier pre-computed with Rustic.Arithmetic.GetFastModMultiplier(System.UInt32@).
+Performs a mod operation using the multiplier pre-computed with [Arithmetic.GetFastModMultiplier(UInt32&)](./rustic.arithmetic.md#getfastmodmultiplieruint32&).
 
 ```csharp
 public static uint FastMod(UInt32& value, UInt32& divisor, UInt64& multiplier)
@@ -189,6 +201,10 @@ public static uint FastMod(UInt32& value, UInt32& divisor, UInt64& multiplier)
 #### Returns
 
 [UInt32](https://docs.microsoft.com/en-us/dotnet/api/system.uint32)<br>
+
+**Remarks:**
+
+This should only be used on 64-bit.
 
 ### **FastMod2(Int32&, Int32&)**
 
@@ -325,6 +341,10 @@ public static ulong Mix2(ulong key)
 #### Returns
 
 [UInt64](https://docs.microsoft.com/en-us/dotnet/api/system.uint64)<br>
+
+**Remarks:**
+
+Source: https://zimbry.blogspot.com/2011/09/better-bit-mixing-improving-on.html
 
 ### **Abs(Int32&)**
 
@@ -648,6 +668,10 @@ public static int Log2(UInt32& value)
 
 [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
 
+**Remarks:**
+
+The value is floored to the next lowest multiple of two from the value, i.e. Log2Floor(3) == Log2(2), and Log2Floor(16) == Log2(16).
+
 ### **Log2(UInt64&)**
 
 Performs a base 2 logarithm operation on an integer using a LUT.
@@ -663,6 +687,10 @@ public static int Log2(UInt64& value)
 #### Returns
 
 [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
+
+**Remarks:**
+
+The value is floored to the next lowest multiple of two from the value, i.e. Log2Floor(3) == Log2(2), and Log2Floor(16) == Log2(16).
 
 ### **RoundUpToEven(UInt32)**
 

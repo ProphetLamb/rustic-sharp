@@ -2,8 +2,6 @@
 
 Namespace: Rustic
 
-
-
 ```csharp
 public static class StringExtensions
 ```
@@ -13,8 +11,6 @@ Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) 
 ## Methods
 
 ### **IsEmpty(String)**
-
-
 
 ```csharp
 public static bool IsEmpty(string s)
@@ -30,8 +26,6 @@ public static bool IsEmpty(string s)
 
 ### **IsWhiteSpace(String)**
 
-
-
 ```csharp
 public static bool IsWhiteSpace(string s)
 ```
@@ -45,8 +39,6 @@ public static bool IsWhiteSpace(string s)
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
 
 ### **Join(String, IEnumerable&lt;String&gt;)**
-
-
 
 ```csharp
 public static string Join(string sep, IEnumerable<string> values)
@@ -63,8 +55,6 @@ public static string Join(string sep, IEnumerable<string> values)
 [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
 
 ### **Join&lt;T&gt;(String, IEnumerable&lt;T&gt;)**
-
-
 
 ```csharp
 public static string Join<T>(string sep, IEnumerable<T> values)
@@ -86,8 +76,6 @@ public static string Join<T>(string sep, IEnumerable<T> values)
 
 ### **Join(String, String[])**
 
-
-
 ```csharp
 public static string Join(string sep, String[] values)
 ```
@@ -103,8 +91,6 @@ public static string Join(string sep, String[] values)
 [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
 
 ### **Join(String, Object[])**
-
-
 
 ```csharp
 public static string Join(string sep, Object[] values)

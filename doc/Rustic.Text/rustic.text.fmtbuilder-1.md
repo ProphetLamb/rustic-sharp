@@ -2,8 +2,6 @@
 
 Namespace: Rustic.Text
 
-
-
 ```csharp
 public struct FmtBuilder<D>
 ```
@@ -17,8 +15,6 @@ Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) 
 ## Constructors
 
 ### **FmtBuilder(StrBuilder, ReadOnlySpan&lt;Char&gt;, D&, IEqualityComparer&lt;Char&gt;)**
-
-
 
 ```csharp
 FmtBuilder(StrBuilder builder, ReadOnlySpan<char> input, D& definition, IEqualityComparer<char> comparer)
@@ -38,8 +34,6 @@ FmtBuilder(StrBuilder builder, ReadOnlySpan<char> input, D& definition, IEqualit
 
 ### **Next()**
 
-
-
 ```csharp
 bool Next()
 ```
@@ -50,8 +44,6 @@ bool Next()
 
 ### **ToString()**
 
-
-
 ```csharp
 string ToString()
 ```
@@ -61,8 +53,6 @@ string ToString()
 [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
 
 ### **Dispose()**
-
-
 
 ```csharp
 void Dispose()

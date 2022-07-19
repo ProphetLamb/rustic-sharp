@@ -2,8 +2,6 @@
 
 Namespace: Rustic.Text
 
-
-
 ```csharp
 public struct NamedDef<T>
 ```
@@ -19,8 +17,6 @@ Implements [IFmtDef](./rustic.text.ifmtdef.md)
 
 ### **Prefix**
 
-
-
 ```csharp
 public string Prefix { get; }
 ```
@@ -30,8 +26,6 @@ public string Prefix { get; }
 [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
 
 ### **Arguments**
-
-
 
 ```csharp
 public IReadOnlyDictionary<string, T> Arguments { get; }
@@ -43,8 +37,6 @@ IReadOnlyDictionary&lt;String, T&gt;<br>
 
 ### **Count**
 
-
-
 ```csharp
 public int Count { get; }
 ```
@@ -54,8 +46,6 @@ public int Count { get; }
 [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
 
 ### **Format**
-
-
 
 ```csharp
 public IFormatProvider Format { get; }
@@ -69,8 +59,6 @@ public IFormatProvider Format { get; }
 
 ### **NamedDef(IReadOnlyDictionary&lt;String, T&gt;, IFormatProvider)**
 
-
-
 ```csharp
 NamedDef(IReadOnlyDictionary<string, T> arguments, IFormatProvider format)
 ```
@@ -82,8 +70,6 @@ NamedDef(IReadOnlyDictionary<string, T> arguments, IFormatProvider format)
 `format` [IFormatProvider](https://docs.microsoft.com/en-us/dotnet/api/system.iformatprovider)<br>
 
 ### **NamedDef(String, IReadOnlyDictionary&lt;String, T&gt;, IFormatProvider)**
-
-
 
 ```csharp
 NamedDef(string prefix, IReadOnlyDictionary<string, T> arguments, IFormatProvider format)
@@ -101,8 +87,6 @@ NamedDef(string prefix, IReadOnlyDictionary<string, T> arguments, IFormatProvide
 
 ### **NextTextEnd(Tokenizer`1&)**
 
-
-
 ```csharp
 bool NextTextEnd(Tokenizer`1& tokenizer)
 ```
@@ -116,8 +100,6 @@ bool NextTextEnd(Tokenizer`1& tokenizer)
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
 
 ### **NextHoleBegin(Tokenizer`1&)**
-
-
 
 ```csharp
 bool NextHoleBegin(Tokenizer`1& tokenizer)
@@ -133,8 +115,6 @@ bool NextHoleBegin(Tokenizer`1& tokenizer)
 
 ### **NextHoleEnd(Tokenizer`1&)**
 
-
-
 ```csharp
 bool NextHoleEnd(Tokenizer`1& tokenizer)
 ```
@@ -149,8 +129,6 @@ bool NextHoleEnd(Tokenizer`1& tokenizer)
 
 ### **NextTextStart(Tokenizer`1&)**
 
-
-
 ```csharp
 bool NextTextStart(Tokenizer`1& tokenizer)
 ```
@@ -164,8 +142,6 @@ bool NextTextStart(Tokenizer`1& tokenizer)
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
 
 ### **TryGetValue(ReadOnlySpan`1&, ReadOnlySpan`1&)**
-
-
 
 ```csharp
 bool TryGetValue(ReadOnlySpan`1& key, ReadOnlySpan`1& value)

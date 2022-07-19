@@ -14,8 +14,6 @@ Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) 
 
 ### **Data**
 
-
-
 ```csharp
 public Type Data { get; }
 ```
@@ -25,8 +23,6 @@ public Type Data { get; }
 [Type](https://docs.microsoft.com/en-us/dotnet/api/system.type)<br>
 
 ### **TypeId**
-
-
 
 ```csharp
 public object TypeId { get; }
@@ -39,8 +35,6 @@ public object TypeId { get; }
 ## Constructors
 
 ### **DataEnumAttribute(Type)**
-
-
 
 ```csharp
 public DataEnumAttribute(Type data)

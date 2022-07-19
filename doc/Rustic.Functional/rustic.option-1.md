@@ -2,7 +2,7 @@
 
 Namespace: Rustic
 
-Represents an optional value. Every [Option&lt;T&gt;](./rustic.option-1.md) is either Rustic.Option.Some``1(``0@) or Rustic.Option.None``1.
+Represents an optional value. Every [Option&lt;T&gt;](./rustic.option-1.md) is either  or .
 
 ```csharp
 public struct Option<T>
@@ -20,7 +20,7 @@ Implements IEquatable&lt;Option&lt;T&gt;&gt;
 
 ### **IsNone**
 
-Returns true if the option contains a value.
+Returns `true` if the option contains a value.
 
 ```csharp
 public bool IsNone { get; }
@@ -32,7 +32,7 @@ public bool IsNone { get; }
 
 ### **IsSome**
 
-Returns true if the option does not contain a value.
+Returns `true` if the option does not contain a value.
 
 ```csharp
 public bool IsSome { get; }
@@ -46,7 +46,7 @@ public bool IsSome { get; }
 
 ### **TrySome(T&)**
 
-If Rustic.Option`1.IsSome, unwraps the value.
+If [Option&lt;T&gt;.IsSome](./rustic.option-1.md#issome), unwraps the value.
 
 ```csharp
 bool TrySome(T& value)
@@ -72,9 +72,13 @@ T SomeUnchecked()
 
 T<br>
 
+**Remarks:**
+
+Undefined behaviour if there is no value.
+
 ### **SomeOrDefault()**
 
-If Rustic.Option`1.IsSome returns the value; otherwise, the default of the type.
+If [Option&lt;T&gt;.IsSome](./rustic.option-1.md#issome) returns the value; otherwise, the `default` of the type.
 
 ```csharp
 T SomeOrDefault()
@@ -86,7 +90,7 @@ T<br>
 
 ### **Expect(String)**
 
-If Rustic.Option`1.IsSome returns the value; otherwise, throws a [InvalidOperationException](https://docs.microsoft.com/en-us/dotnet/api/system.invalidoperationexception) with the  specified.
+If [Option&lt;T&gt;.IsSome](./rustic.option-1.md#issome) returns the value; otherwise, throws a [InvalidOperationException](https://docs.microsoft.com/en-us/dotnet/api/system.invalidoperationexception) with the  specified.
 
 ```csharp
 T Expect(string message)
@@ -134,8 +138,6 @@ T<br>
 
 ### **SomeOr(IntPtr)**
 
-
-
 ```csharp
 T SomeOr(IntPtr other)
 ```
@@ -150,7 +152,7 @@ T<br>
 
 ### **Map&lt;U&gt;(Func&lt;T, U&gt;)**
 
-If Rustic.Option`1.IsSome maps the value.
+If [Option&lt;T&gt;.IsSome](./rustic.option-1.md#issome) maps the value.
 
 ```csharp
 Option<U> Map<U>(Func<T, U> map)
@@ -171,8 +173,6 @@ Option&lt;U&gt;<br>
 
 ### **Map&lt;U&gt;(IntPtr)**
 
-
-
 ```csharp
 Option<U> Map<U>(IntPtr map)
 ```
@@ -191,7 +191,7 @@ Option&lt;U&gt;<br>
 
 ### **MapOr&lt;U&gt;(Func&lt;T, U&gt;, U)**
 
-If Rustic.Option`1.IsSome maps the value; coalesces with the ault value.
+If [Option&lt;T&gt;.IsSome](./rustic.option-1.md#issome) maps the value; coalesces with the ault value.
 
 ```csharp
 U MapOr<U>(Func<T, U> map, U def)
@@ -214,8 +214,6 @@ U<br>
 
 ### **MapOr&lt;U&gt;(IntPtr, U)**
 
-
-
 ```csharp
 U MapOr<U>(IntPtr map, U def)
 ```
@@ -236,7 +234,7 @@ U<br>
 
 ### **MapOr&lt;U&gt;(Func&lt;T, U&gt;, Func&lt;U&gt;)**
 
-If Rustic.Option`1.IsSome maps the value; coalesces with the ault value.
+If [Option&lt;T&gt;.IsSome](./rustic.option-1.md#issome) maps the value; coalesces with the ault value.
 
 ```csharp
 U MapOr<U>(Func<T, U> map, Func<U> def)
@@ -259,8 +257,6 @@ U<br>
 
 ### **MapOr&lt;U&gt;(IntPtr, IntPtr)**
 
-
-
 ```csharp
 U MapOr<U>(IntPtr map, IntPtr def)
 ```
@@ -281,7 +277,7 @@ U<br>
 
 ### **And&lt;U&gt;(Option&lt;U&gt;)**
 
-If Rustic.Option`1.IsNone returns None; otherwise, returns the  option.
+If [Option&lt;T&gt;.IsNone](./rustic.option-1.md#isnone) returns None; otherwise, returns the  option.
 
 ```csharp
 Option<U> And<U>(Option<U> other)
@@ -302,7 +298,7 @@ Option&lt;U&gt;<br>
 
 ### **And&lt;U&gt;(Func&lt;Option&lt;U&gt;&gt;)**
 
-If Rustic.Option`1.IsNone returns None; otherwise, returns the  option.
+If [Option&lt;T&gt;.IsNone](./rustic.option-1.md#isnone) returns None; otherwise, returns the  option.
 
 ```csharp
 Option<U> And<U>(Func<Option<U>> other)
@@ -323,8 +319,6 @@ Option&lt;U&gt;<br>
 
 ### **And&lt;U&gt;(IntPtr)**
 
-
-
 ```csharp
 Option<U> And<U>(IntPtr other)
 ```
@@ -343,7 +337,7 @@ Option&lt;U&gt;<br>
 
 ### **Or(Option&lt;T&gt;)**
 
-If Rustic.Option`1.IsSome returns this; otherwise, returns the  option.
+If [Option&lt;T&gt;.IsSome](./rustic.option-1.md#issome) returns this; otherwise, returns the  option.
 
 ```csharp
 Option<T> Or(Option<T> other)
@@ -359,7 +353,7 @@ Option<T> Or(Option<T> other)
 
 ### **Or(Func&lt;Option&lt;T&gt;&gt;)**
 
-If Rustic.Option`1.IsSome returns this; otherwise, returns the  option.
+If [Option&lt;T&gt;.IsSome](./rustic.option-1.md#issome) returns this; otherwise, returns the  option.
 
 ```csharp
 Option<T> Or(Func<Option<T>> other)
@@ -374,8 +368,6 @@ Option<T> Or(Func<Option<T>> other)
 [Option&lt;T&gt;](./rustic.option-1.md)<br>
 
 ### **Or(IntPtr)**
-
-
 
 ```csharp
 Option<T> Or(IntPtr other)
@@ -407,7 +399,7 @@ Option<T> Xor(Option<T> other)
 
 ### **Where(Predicate&lt;T&gt;)**
 
-If Rustic.Option`1.IsSome and the filter applies to the value returns Some; otherwise returns None.
+If [Option&lt;T&gt;.IsSome](./rustic.option-1.md#issome) and the filter applies to the value returns Some; otherwise returns None.
 
 ```csharp
 Option<T> Where(Predicate<T> filter)
@@ -422,8 +414,6 @@ Option<T> Where(Predicate<T> filter)
 [Option&lt;T&gt;](./rustic.option-1.md)<br>
 
 ### **Where(IntPtr)**
-
-
 
 ```csharp
 Option<T> Where(IntPtr filter)
@@ -483,8 +473,6 @@ Option&lt;R&gt;<br>
 
 ### **Zip&lt;U, R&gt;(Option&lt;U&gt;, IntPtr)**
 
-
-
 ```csharp
 Option<R> Zip<U, R>(Option<U> other, IntPtr map)
 ```
@@ -507,7 +495,7 @@ Option&lt;R&gt;<br>
 
 ### **Equals(T&)**
 
-Returns true if Some value is equal to the ; otherwise, false.
+Returns `true` if Some value is equal to the ; otherwise, `false`.
 
 ```csharp
 bool Equals(T& value)
@@ -523,7 +511,7 @@ bool Equals(T& value)
 
 ### **Equals(T&, IEqualityComparer&lt;T&gt;)**
 
-Returns true if Some value is equal to the ; otherwise, false. Used the  to compare the values.
+Returns `true` if Some value is equal to the ; otherwise, `false`. Used the  to compare the values.
 
 ```csharp
 bool Equals(T& value, IEqualityComparer<T> comparer)
@@ -541,8 +529,6 @@ bool Equals(T& value, IEqualityComparer<T> comparer)
 
 ### **Equals(Option&lt;T&gt;)**
 
-
-
 ```csharp
 bool Equals(Option<T> other)
 ```
@@ -556,8 +542,6 @@ bool Equals(Option<T> other)
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
 
 ### **Equals(Option&lt;T&gt;, IEqualityComparer&lt;T&gt;)**
-
-
 
 ```csharp
 bool Equals(Option<T> other, IEqualityComparer<T> comparer)
@@ -575,8 +559,6 @@ bool Equals(Option<T> other, IEqualityComparer<T> comparer)
 
 ### **Equals(Object)**
 
-
-
 ```csharp
 bool Equals(object obj)
 ```
@@ -590,8 +572,6 @@ bool Equals(object obj)
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
 
 ### **GetHashCode()**
-
-
 
 ```csharp
 int GetHashCode()

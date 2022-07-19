@@ -1,28 +1,33 @@
-# SplitIterExtensions
+# SeqSplitIterExtensions
 
 Namespace: Rustic.Text
 
 Collection of extensions and utility functionality related to [SplitIter&lt;T&gt;](./rustic.text.splititer-1.md).
 
 ```csharp
-public static class SplitIterExtensions
+public static class SeqSplitIterExtensions
 ```
 
-Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) → [SplitIterExtensions](./rustic.text.splititerextensions.md)
+Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) → [SeqSplitIterExtensions](./rustic.text.seqsplititerextensions.md)
 
 ## Methods
 
-### **ToArray(SplitIter&lt;Char&gt;)**
+### **ToArray&lt;S&gt;(SeqSplitIter&lt;Char, S&gt;)**
 
 Enumerates the remaining elements in the [SplitIter&lt;T&gt;](./rustic.text.splititer-1.md) into a array.
 
 ```csharp
-public static String[] ToArray(SplitIter<char> self)
+public static String[] ToArray<S>(SeqSplitIter<char, S> self)
 ```
+
+#### Type Parameters
+
+`S`<br>
+The type of a sequence of chars.
 
 #### Parameters
 
-`self` [SplitIter&lt;Char&gt;](./rustic.text.splititer-1.md)<br>
+`self` SeqSplitIter&lt;Char, S&gt;<br>
 
 #### Returns
 
@@ -32,12 +37,12 @@ public static String[] ToArray(SplitIter<char> self)
 
 Does consume from the iterator.
 
-### **ToArray&lt;T, O&gt;(SplitIter&lt;T&gt;, Func&lt;O, T, O&gt;)**
+### **ToArray&lt;T, O, S&gt;(SeqSplitIter&lt;T, S&gt;, Func&lt;O, T, O&gt;)**
 
 Enumerates the remaining elements in the [SplitIter&lt;T&gt;](./rustic.text.splititer-1.md) into a array, aggregating the slice of elements.
 
 ```csharp
-public static O[] ToArray<T, O>(SplitIter<T> self, Func<O, T, O> aggregate)
+public static O[] ToArray<T, O, S>(SeqSplitIter<T, S> self, Func<O, T, O> aggregate)
 ```
 
 #### Type Parameters
@@ -48,9 +53,12 @@ The type of elements in the collection.
 `O`<br>
 The type of the aggregation of elements.
 
+`S`<br>
+The type of a sequence of elements.
+
 #### Parameters
 
-`self` SplitIter&lt;T&gt;<br>
+`self` SeqSplitIter&lt;T, S&gt;<br>
 The iterator to aggregate.
 
 `aggregate` Func&lt;O, T, O&gt;<br>
@@ -60,12 +68,12 @@ The function used to aggregate the items in each iterator element.
 
 O[]<br>
 
-### **ToArray&lt;T, O&gt;(SplitIter&lt;T&gt;, Func&lt;O, T, O&gt;, Func&lt;O&gt;)**
+### **ToArray&lt;T, O, S&gt;(SeqSplitIter&lt;T, S&gt;, Func&lt;O, T, O&gt;, Func&lt;O&gt;)**
 
 Enumerates the remaining elements in the [SplitIter&lt;T&gt;](./rustic.text.splititer-1.md) into a array, aggregating the slice of elements.
 
 ```csharp
-public static O[] ToArray<T, O>(SplitIter<T> self, Func<O, T, O> aggregate, Func<O> seed)
+public static O[] ToArray<T, O, S>(SeqSplitIter<T, S> self, Func<O, T, O> aggregate, Func<O> seed)
 ```
 
 #### Type Parameters
@@ -76,9 +84,12 @@ The type of elements in the collection.
 `O`<br>
 The type of the aggregation of elements.
 
+`S`<br>
+The type of a sequence of elements.
+
 #### Parameters
 
-`self` SplitIter&lt;T&gt;<br>
+`self` SeqSplitIter&lt;T, S&gt;<br>
 The iterator to aggregate.
 
 `aggregate` Func&lt;O, T, O&gt;<br>
@@ -91,12 +102,12 @@ The initial value used for aggregating each element.
 
 O[]<br>
 
-### **Split&lt;T&gt;(ReadOnlySpan&lt;T&gt;, T&, SplitOptions, IEqualityComparer&lt;T&gt;)**
+### **Split&lt;T, S&gt;(ReadOnlySpan&lt;T&gt;, S&, SplitOptions, IEqualityComparer&lt;T&gt;)**
 
 Splits the  span at the positions defined by the .
 
 ```csharp
-public static SplitIter<T> Split<T>(ReadOnlySpan<T> span, T& separator, SplitOptions options, IEqualityComparer<T> comparer)
+public static SeqSplitIter<T, S> Split<T, S>(ReadOnlySpan<T> span, S& separator, SplitOptions options, IEqualityComparer<T> comparer)
 ```
 
 #### Type Parameters
@@ -104,12 +115,15 @@ public static SplitIter<T> Split<T>(ReadOnlySpan<T> span, T& separator, SplitOpt
 `T`<br>
 The type of the elements of the .
 
+`S`<br>
+The type of a sequence of elements.
+
 #### Parameters
 
 `span` ReadOnlySpan&lt;T&gt;<br>
 The span.
 
-`separator` T&<br>
+`separator` S&<br>
 The separator by which to split the .
 
 `options` [SplitOptions](./rustic.text.splitoptions.md)<br>
@@ -120,15 +134,15 @@ The comparer used to determine whether two objects are equal.
 
 #### Returns
 
-SplitIter&lt;T&gt;<br>
+SeqSplitIter&lt;T, S&gt;<br>
 The iterator splitting the  span with the specified parameters.
 
-### **Split&lt;T&gt;(ReadOnlySpan&lt;T&gt;, T&, T&, SplitOptions, IEqualityComparer&lt;T&gt;)**
+### **Split&lt;T, S&gt;(ReadOnlySpan&lt;T&gt;, S&, S&, SplitOptions, IEqualityComparer&lt;T&gt;)**
 
 Splits the  span at the positions defined by the separators.
 
 ```csharp
-public static SplitIter<T> Split<T>(ReadOnlySpan<T> span, T& separator0, T& separator1, SplitOptions options, IEqualityComparer<T> comparer)
+public static SeqSplitIter<T, S> Split<T, S>(ReadOnlySpan<T> span, S& separator0, S& separator1, SplitOptions options, IEqualityComparer<T> comparer)
 ```
 
 #### Type Parameters
@@ -136,15 +150,18 @@ public static SplitIter<T> Split<T>(ReadOnlySpan<T> span, T& separator0, T& sepa
 `T`<br>
 The type of the elements of the .
 
+`S`<br>
+The type of a sequence of elements.
+
 #### Parameters
 
 `span` ReadOnlySpan&lt;T&gt;<br>
 The span.
 
-`separator0` T&<br>
+`separator0` S&<br>
 The fist separator by which to split the .
 
-`separator1` T&<br>
+`separator1` S&<br>
 The second separator by which to split the .
 
 `options` [SplitOptions](./rustic.text.splitoptions.md)<br>
@@ -155,15 +172,15 @@ The comparer used to determine whether two objects are equal.
 
 #### Returns
 
-SplitIter&lt;T&gt;<br>
+SeqSplitIter&lt;T, S&gt;<br>
 The iterator splitting the  span with the specified parameters.
 
-### **Split&lt;T&gt;(ReadOnlySpan&lt;T&gt;, T&, T&, T&, SplitOptions, IEqualityComparer&lt;T&gt;)**
+### **Split&lt;T, S&gt;(ReadOnlySpan&lt;T&gt;, S&, S&, S&, SplitOptions, IEqualityComparer&lt;T&gt;)**
 
 Splits the  span at the positions defined by the separators.
 
 ```csharp
-public static SplitIter<T> Split<T>(ReadOnlySpan<T> span, T& separator0, T& separator1, T& separator2, SplitOptions options, IEqualityComparer<T> comparer)
+public static SeqSplitIter<T, S> Split<T, S>(ReadOnlySpan<T> span, S& separator0, S& separator1, S& separator2, SplitOptions options, IEqualityComparer<T> comparer)
 ```
 
 #### Type Parameters
@@ -171,18 +188,21 @@ public static SplitIter<T> Split<T>(ReadOnlySpan<T> span, T& separator0, T& sepa
 `T`<br>
 The type of the elements of the .
 
+`S`<br>
+The type of a sequence of elements.
+
 #### Parameters
 
 `span` ReadOnlySpan&lt;T&gt;<br>
 The span.
 
-`separator0` T&<br>
+`separator0` S&<br>
 The fist separator by which to split the .
 
-`separator1` T&<br>
+`separator1` S&<br>
 The second separator by which to split the .
 
-`separator2` T&<br>
+`separator2` S&<br>
 The third separator by which to split the .
 
 `options` [SplitOptions](./rustic.text.splitoptions.md)<br>
@@ -193,15 +213,15 @@ The comparer used to determine whether two objects are equal.
 
 #### Returns
 
-SplitIter&lt;T&gt;<br>
+SeqSplitIter&lt;T, S&gt;<br>
 The iterator splitting the  span with the specified parameters.
 
-### **Split&lt;T&gt;(ReadOnlySpan&lt;T&gt;, T&, T&, T&, T&, SplitOptions, IEqualityComparer&lt;T&gt;)**
+### **Split&lt;T, S&gt;(ReadOnlySpan&lt;T&gt;, S&, S&, S&, S&, SplitOptions, IEqualityComparer&lt;T&gt;)**
 
 Splits the  span at the positions defined by the separators.
 
 ```csharp
-public static SplitIter<T> Split<T>(ReadOnlySpan<T> span, T& separator0, T& separator1, T& separator2, T& separator3, SplitOptions options, IEqualityComparer<T> comparer)
+public static SeqSplitIter<T, S> Split<T, S>(ReadOnlySpan<T> span, S& separator0, S& separator1, S& separator2, S& separator3, SplitOptions options, IEqualityComparer<T> comparer)
 ```
 
 #### Type Parameters
@@ -209,21 +229,24 @@ public static SplitIter<T> Split<T>(ReadOnlySpan<T> span, T& separator0, T& sepa
 `T`<br>
 The type of the elements of the .
 
+`S`<br>
+The type of a sequence of elements.
+
 #### Parameters
 
 `span` ReadOnlySpan&lt;T&gt;<br>
 The span.
 
-`separator0` T&<br>
+`separator0` S&<br>
 The fist separator by which to split the .
 
-`separator1` T&<br>
+`separator1` S&<br>
 The second separator by which to split the .
 
-`separator2` T&<br>
+`separator2` S&<br>
 The third separator by which to split the .
 
-`separator3` T&<br>
+`separator3` S&<br>
 The third separator by which to split the .
 
 `options` [SplitOptions](./rustic.text.splitoptions.md)<br>
@@ -234,15 +257,15 @@ The comparer used to determine whether two objects are equal.
 
 #### Returns
 
-SplitIter&lt;T&gt;<br>
+SeqSplitIter&lt;T, S&gt;<br>
 The iterator splitting the  span with the specified parameters.
 
-### **Split&lt;T&gt;(ReadOnlySpan&lt;T&gt;, TinySpan&lt;T&gt;, SplitOptions, IEqualityComparer&lt;T&gt;)**
+### **Split&lt;T, S&gt;(ReadOnlySpan&lt;T&gt;, TinySpan&lt;S&gt;, SplitOptions, IEqualityComparer&lt;T&gt;)**
 
 Splits the  span at the positions defined by the .
 
 ```csharp
-public static SplitIter<T> Split<T>(ReadOnlySpan<T> span, TinySpan<T> separators, SplitOptions options, IEqualityComparer<T> comparer)
+public static SeqSplitIter<T, S> Split<T, S>(ReadOnlySpan<T> span, TinySpan<S> separators, SplitOptions options, IEqualityComparer<T> comparer)
 ```
 
 #### Type Parameters
@@ -250,12 +273,15 @@ public static SplitIter<T> Split<T>(ReadOnlySpan<T> span, TinySpan<T> separators
 `T`<br>
 The type of the elements of the .
 
+`S`<br>
+The type of a sequence of elements.
+
 #### Parameters
 
 `span` ReadOnlySpan&lt;T&gt;<br>
 The span.
 
-`separators` TinySpan&lt;T&gt;<br>
+`separators` TinySpan&lt;S&gt;<br>
 The separators by which to split the .
 
 `options` [SplitOptions](./rustic.text.splitoptions.md)<br>
@@ -266,15 +292,15 @@ The comparer used to determine whether two objects are equal.
 
 #### Returns
 
-SplitIter&lt;T&gt;<br>
+SeqSplitIter&lt;T, S&gt;<br>
 The iterator splitting the  with the specified parameters.
 
-### **Split&lt;T&gt;(Span&lt;T&gt;, T&)**
+### **Split&lt;T, S&gt;(Span&lt;T&gt;, S&)**
 
 Splits the  span at the positions defined by the .
 
 ```csharp
-public static SplitIter<T> Split<T>(Span<T> span, T& separator)
+public static SeqSplitIter<T, S> Split<T, S>(Span<T> span, S& separator)
 ```
 
 #### Type Parameters
@@ -282,25 +308,28 @@ public static SplitIter<T> Split<T>(Span<T> span, T& separator)
 `T`<br>
 The type of the elements of the .
 
+`S`<br>
+The type of a sequence of elements.
+
 #### Parameters
 
 `span` Span&lt;T&gt;<br>
 The span.
 
-`separator` T&<br>
+`separator` S&<br>
 The separator by which to split the .
 
 #### Returns
 
-SplitIter&lt;T&gt;<br>
+SeqSplitIter&lt;T, S&gt;<br>
 The iterator splitting the  span with the specified parameters.
 
-### **Split&lt;T&gt;(Span&lt;T&gt;, T&, SplitOptions, IEqualityComparer&lt;T&gt;)**
+### **Split&lt;T, S&gt;(Span&lt;T&gt;, S&, SplitOptions, IEqualityComparer&lt;T&gt;)**
 
 Splits the  span at the positions defined by the .
 
 ```csharp
-public static SplitIter<T> Split<T>(Span<T> span, T& separator, SplitOptions options, IEqualityComparer<T> comparer)
+public static SeqSplitIter<T, S> Split<T, S>(Span<T> span, S& separator, SplitOptions options, IEqualityComparer<T> comparer)
 ```
 
 #### Type Parameters
@@ -308,12 +337,15 @@ public static SplitIter<T> Split<T>(Span<T> span, T& separator, SplitOptions opt
 `T`<br>
 The type of the elements of the .
 
+`S`<br>
+The type of a sequence of elements.
+
 #### Parameters
 
 `span` Span&lt;T&gt;<br>
 The span.
 
-`separator` T&<br>
+`separator` S&<br>
 The separator by which to split the .
 
 `options` [SplitOptions](./rustic.text.splitoptions.md)<br>
@@ -324,15 +356,15 @@ The comparer used to determine whether two objects are equal.
 
 #### Returns
 
-SplitIter&lt;T&gt;<br>
+SeqSplitIter&lt;T, S&gt;<br>
 The iterator splitting the  span with the specified parameters.
 
-### **Split&lt;T&gt;(Span&lt;T&gt;, T&, T&, SplitOptions, IEqualityComparer&lt;T&gt;)**
+### **Split&lt;T, S&gt;(Span&lt;T&gt;, S&, S&, SplitOptions, IEqualityComparer&lt;T&gt;)**
 
 Splits the  span at the positions defined by the separators.
 
 ```csharp
-public static SplitIter<T> Split<T>(Span<T> span, T& separator0, T& separator1, SplitOptions options, IEqualityComparer<T> comparer)
+public static SeqSplitIter<T, S> Split<T, S>(Span<T> span, S& separator0, S& separator1, SplitOptions options, IEqualityComparer<T> comparer)
 ```
 
 #### Type Parameters
@@ -340,15 +372,18 @@ public static SplitIter<T> Split<T>(Span<T> span, T& separator0, T& separator1, 
 `T`<br>
 The type of the elements of the .
 
+`S`<br>
+The type of a sequence of elements.
+
 #### Parameters
 
 `span` Span&lt;T&gt;<br>
 The span.
 
-`separator0` T&<br>
-The fist separator by which to split the .
+`separator0` S&<br>
+The fisS separator by which to split the .
 
-`separator1` T&<br>
+`separator1` S&<br>
 The second separator by which to split the .
 
 `options` [SplitOptions](./rustic.text.splitoptions.md)<br>
@@ -359,15 +394,15 @@ The comparer used to determine whether two objects are equal.
 
 #### Returns
 
-SplitIter&lt;T&gt;<br>
+SeqSplitIter&lt;T, S&gt;<br>
 The iterator splitting the  span with the specified parameters.
 
-### **Split&lt;T&gt;(Span&lt;T&gt;, TinySpan&lt;T&gt;, SplitOptions, IEqualityComparer&lt;T&gt;)**
+### **Split&lt;T, S&gt;(Span&lt;T&gt;, TinySpan&lt;S&gt;, SplitOptions, IEqualityComparer&lt;T&gt;)**
 
 Splits the  span at the positions defined by the .
 
 ```csharp
-public static SplitIter<T> Split<T>(Span<T> span, TinySpan<T> separators, SplitOptions options, IEqualityComparer<T> comparer)
+public static SeqSplitIter<T, S> Split<T, S>(Span<T> span, TinySpan<S> separators, SplitOptions options, IEqualityComparer<T> comparer)
 ```
 
 #### Type Parameters
@@ -375,12 +410,15 @@ public static SplitIter<T> Split<T>(Span<T> span, TinySpan<T> separators, SplitO
 `T`<br>
 The type of the elements of the .
 
+`S`<br>
+The type of a sequence of elements.
+
 #### Parameters
 
 `span` Span&lt;T&gt;<br>
 The span.
 
-`separators` TinySpan&lt;T&gt;<br>
+`separators` TinySpan&lt;S&gt;<br>
 The separators by which to split the .
 
 `options` [SplitOptions](./rustic.text.splitoptions.md)<br>
@@ -391,5 +429,5 @@ The comparer used to determine whether two objects are equal.
 
 #### Returns
 
-SplitIter&lt;T&gt;<br>
+SeqSplitIter&lt;T, S&gt;<br>
 The iterator splitting the  span with the specified parameters.

@@ -1,11 +1,11 @@
-# SplitIter&lt;T&gt;
+# SeqSplitIter&lt;T, S&gt;
 
 Namespace: Rustic.Text
 
-Iterates a span in segments determined by separators.
+Iterates a span in segments determined by separator sequences.
 
 ```csharp
-public struct SplitIter<T>
+public struct SeqSplitIter<T, S>
 ```
 
 #### Type Parameters
@@ -13,7 +13,10 @@ public struct SplitIter<T>
 `T`<br>
 The type of an element of the span.
 
-Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) → [ValueType](https://docs.microsoft.com/en-us/dotnet/api/system.valuetype) → [SplitIter&lt;T&gt;](./rustic.text.splititer-1.md)
+`S`<br>
+The type of a sequence of elements.
+
+Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) → [ValueType](https://docs.microsoft.com/en-us/dotnet/api/system.valuetype) → [SeqSplitIter&lt;T, S&gt;](./rustic.text.seqsplititer-2.md)
 
 ## Properties
 
@@ -55,7 +58,7 @@ public int Width { get; }
 
 ### **IncludesSeparator**
 
-Indicates whether the [SplitIter&lt;T&gt;.Current](./rustic.text.splititer-1.md#current) item is terminated by the separator.
+Indicates whether the [SeqSplitIter&lt;T, S&gt;.Current](./rustic.text.seqsplititer-2.md#current) item is terminated by the separator.
 
 ```csharp
 public bool IncludesSeparator { get; }
@@ -72,12 +75,12 @@ public bool IncludesSeparator { get; }
 Returns a new [SplitIter&lt;T&gt;](./rustic.text.splititer-1.md) enumerator with the same input in the initial state.
 
 ```csharp
-SplitIter<T> GetEnumerator()
+SeqSplitIter<T, S> GetEnumerator()
 ```
 
 #### Returns
 
-[SplitIter&lt;T&gt;](./rustic.text.splititer-1.md)<br>
+[SeqSplitIter&lt;T, S&gt;](./rustic.text.seqsplititer-2.md)<br>
 
 ### **MoveNext()**
 

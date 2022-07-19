@@ -2,8 +2,6 @@
 
 Namespace: Rustic.Text
 
-
-
 ```csharp
 public class Fmt
 ```
@@ -28,8 +26,6 @@ public static Fmt Definition { get; }
 
 ### **Fmt()**
 
-
-
 ```csharp
 public Fmt()
 ```
@@ -37,8 +33,6 @@ public Fmt()
 ## Methods
 
 ### **Format&lt;D&gt;(ReadOnlySpan&lt;Char&gt;, D&, IEqualityComparer&lt;Char&gt;)**
-
-
 
 ```csharp
 public static string Format<D>(ReadOnlySpan<char> format, D& definition, IEqualityComparer<char> comparer)
@@ -62,8 +56,6 @@ public static string Format<D>(ReadOnlySpan<char> format, D& definition, IEquali
 
 ### **Index(ReadOnlySpan&lt;Char&gt;, TinyVec&lt;Object&gt;, IEqualityComparer&lt;Char&gt;, IFormatProvider)**
 
-
-
 ```csharp
 public string Index(ReadOnlySpan<char> format, TinyVec<object> arguments, IEqualityComparer<char> comparer, IFormatProvider provider)
 ```
@@ -83,8 +75,6 @@ public string Index(ReadOnlySpan<char> format, TinyVec<object> arguments, IEqual
 [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
 
 ### **Index&lt;T&gt;(ReadOnlySpan&lt;Char&gt;, TinyVec&lt;T&gt;, IEqualityComparer&lt;Char&gt;, IFormatProvider)**
-
-
 
 ```csharp
 public string Index<T>(ReadOnlySpan<char> format, TinyVec<T> arguments, IEqualityComparer<char> comparer, IFormatProvider provider)
@@ -110,8 +100,6 @@ public string Index<T>(ReadOnlySpan<char> format, TinyVec<T> arguments, IEqualit
 
 ### **Named&lt;T&gt;(ReadOnlySpan&lt;Char&gt;, IReadOnlyDictionary&lt;String, T&gt;, IEqualityComparer&lt;Char&gt;, IFormatProvider)**
 
-
-
 ```csharp
 public string Named<T>(ReadOnlySpan<char> format, IReadOnlyDictionary<string, T> arguments, IEqualityComparer<char> comparer, IFormatProvider provider)
 ```
@@ -135,8 +123,6 @@ public string Named<T>(ReadOnlySpan<char> format, IReadOnlyDictionary<string, T>
 [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
 
 ### **Named(ReadOnlySpan&lt;Char&gt;, IReadOnlyDictionary&lt;String, Object&gt;, IEqualityComparer&lt;Char&gt;, IFormatProvider)**
-
-
 
 ```csharp
 public string Named(ReadOnlySpan<char> format, IReadOnlyDictionary<string, object> arguments, IEqualityComparer<char> comparer, IFormatProvider provider)

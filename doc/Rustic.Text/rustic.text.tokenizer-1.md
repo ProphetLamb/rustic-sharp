@@ -15,11 +15,20 @@ The type of an element of the span.
 
 Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) → [ValueType](https://docs.microsoft.com/en-us/dotnet/api/system.valuetype) → [Tokenizer&lt;T&gt;](./rustic.text.tokenizer-1.md)
 
+**Remarks:**
+
+Provides utility to read the next element, to read until an element occurs, read a sequence of elements, and to read until a sequence of elements occurs,
+ in the modes TryRead, Peek, and Read:
+ <br>
+ TryRead only consumes elements only if successful.
+ <br>
+ Peek is [PureAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.contracts.pureattribute) and never consumes elements and informs about the position at which the condition was fulfilled.
+ <br>
+ Read always consumes elements, if not successful elements will still be consumed.
+
 ## Properties
 
 ### **Raw**
-
-
 
 ```csharp
 public ReadOnlySpan<T> Raw { get; }
@@ -30,8 +39,6 @@ public ReadOnlySpan<T> Raw { get; }
 ReadOnlySpan&lt;T&gt;<br>
 
 ### **Comparer**
-
-
 
 ```csharp
 public IEqualityComparer<T> Comparer { get; }
@@ -79,8 +86,6 @@ public int Width { get; set; }
 
 ### **Length**
 
-
-
 ```csharp
 public int Length { get; }
 ```
@@ -103,8 +108,6 @@ ReadOnlySpan&lt;T&gt;<br>
 
 ### **Current**
 
-
-
 ```csharp
 public T& Current { get; }
 ```
@@ -114,8 +117,6 @@ public T& Current { get; }
 T&<br>
 
 ### **Item**
-
-
 
 ```csharp
 public T& Item { get; }
@@ -147,7 +148,7 @@ The comparer used to determine whether two objects are equal.
 
 ### **Offset(Int32)**
 
-Represents the token at an offset relative to the Rustic.Text.Tokenizer`1.Head.
+Represents the token at an offset relative to the [Tokenizer&lt;T&gt;.Head](./rustic.text.tokenizer-1.md#head).
 
 ```csharp
 T& Offset(int offset)
@@ -193,15 +194,13 @@ bool Consume(int amount)
 
 ### **Dispose()**
 
-
-
 ```csharp
 void Dispose()
 ```
 
 ### **FinalizeToken()**
 
-Returns &amp; clears the Rustic.Text.Tokenizer`1.Token, and moves the iterator to the first element after the token.
+Returns &amp; clears the [Tokenizer&lt;T&gt;.Token](./rustic.text.tokenizer-1.md#token), and moves the iterator to the first element after the token.
 
 ```csharp
 ReadOnlySpan<T> FinalizeToken()
@@ -230,7 +229,7 @@ void Reset()
 
 ### **Advance(Int32)**
 
-Advances the Rustic.Text.Tokenizer`1.Head to a specific , always consumes elements.
+Advances the [Tokenizer&lt;T&gt;.Head](./rustic.text.tokenizer-1.md#head) to a specific , always consumes elements.
 
 ```csharp
 void Advance(int position)
@@ -243,7 +242,7 @@ The target position
 
 ### **TryAdvance(Int32)**
 
-Advances the Rustic.Text.Tokenizer`1.Head to a specific , consumes elements only if successful.
+Advances the [Tokenizer&lt;T&gt;.Head](./rustic.text.tokenizer-1.md#head) to a specific , consumes elements only if successful.
 
 ```csharp
 bool TryAdvance(int position)
@@ -258,6 +257,10 @@ The target position
 
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
  if the elements could be consumed; otherwise, .
+
+**Remarks:**
+
+If the target  is behind the [Tokenizer&lt;T&gt;.Head](./rustic.text.tokenizer-1.md#head) the state won't change.
 
 ### **Read&lt;S&gt;(S&, Int32&)**
 

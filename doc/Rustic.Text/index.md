@@ -6,11 +6,15 @@
 
 [FmtBuilder&lt;D&gt;](./rustic.text.fmtbuilder-1.md)
 
-[IdxDef](./rustic.text.idxdef.md)
+[IdxDef&lt;T&gt;](./rustic.text.idxdef-1.md)
 
 [IFmtDef](./rustic.text.ifmtdef.md)
 
-[NamedDef](./rustic.text.nameddef.md)
+[NamedDef&lt;T&gt;](./rustic.text.nameddef-1.md)
+
+[SeqSplitIter&lt;T, S&gt;](./rustic.text.seqsplititer-2.md)
+
+[SeqSplitIterExtensions](./rustic.text.seqsplititerextensions.md)
 
 [SplitIter&lt;T&gt;](./rustic.text.splititer-1.md)
 

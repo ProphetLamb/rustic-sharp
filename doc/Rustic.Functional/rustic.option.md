@@ -2,8 +2,6 @@
 
 Namespace: Rustic
 
-
-
 ```csharp
 public static class Option
 ```
@@ -143,8 +141,6 @@ public static Task<Option<E>> TryInvoke<E>(Func<Task> action)
 Task&lt;Option&lt;E&gt;&gt;<br>
 
 ### **FilterMap&lt;T, U&gt;(IEnumerable&lt;T&gt;, Func&lt;T, Option&lt;U&gt;&gt;)**
-
-
 
 ```csharp
 public static IEnumerable<U> FilterMap<T, U>(IEnumerable<T> sequence, Func<T, Option<U>> filterMap)

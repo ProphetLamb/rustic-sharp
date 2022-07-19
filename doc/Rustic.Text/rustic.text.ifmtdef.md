@@ -2,8 +2,6 @@
 
 Namespace: Rustic.Text
 
-
-
 ```csharp
 public interface IFmtDef
 ```
@@ -38,8 +36,6 @@ public abstract int Count { get; }
 
 ### **NextTextEnd(Tokenizer`1&)**
 
-
-
 ```csharp
 bool NextTextEnd(Tokenizer`1& tokenizer)
 ```
@@ -53,8 +49,6 @@ bool NextTextEnd(Tokenizer`1& tokenizer)
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
 
 ### **NextHoleBegin(Tokenizer`1&)**
-
-
 
 ```csharp
 bool NextHoleBegin(Tokenizer`1& tokenizer)
@@ -70,8 +64,6 @@ bool NextHoleBegin(Tokenizer`1& tokenizer)
 
 ### **NextHoleEnd(Tokenizer`1&)**
 
-
-
 ```csharp
 bool NextHoleEnd(Tokenizer`1& tokenizer)
 ```
@@ -85,8 +77,6 @@ bool NextHoleEnd(Tokenizer`1& tokenizer)
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
 
 ### **NextTextStart(Tokenizer`1&)**
-
-
 
 ```csharp
 bool NextTextStart(Tokenizer`1& tokenizer)

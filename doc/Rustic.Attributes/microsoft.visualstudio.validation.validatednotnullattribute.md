@@ -14,8 +14,6 @@ Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) 
 
 ### **TypeId**
 
-
-
 ```csharp
 public object TypeId { get; }
 ```
@@ -27,8 +25,6 @@ public object TypeId { get; }
 ## Constructors
 
 ### **ValidatedNotNullAttribute()**
-
-
 
 ```csharp
 public ValidatedNotNullAttribute()

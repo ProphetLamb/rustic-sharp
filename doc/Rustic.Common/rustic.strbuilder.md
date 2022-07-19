@@ -2,7 +2,7 @@
 
 Namespace: Rustic
 
-This class represents a mutable string. Initially allocated in the stack, resorts to the System.Buffers.ArrayPool`1.Shared when growing.
+This class represents a mutable string. Initially allocated in the stack, resorts to the [ArrayPool&lt;T&gt;.Shared](https://docs.microsoft.com/en-us/dotnet/api/system.buffers.arraypool-1.shared) when growing.
 
 ```csharp
 public struct StrBuilder
@@ -37,8 +37,6 @@ public int Capacity { get; }
 [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
 
 ### **Item**
-
-
 
 ```csharp
 public Char& Item { get; }
@@ -77,7 +75,7 @@ The stack-buffer used to build the string.
 
 ### **StrBuilder(Int32)**
 
-Initializes a new [StrBuilder](./rustic.strbuilder.md) with a array from the System.Buffers.ArrayPool`1.Shared with the specific size.
+Initializes a new [StrBuilder](./rustic.strbuilder.md) with a array from the [ArrayPool&lt;T&gt;.Shared](https://docs.microsoft.com/en-us/dotnet/api/system.buffers.arraypool-1.shared) with the specific size.
 
 ```csharp
 StrBuilder(int initialCapacity)
@@ -106,7 +104,7 @@ The minimum capacity of the pool-array.
 ### **GetPinnableReference()**
 
 Get a pinnable reference to the builder.
- Does not ensure there is a null char after Rustic.StrBuilder.Length
+ Does not ensure there is a null char after [StrBuilder.Length](./rustic.strbuilder.md#length)
  This overload is pattern matched in the C# 7.3+ compiler so you can omit
  the explicit method call, and write eg "fixed (char* c = builder)"
 
@@ -215,8 +213,6 @@ The number of characters after the .
 [ReadOnlySpan&lt;Char&gt;](https://docs.microsoft.com/en-us/dotnet/api/system.readonlyspan-1)<br>
 
 ### **TryCopyTo(Span&lt;Char&gt;, Int32&)**
-
-
 
 ```csharp
 bool TryCopyTo(Span<char> destination, Int32& charsWritten)
@@ -373,8 +369,6 @@ The length of the span to append.
 The span at the end of the builder.
 
 ### **Dispose()**
-
-
 
 ```csharp
 void Dispose()
