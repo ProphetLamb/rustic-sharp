@@ -5,7 +5,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Features>strict</Features>
 
-    <CodeAnalysisRuleSet>..\..\ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>$(SolutionDir)\ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <PropertyGroup Label="Nuget Package Info">
@@ -20,7 +20,7 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/ProphetLamb/rustic-sharp.git</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>$([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)/../../RELEASENOTES.md"))</PackageReleaseNotes>
+    <PackageReleaseNotes>$([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)/RELEASENOTES.md"))</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Label="Nuget Pack Options">
@@ -33,9 +33,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\..\.editorconfig" Link=".editorconfig" />
-    <Compile Include="..\AssemblyInfo.cs" Link="AssemblyInfo.cs" />
-    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="$(SolutionDir)\.editorconfig" Link=".editorconfig" />
+    <Compile Include="$(SolutionDir)\AssemblyInfo.cs" Link="AssemblyInfo.cs" />
+    <None Include="$(SolutionDir)\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup Label="Nuget Pack Source Link">
