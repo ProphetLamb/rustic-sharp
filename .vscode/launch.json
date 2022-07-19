@@ -1,6 +1,13 @@
 {
   "version": "0.2.0",
   "configurations": [
+  {
+    "name": "Make documentation",
+    "type": "PowerShell",
+    "request": "launch",
+    "script": "${workspaceFolder}/doc.ps1",
+    "cwd": "${workspaceFolder}"
+  },
     {
       // Use IntelliSense to find out which attributes exist for C# debugging
       // Use hover for the description of the existing attributes

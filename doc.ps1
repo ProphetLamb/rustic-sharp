@@ -1,14 +1,24 @@
 mkdir -Force "doc/"
 
 foreach ($project in Get-ChildItem -Path src/ -Recurse -File *.csproj) {
-    $dir=$project.DirectoryName
-    $name=[System.IO.Path]::GetFileNameWithoutExtension($project.Name)
+    $dir = $project.DirectoryName
 
-    # default namespace
-    if ((Get-Content $project) -match "<DefaultNamespace>(.*)<DefaultNamespace/>")
-    {
-        $name=$Matches[0]
+    $lines = Get-Content $project
+
+    # assembly name
+    $name = [System.IO.Path]::GetFileNameWithoutExtension($project.Name)
+    $lines | Select-String -Pattern '<Product\>(.*)</Product\>' | ForEach-Object {
+        $name = $_.Matches.Groups[1].Value
     }
 
-    & xmldoc2md "$dir/bin/Debug/net50/$name.dll" "doc/$name"
+    # target framework
+    $target = 'net60'
+    $lines | Select-String -Pattern '<TargetFrameworks\>(?:([^;]+;?)+)+</TargetFrameworks\>' | ForEach-Object {
+        $target = $_.Matches.Groups[$_.Matches.Groups.Count - 1].Value
+    }
+    $lines | Select-String -Pattern '<TargetFramework\>(.*)</TargetFramework\>' | ForEach-Object {
+        $target = "" # no sub directory created for single target framework
+    }
+
+    & xmldoc2md "$dir/bin/Debug/$target/$name.dll" "doc/$name"
 }
