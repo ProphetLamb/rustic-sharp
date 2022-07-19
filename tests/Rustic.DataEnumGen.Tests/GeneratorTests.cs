@@ -122,7 +122,7 @@ namespace Rustic.DataEnumGen.Tests.TestAssembly
                 MetadataReference.CreateFromFile(typeof(System.Runtime.CompilerServices.MethodImplAttribute).GetTypeInfo().Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(System.Runtime.Serialization.ISerializable).GetTypeInfo().Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(System.Runtime.InteropServices.StructLayoutAttribute).GetTypeInfo().Assembly.Location),
-                MetadataReference.CreateFromFile(@"C:\Program Files (x86)\dotnet\shared\Microsoft.NETCore.App\6.0.1\System.Runtime.dll"),
+                MetadataReference.CreateFromFile(Path.Combine(System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory(), "System.Runtime.dll")),
                 MetadataReference.CreateFromFile(typeof(HashCode).GetTypeInfo().Assembly.Location),
             },
             new CSharpCompilationOptions(OutputKind.ConsoleApplication));
