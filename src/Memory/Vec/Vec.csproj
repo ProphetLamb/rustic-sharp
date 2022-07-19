@@ -12,13 +12,12 @@
     <AssemblyTitle>$(Product)</AssemblyTitle>
     <PackageId>$(Product)</PackageId>
     <Title>$(Product)</Title>
-    <Description>Commonly used collection implementation allowing by-ref access to the storage.</Description>
-    <PackageTags>ArrayPool;Ref;Span;Collections</PackageTags>
+    <Description>List implementations of FIFO queues, allowing by-ref access and pool sourcing.</Description>
+    <PackageTags>ArrayPool;Ref;Span;Collections;Stack</PackageTags>
   </PropertyGroup>
 
   <ItemGroup Condition="!$(DefineConstants.Contains('NET5_0_OR_GREATER'))">
     <PackageReference Include="System.Memory" Version="4.5.4" />
-    <PackageReference Include="IndexRange" Version="1.0.2" />
   </ItemGroup>
 
   <ItemGroup>

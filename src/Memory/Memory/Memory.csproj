@@ -12,7 +12,7 @@
     <AssemblyTitle>$(Product)</AssemblyTitle>
     <PackageId>$(Product)</PackageId>
     <Title>$(Product)</Title>
-    <Description>Packed bit collections. Storing sequences of boolean values in integers.</Description>
+    <Description>Commonly used collection implementation allowing by-ref access to the storage.</Description>
     <PackageTags>ArrayPool;Ref;Span;Collections</PackageTags>
   </PropertyGroup>
 
