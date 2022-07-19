@@ -34,12 +34,10 @@ public interface IReadOnlyVector<T>
     [Pure]
     new ref readonly T this[int index] { get; }
 
-#if NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER
     /// <summary>Gets the element at the specified <paramref name="index"/>.</summary>
     /// <param name="index">The index of the element to get or set.</param>
     [Pure]
     ref readonly T this[Index index] { get; }
-#endif
 
     /// <summary>Creates a new span over a target vector.</summary>
     /// <returns>The span representation of the vector.</returns>
@@ -118,11 +116,9 @@ public interface IVector<T>
     /// <param name="index">The index of the element to get or set.</param>
     new ref T this[int index] { get; }
 
-#if NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER
     /// <summary>Gets or sets the element at the specified <paramref name="index"/>.</summary>
     /// <param name="index">The index of the element to get or set.</param>
     new ref T this[Index index] { get; }
-#endif
 
     /// <summary>Returns the number of elements in the vector.</summary>
     new int Count { get; }
@@ -173,7 +169,6 @@ public static class ReadOnlyVectorTraits
         return self.AsSpan(0, self.Count);
     }
 
-#if NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER
     /// <summary>Creates a new span over a target vector.</summary>
     /// <typeparam name="T">The type of elements in the vector.</typeparam>
     /// <returns>The span representation of the vector.</returns>
@@ -213,7 +208,6 @@ public static class ReadOnlyVectorTraits
         var (off, cnt) = range.GetOffsetAndLength(self.Count);
         return self.IndexOf(off, cnt, item, comparer);
     }
-#endif
 
     /// <inheritdoc cref="IList{T}.IndexOf"/>
     [Pure]
@@ -232,7 +226,6 @@ public static class ReadOnlyVectorTraits
         return self.IndexOf(0, self.Count, item, comparer);
     }
 
-#if NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER
     /// <inheritdoc cref="List{T}.LastIndexOf(T)"/>
     [Pure]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -251,7 +244,6 @@ public static class ReadOnlyVectorTraits
         var (off, cnt) = range.GetOffsetAndLength(self.Count);
         return self.LastIndexOf(off, cnt, item, comparer);
     }
-#endif
 
     /// <inheritdoc cref="List{T}.LastIndexOf(T)"/>
     [Pure]
@@ -270,7 +262,6 @@ public static class ReadOnlyVectorTraits
         return self.LastIndexOf(0, self.Count, item, comparer);
     }
 
-#if NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER
     /// <inheritdoc cref="List{T}.BinarySearch(T, IComparer{T})"/>
     [Pure]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -289,7 +280,6 @@ public static class ReadOnlyVectorTraits
         var (off, cnt) = range.GetOffsetAndLength(self.Count);
         return self.BinarySearch(off, cnt, item, comparer);
     }
-#endif
 
     /// <inheritdoc cref="List{T}.BinarySearch(T, IComparer{T})"/>
     [Pure]
@@ -334,7 +324,6 @@ public static class VectorTraits
         self.InsertRange(self.Count, values);
     }
 
-#if NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER
     /// <inheritdoc cref="List{T}.InsertRange"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void InsertRange<T>(this IVector<T> self, Index index, ReadOnlySpan<T> values)
@@ -342,7 +331,6 @@ public static class VectorTraits
         var off = index.GetOffset(self.Count);
         self.InsertRange(off, values);
     }
-#endif
 
     /// <inheritdoc cref="List{T}.Remove"/>
     public static bool Remove<T>(this IVector<T> self, in T item)
@@ -371,7 +359,6 @@ public static class VectorTraits
         return false;
     }
 
-#if NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER
     /// <inheritdoc cref="List{T}.RemoveRange"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void RemoveRange<T>(this IVector<T> self, Range range)
@@ -387,7 +374,6 @@ public static class VectorTraits
         var off = index.GetOffset(self.Count);
         self.RemoveAt(off);
     }
-#endif
 
     /// <summary>Removes the element at the specified <paramref name="index"/> from the vector by over-writing it with the last element.</summary>
     /// <typeparam name="T">The type of elements in the vector.</typeparam>
@@ -400,7 +386,6 @@ public static class VectorTraits
         self.RemoveAt(last); // Should not copy when removing the last element.
     }
 
-#if NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER
     /// <summary>Removes the element at the specified <paramref name="index"/> from the vector by over-writing it with the last element.</summary>
     /// <typeparam name="T">The type of elements in the vector.</typeparam>
     /// <remarks>No block of elements in moved. The order of the vector is disturbed.</remarks>
@@ -409,7 +394,6 @@ public static class VectorTraits
         var off = index.GetOffset(self.Count);
         self.SwapRemove(off);
     }
-#endif
 
     /// <inheritdoc cref="List{T}.Sort()"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -433,7 +417,6 @@ public static class VectorTraits
         self.Sort(new ComparisonCmp<T>(comparison));
     }
 
-#if NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER
     /// <inheritdoc cref="List{T}.Reverse()"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Reverse<T>(this IVector<T> self, Range range)
@@ -441,7 +424,6 @@ public static class VectorTraits
         var (off, cnt) = range.GetOffsetAndLength(self.Count);
         self.Reverse(off, cnt);
     }
-#endif
 
     /// <inheritdoc cref="List{T}.Reverse()"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

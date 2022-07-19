@@ -5,7 +5,7 @@
 namespace System.Diagnostics.CodeAnalysis;
 #pragma warning restore IDE0130
 
-#if !(NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0 || NETCOREAPP3_0_OR_GREATER || NET5_O || NET5_0_OR_GREATER)
+#if !(NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER || NET5_0_OR_GREATER)
 /// <summary>Specifies that null is allowed as an input even if the corresponding type disallows it.</summary>
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter | AttributeTargets.Property, Inherited = false)]
 public sealed class AllowNullAttribute : Attribute
@@ -89,7 +89,7 @@ public sealed class DoesNotReturnIfAttribute : Attribute
 }
 #endif
 
-#if !(NET5_O || NET5_0_OR_GREATER)
+#if !NET5_0_OR_GREATER
 /// <summary>Specifies that the method or property will ensure that the listed field and property members have not-null values.</summary>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property, Inherited = false, AllowMultiple = true)]
 public sealed class MemberNotNullAttribute : Attribute

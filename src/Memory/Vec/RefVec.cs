@@ -75,7 +75,6 @@ public ref struct RefVec<T>
         }
     }
 
-#if NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER
     /// <summary>
     ///     Gets or sets the element at the specified <paramref name="index"/>.
     /// </summary>
@@ -119,7 +118,6 @@ public ref struct RefVec<T>
         range.ValidateArgRange(count >= 0);
         range.ValidateArgRange(start <= Length - count);
     }
-#endif
 
     /// <summary>
     ///     Ensures that the list has a minimum capacity.

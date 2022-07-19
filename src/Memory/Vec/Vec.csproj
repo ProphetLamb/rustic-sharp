@@ -18,6 +18,7 @@
 
   <ItemGroup Condition="!$(DefineConstants.Contains('NET5_0_OR_GREATER'))">
     <PackageReference Include="System.Memory" Version="4.5.4" />
+    <PackageReference Include="IndexRange" Version="1.0.2" />
   </ItemGroup>
 
   <ItemGroup>

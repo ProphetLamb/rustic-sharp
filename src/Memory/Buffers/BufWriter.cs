@@ -110,13 +110,11 @@ public class BufWriter<T> :
 
     ref readonly T IReadOnlyVector<T>.this[int index] => ref this[index];
 
-#if NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER
     /// <inheritdoc />
     public ref T this[Index index] => ref this[index.GetOffset(Length)];
 
     /// <inheritdoc />
     ref readonly T IReadOnlyVector<T>.this[Index index] => ref this[index];
-#endif
 
     /// <inheritdoc />
     T IList<T>.this[int index] { get => this[index]; set => this[index] = value; }
