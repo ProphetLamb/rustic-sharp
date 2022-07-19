@@ -338,7 +338,7 @@ public static class ILReflect
             GenCtor<T>(targetType, ctorParamTypes);
         }
 
-        var type = typeBuilder.CreateType();
+        var type = typeBuilder.CreateType()!;
         var target = (T)asmBuilder.CreateInstance(name)!;
         return (target, type);
     }
