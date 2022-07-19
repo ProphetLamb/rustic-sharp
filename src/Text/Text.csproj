@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net472;net50;net60</TargetFrameworks>
+    <RootNamespace>Rustic.Text</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Assembly Info">
+    <Product>Rustic.Text</Product>
+    <AssemblyName>$(Product)</AssemblyName>
+    <AssemblyTitle>$(Product)</AssemblyTitle>
+    <PackageId>$(Product)</PackageId>
+    <Title>$(Product)</Title>
+    <Description>Types and extensions improving string access and formatting functionality.</Description>
+    <PackageTags>String,Span,Formatting,Text</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Memory\Memory\Memory.csproj" />
+    <ProjectReference Include="..\Common\Common.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net472;net50;net60</TargetFrameworks>
+    <DeterministicSourcePaths Condition="'$(EnableSourceLink)' == ''">false</DeterministicSourcePaths>
+    <RootNamespace>Rustic.Memory</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Assembly Info">
+    <Product>Rustic.Memory.Bit</Product>
+    <AssemblyName>$(Product)</AssemblyName>
+    <AssemblyTitle>$(Product)</AssemblyTitle>
+    <PackageId>$(Product)</PackageId>
+    <Title>$(Product)</Title>
+    <Description>Packed bit collections. Storing sequences of boolean values in integers.</Description>
+    <PackageTags>ArrayPool;Ref;Span;Collections</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup Condition="!$(DefineConstants.Contains('NET5_0_OR_GREATER'))">
+    <PackageReference Include="System.Memory" Version="4.5.4"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bit\Bit.csproj"/>
+    <ProjectReference Include="..\Buffers\Buffers.csproj"/>
+    <ProjectReference Include="..\Common\Common.csproj"/>
+    <ProjectReference Include="..\Inline\Inline.csproj"/>
+    <ProjectReference Include="..\Vec\Vec.csproj"/>
+  </ItemGroup>
+
+</Project>
