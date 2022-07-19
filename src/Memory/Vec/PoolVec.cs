@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 namespace Rustic.Memory;
 
 /// <summary>
-///     Represents a strongly typed list of object that can be accessed by ref. Provides a similar interface as <see cref="System.Collections.Generic.List{T}"/>.
+///     Represents a strongly typed FIFO list of object that can be accessed by ref. Provides a similar interface as <see cref="System.Collections.Generic.List{T}"/>.
 ///     The list allocated from a <see cref="ArrayPool{T}"/>.
 /// </summary>
 /// <typeparam name="T">The type of items of the list.</typeparam>

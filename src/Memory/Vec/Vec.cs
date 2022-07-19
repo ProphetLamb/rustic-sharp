@@ -11,7 +11,7 @@ using Rustic.Memory.Common;
 namespace Rustic.Memory;
 
 /// <summary>
-///     Represents a strongly typed list of object that can be accessed by ref. Provides a similar interface as <see cref="List{T}"/>.
+///     Represents a strongly typed FIFO list of object that can be accessed by ref. Provides a similar interface as <see cref="List{T}"/>.
 /// </summary>
 /// <typeparam name="T">The type of items of the list.</typeparam>
 [DebuggerDisplay("Length = {Count}")]
@@ -131,10 +131,7 @@ public class Vec<T> : IVector<T>
     /// <inheritdoc/>
     ref readonly T IReadOnlyVector<T>.this[Index index] => ref this[index];
 
-    /// <summary>
-    ///     Gets a span of elements of elements from the specified <paramref name="range"/>.
-    /// </summary>
-    /// <param name="range">The range of elements to get or set.</param>
+    /// <inheritdoc/>
     public ReadOnlySpan<T> this[Range range]
     {
         get
@@ -199,6 +196,7 @@ public class Vec<T> : IVector<T>
     [Pure]
     public ReadOnlySpan<T> AsSpan(int start, int length)
     {
+        length.ValidateArgRange(length <= Length);
         return new(Storage!, start, length);
     }
 
@@ -263,7 +261,7 @@ public class Vec<T> : IVector<T>
     /// <inheritdoc />
     public bool TryCopyTo(Span<T> destination)
     {
-        return IsEmpty || Storage.AsSpan().TryCopyTo(destination);
+        return IsEmpty || Storage.AsSpan(0, Length).TryCopyTo(destination);
     }
 
     /// <inheritdoc />

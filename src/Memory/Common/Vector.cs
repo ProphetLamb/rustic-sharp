@@ -28,7 +28,6 @@ public interface IReadOnlyVector<T>
 
     /// <inheritdoc cref="List{T}.Capacity"/>
     int Capacity { get; }
-
     /// <summary>Gets the element at the specified <paramref name="index"/>.</summary>
     /// <param name="index">The index of the element to get or set.</param>
     [Pure]
@@ -38,6 +37,13 @@ public interface IReadOnlyVector<T>
     /// <param name="index">The index of the element to get or set.</param>
     [Pure]
     ref readonly T this[Index index] { get; }
+
+    /// <summary>
+    ///     Gets a span of elements of elements from the specified <paramref name="range"/>.
+    /// </summary>
+    /// <param name="range">The range of elements to get.</param>
+    [Pure]
+    ReadOnlySpan<T> this[Range range] { get; }
 
     /// <summary>Creates a new span over a target vector.</summary>
     /// <returns>The span representation of the vector.</returns>
@@ -105,56 +111,6 @@ public interface IReadOnlyVector<T>
 
     /// <inheritdoc cref="Span{T}.TryCopyTo"/>
     bool TryCopyTo(Span<T> destination);
-}
-
-/// <summary>Represents a strongly typed vector of object that can be accessed by ref. Provides a similar interface as <see cref="List{T}"/>.</summary>
-/// <typeparam name="T">The type of items of the vector.</typeparam>
-public interface IVector<T>
-    : IReadOnlyVector<T>, IList<T>, ICollection
-{
-    /// <summary>Gets or sets the element at the specified <paramref name="index"/>.</summary>
-    /// <param name="index">The index of the element to get or set.</param>
-    new ref T this[int index] { get; }
-
-    /// <summary>Gets or sets the element at the specified <paramref name="index"/>.</summary>
-    /// <param name="index">The index of the element to get or set.</param>
-    new ref T this[Index index] { get; }
-
-    /// <summary>Returns the number of elements in the vector.</summary>
-    new int Count { get; }
-
-    /// <summary>Ensures that the collection can contain at least <paramref name="additionalCapacity"/> more elements.</summary>
-    /// <param name="additionalCapacity">The number of additional elements the collection must be able to contain.</param>
-    /// <returns>The new capacity of the collection.</returns>
-    int Reserve(int additionalCapacity);
-
-    /// <summary>Inserts a range of <paramref name="values"/> into the vector at the specified index.</summary>
-    /// <param name="index">The index at which to insert the first element.</param>
-    /// <param name="values">The collection of values to insert.</param>
-    void InsertRange(int index, ReadOnlySpan<T> values);
-
-    /// <summary>Removes a specified range of values for the vector.</summary>
-    /// <param name="start">The zero-based starting index of the range to remove.</param>
-    /// <param name="count">The length of the range to remove.</param>
-    void RemoveRange(int start, int count);
-
-    /// <summary>Sorts a range of elements in the vector using the specified <paramref name="comparer"/>.</summary>
-    /// <typeparam name="C">The type of the comparer.</typeparam>
-    /// <param name="start">The zero-based starting index of the range to sort.</param>
-    /// <param name="count">The length of the range to sort.</param>
-    /// <param name="comparer">The comparer implementation to use when comparing elements.</param>
-    void Sort<C>(int start, int count, in C comparer)
-        where C : IComparer<T>;
-
-    /// <summary>Sorts a range of elements in the vector using the <see cref="Comparer{T}.Default"/>.</summary>
-    /// <param name="start">The zero-based starting index of the range to sort.</param>
-    /// <param name="count">The length of the range to sort.</param>
-    void Sort(int start, int count);
-
-    /// <summary>Reveses the order of a range of elements in the vector.</summary>
-    /// <param name="start">The zero-based starting index of the range to reverse.</param>
-    /// <param name="count">The length of the range to reverse.</param>
-    void Reverse(int start, int count);
 }
 
 /// <summary>Collection of extensions and utility functions related to <see cref="IReadOnlyVector{T}"/>.</summary>
@@ -314,6 +270,62 @@ public static class ReadOnlyVectorTraits
     public static bool Contains<T>(this IReadOnlyVector<T> self, in T item) => self.IndexOf(in item) >= 0;
 }
 
+/// <summary>Represents a strongly typed vector of objects that can be accessed by ref. Provides a similar interface as <see cref="List{T}"/>.</summary>
+/// <typeparam name="T">The type of items of the vector.</typeparam>
+public interface IVector<T>
+    : IReadOnlyVector<T>, IList<T>, ICollection
+{
+    /// <summary>Returns the number of elements in the vector.</summary>
+    new int Count { get; }
+
+    /// <summary>Gets or sets the element at the specified <paramref name="index"/>.</summary>
+    /// <param name="index">The index of the element to get or set.</param>
+    new ref T this[int index] { get; }
+
+    /// <summary>Gets or sets the element at the specified <paramref name="index"/>.</summary>
+    /// <param name="index">The index of the element to get or set.</param>
+    new ref T this[Index index] { get; }
+
+    /// <summary>
+    ///     Gets a span of elements of elements from the specified <paramref name="range"/>.
+    /// </summary>
+    /// <param name="range">The range of elements to get or set.</param>
+    new ReadOnlySpan<T> this[Range range] { get; set; }
+
+    /// <summary>Ensures that the collection can contain at least <paramref name="additionalCapacity"/> more elements.</summary>
+    /// <param name="additionalCapacity">The number of additional elements the collection must be able to contain.</param>
+    /// <returns>The new capacity of the collection.</returns>
+    int Reserve(int additionalCapacity);
+
+    /// <summary>Inserts a range of <paramref name="values"/> into the vector at the specified index.</summary>
+    /// <param name="index">The index at which to insert the first element.</param>
+    /// <param name="values">The collection of values to insert.</param>
+    void InsertRange(int index, ReadOnlySpan<T> values);
+
+    /// <summary>Removes a specified range of values for the vector.</summary>
+    /// <param name="start">The zero-based starting index of the range to remove.</param>
+    /// <param name="count">The length of the range to remove.</param>
+    void RemoveRange(int start, int count);
+
+    /// <summary>Sorts a range of elements in the vector using the specified <paramref name="comparer"/>.</summary>
+    /// <typeparam name="C">The type of the comparer.</typeparam>
+    /// <param name="start">The zero-based starting index of the range to sort.</param>
+    /// <param name="count">The length of the range to sort.</param>
+    /// <param name="comparer">The comparer implementation to use when comparing elements.</param>
+    void Sort<C>(int start, int count, in C comparer)
+        where C : IComparer<T>;
+
+    /// <summary>Sorts a range of elements in the vector using the <see cref="Comparer{T}.Default"/>.</summary>
+    /// <param name="start">The zero-based starting index of the range to sort.</param>
+    /// <param name="count">The length of the range to sort.</param>
+    void Sort(int start, int count);
+
+    /// <summary>Reveses the order of a range of elements in the vector.</summary>
+    /// <param name="start">The zero-based starting index of the range to reverse.</param>
+    /// <param name="count">The length of the range to reverse.</param>
+    void Reverse(int start, int count);
+}
+
 /// <summary>Collection of extensions and utility functions related to <see cref="IVector{T}"/>.</summary>
 public static class VectorTraits
 {
@@ -430,20 +442,6 @@ public static class VectorTraits
     public static void Reverse<T>(this IVector<T> self)
     {
         self.Reverse(0, self.Count);
-    }
-
-    /// <summary>Removes to topmost element from the stack.</summary>
-    /// <returns>Returns <see cref="Option.Some{T}"/> if an element was removed; otherwise, returns <see cref="Option.None{T}"/>.</returns>
-    public static Option<T> Pop<T>(this IVector<T> self)
-    {
-        if (!self.IsEmpty)
-        {
-            var last = self.Count - 1;
-            T value = self[last];
-            self.RemoveAt(last);
-            return Some(value);
-        }
-        return default;
     }
 
     private struct ComparisonCmp<T> : IComparer<T>, IEqualityComparer<T>

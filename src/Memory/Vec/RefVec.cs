@@ -10,7 +10,7 @@ using System.Text;
 namespace Rustic.Memory;
 
 /// <summary>
-///     Represents a strongly typed list of object that can be accessed by ref. Provides a similar interface as <see cref="List{T}"/>.
+///     Represents a strongly typed FIFO list of object that can be accessed by ref. Provides a similar interface as <see cref="List{T}"/>.
 /// </summary>
 /// <typeparam name="T">The type of items of the list.</typeparam>
 [DebuggerDisplay("{GetDebuggerDisplay(),nq}")]

@@ -108,6 +108,7 @@ public class BufWriter<T> :
 
     T IReadOnlyList<T>.this[int index] => this[index];
 
+    T IList<T>.this[int index] { get => this[index]; set => this[index] = value; }
     ref readonly T IReadOnlyVector<T>.this[int index] => ref this[index];
 
     /// <inheritdoc />
@@ -116,8 +117,22 @@ public class BufWriter<T> :
     /// <inheritdoc />
     ref readonly T IReadOnlyVector<T>.this[Index index] => ref this[index];
 
+    public ReadOnlySpan<T> this[Range range]
+    {
+        get
+        {
+            (int start, int count) = range.GetOffsetAndLength(Length);
+            return AsSpan(start, count);
+        }
+        set
+        {
+            (int start, int count) = range.GetOffsetAndLength(Length);
+            GuardRange(start, count);
+            value.CopyTo(Buffer.AsSpan(start, count));
+        }
+    }
+
     /// <inheritdoc />
-    T IList<T>.this[int index] { get => this[index]; set => this[index] = value; }
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
