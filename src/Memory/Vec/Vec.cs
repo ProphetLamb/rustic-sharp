@@ -131,7 +131,10 @@ public class Vec<T> : IVector<T>
     /// <inheritdoc/>
     ref readonly T IReadOnlyVector<T>.this[Index index] => ref this[index];
 
-    /// <inheritdoc/>
+    /// <summary>
+    ///     Gets a span of elements of elements from the specified <paramref name="range"/>.
+    /// </summary>
+    /// <param name="range">The range of elements to get.</param>
     public ReadOnlySpan<T> this[Range range]
     {
         get
@@ -192,7 +195,8 @@ public class Vec<T> : IVector<T>
         return ref ret!;
     }
 
-    /// <inheritdoc />
+    /// <summary>Creates a new span over a target vector.</summary>
+    /// <returns>The span representation of the vector.</returns>
     [Pure]
     public ReadOnlySpan<T> AsSpan(int start, int length)
     {

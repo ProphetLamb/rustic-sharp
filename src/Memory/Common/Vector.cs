@@ -39,18 +39,6 @@ public interface IReadOnlyVector<T>
     ref readonly T this[Index index] { get; }
 
     /// <summary>
-    ///     Gets a span of elements of elements from the specified <paramref name="range"/>.
-    /// </summary>
-    /// <param name="range">The range of elements to get.</param>
-    [Pure]
-    ReadOnlySpan<T> this[Range range] { get; }
-
-    /// <summary>Creates a new span over a target vector.</summary>
-    /// <returns>The span representation of the vector.</returns>
-    [Pure]
-    ReadOnlySpan<T> AsSpan(int start, int length);
-
-    /// <summary>
     /// Reports the zero-based index of the first occurrence of the specified <paramref name="item"/> in the vector.
     /// </summary>
     /// <typeparam name="E">The type of the comparer.</typeparam>
@@ -116,36 +104,6 @@ public interface IReadOnlyVector<T>
 /// <summary>Collection of extensions and utility functions related to <see cref="IReadOnlyVector{T}"/>.</summary>
 public static class ReadOnlyVectorTraits
 {
-    /// <summary>Creates a new span over a target vector.</summary>
-    /// <typeparam name="T">The type of elements in the vector.</typeparam>
-    /// <returns>The span representation of the vector.</returns>
-    [Pure]
-    public static ReadOnlySpan<T> AsSpan<T>(this IReadOnlyVector<T> self)
-    {
-        return self.AsSpan(0, self.Count);
-    }
-
-    /// <summary>Creates a new span over a target vector.</summary>
-    /// <typeparam name="T">The type of elements in the vector.</typeparam>
-    /// <returns>The span representation of the vector.</returns>
-    [Pure]
-    public static ReadOnlySpan<T> AsSpan<T>(this IReadOnlyVector<T> self, Index index)
-    {
-        var len = self.Count;
-        var off = index.GetOffset(len);
-        return self.AsSpan(off, len - off);
-    }
-
-    /// <summary>Creates a new span over a target vector.</summary>
-    /// <typeparam name="T">The type of elements in the vector.</typeparam>
-    /// <returns>The span representation of the vector.</returns>
-    [Pure]
-    public static ReadOnlySpan<T> AsSpan<T>(this IReadOnlyVector<T> self, Range range)
-    {
-        var (off, cnt) = range.GetOffsetAndLength(self.Count);
-        return self.AsSpan(off, cnt);
-    }
-
     /// <inheritdoc cref="IList{T}.IndexOf"/>
     [Pure]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -285,12 +243,6 @@ public interface IVector<T>
     /// <summary>Gets or sets the element at the specified <paramref name="index"/>.</summary>
     /// <param name="index">The index of the element to get or set.</param>
     new ref T this[Index index] { get; }
-
-    /// <summary>
-    ///     Gets a span of elements of elements from the specified <paramref name="range"/>.
-    /// </summary>
-    /// <param name="range">The range of elements to get or set.</param>
-    new ReadOnlySpan<T> this[Range range] { get; set; }
 
     /// <summary>Ensures that the collection can contain at least <paramref name="additionalCapacity"/> more elements.</summary>
     /// <param name="additionalCapacity">The number of additional elements the collection must be able to contain.</param>

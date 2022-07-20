@@ -115,32 +115,6 @@ public class VecRing<T> : IVector<T>
 
     ref readonly T IReadOnlyVector<T>.this[Index index] => ref this[index];
 
-    /// <inheritdoc />
-    public ReadOnlySpan<T> this[Range range]
-    {
-        get
-        {
-            (int off, int len) = range.GetOffsetAndLength(Length);
-            return AsSpan(off, len);
-        }
-        set
-        {
-            (int start, int count) = range.GetOffsetAndLength(Length);
-            GuardRange(start, count);
-            value.CopyTo(Storage.AsSpan(start + _head, count));
-        }
-    }
-
-    ReadOnlySpan<T> IReadOnlyVector<T>.this[Range range] => this[range];
-
-    /// <inheritdoc />
-    public ReadOnlySpan<T> AsSpan(int start, int length)
-    {
-        start.ValidateArgRange(start >= 0);
-        length.ValidateArgRange(length <= Length);
-        return new(Storage!, start + _head, length);
-    }
-
     private void GuardRange(int start, int count)
     {
         start.ValidateArgRange(start >= 0);
