@@ -208,17 +208,10 @@ public class Vec<T> : IVector<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add(T item)
     {
-        var pos = _count;
-
-        if (Storage is not null && (uint)pos < (uint)Storage.Length)
-        {
-            Storage[pos] = item;
-            _count = pos + 1;
-        }
-        else
-        {
-            GrowAndAppend(item);
-        }
+        int len = _count;
+        Reserve(1);
+        Storage![len] = item;
+        _count = len + 1;
     }
 
     /// <summary>
@@ -477,13 +470,6 @@ public class Vec<T> : IVector<T>
         return Capacity;
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private void GrowAndAppend(T value)
-    {
-        Grow(1);
-        Add(value);
-    }
-
     /// <summary>
     ///     Resize the internal buffer either by doubling current buffer size or
     ///     by adding <paramref name="additionalCapacityBeyondPos" /> to
@@ -499,10 +485,11 @@ public class Vec<T> : IVector<T>
 
         if (Storage is not null)
         {
-            Debug.Assert(_count > Storage.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
+            int len = _count;
+            Debug.Assert(len > Storage.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
 
-            var temp = new T[(_count + additionalCapacityBeyondPos).Max(Storage.Length * 2)];
-            Array.Copy(Storage, 0, temp, 0, _count);
+            var temp = new T[(len + additionalCapacityBeyondPos).Max(Storage.Length * 2)];
+            Storage.AsSpan(0, len).CopyTo(temp.AsSpan(0, len));
             Storage = temp;
         }
         else

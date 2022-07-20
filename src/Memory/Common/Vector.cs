@@ -249,6 +249,10 @@ public interface IVector<T>
     /// <returns>The new capacity of the collection.</returns>
     int Reserve(int additionalCapacity);
 
+    /// <inheritdoc cref="List{T}.Insert"/>
+    [CLSCompliant(false)]
+    public void Insert(int index, in T value);
+
     /// <summary>Inserts a range of <paramref name="values"/> into the vector at the specified index.</summary>
     /// <param name="index">The index at which to insert the first element.</param>
     /// <param name="values">The collection of values to insert.</param>
@@ -415,7 +419,7 @@ public static class VectorTraits
             return Compare(x, y) == 0;
         }
 
-        public int GetHashCode(T obj)
+        public int GetHashCode([AllowNull] T obj)
         {
             Debug.Fail("Comparison cannot compute a hashcode. Fallback to obj.GetHashCode()");
             return obj is null ? 0 : obj.GetHashCode();

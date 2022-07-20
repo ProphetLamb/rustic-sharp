@@ -49,10 +49,11 @@ public class PoolVec<T>
 
         if (Storage is not null)
         {
-            Debug.Assert(Count > Storage.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
+            int len = Count;
+            Debug.Assert(len > Capacity - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
 
-            var temp = Pool.Rent((Count + additionalCapacityBeyondPos).Max(Storage.Length * 2));
-            Array.Copy(Storage, 0, temp, 0, Count);
+            var temp = Pool.Rent((len + additionalCapacityBeyondPos).Max(Storage.Length * 2));
+            Storage.AsSpan(0, len).CopyTo(temp.AsSpan(0, len));
             Storage = temp;
             if (temp is not null)
             {
@@ -76,14 +77,16 @@ public class PoolVec<T>
     /// <inheritdoc cref="IDisposable.Dispose"/>
     protected virtual void Dispose(bool disposing)
     {
-        if (disposing)
+        if (!disposing)
         {
-            var temp = Storage;
-            Storage = null;
-            if (temp is not null)
-            {
-                Pool.Return(temp);
-            }
+            return;
+        }
+
+        var temp = Storage;
+        Storage = null;
+        if (temp is not null)
+        {
+            Pool.Return(temp);
         }
     }
 }
