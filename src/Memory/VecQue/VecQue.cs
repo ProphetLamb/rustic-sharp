@@ -100,9 +100,9 @@ public class VecRing<T> : IVector<T>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
-            this.ValidateArg(Storage is not null);
-            Debug.Assert(index + Head < Tail);
-            return ref Storage[index + _head];
+            Storage.ValidateArg(Storage is not null);
+            Debug.Assert(index + HeadVirtual < Tail);
+            return ref Storage[GetIndex(index)];
         }
     }
 

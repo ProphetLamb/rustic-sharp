@@ -98,7 +98,7 @@ public class BufWriter<T> :
         get
         {
             index.ValidateArgRange(index >= 0 && index < Length);
-            this.ValidateArg(Buffer is not null);
+            Buffer.ValidateArg(Buffer is not null);
             return ref Buffer[index];
         }
     }
@@ -404,7 +404,7 @@ public class BufWriter<T> :
         }
         else
         {
-            this.ValidateArg(Length != -1);
+            Length.ValidateArg(Length != -1);
             Buffer = new T[Math.Max(additionalCapacityBeyondPos, 16)];
         }
     }
@@ -579,7 +579,7 @@ public class BufWriter<T> :
 
         if (count != 0)
         {
-            this.ValidateArg(Buffer is not null);
+            Buffer.ValidateArg(Buffer is not null);
             Buffer.AsSpan(start, count).Sort();
         }
     }

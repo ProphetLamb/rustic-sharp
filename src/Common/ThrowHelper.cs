@@ -53,7 +53,6 @@ public static class ThrowHelper
 
     [DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void ValidateArg<T>(this T value, [DoesNotReturnIf(false)] bool condition, [CallerArgumentExpression("value")] string name = null!, [CallerArgumentExpression("condition")] string message = null!)
-        where T : notnull
     {
         if (!condition)
         {
@@ -63,7 +62,6 @@ public static class ThrowHelper
 
     [DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void ValidateArgRange<T>(this T value, [DoesNotReturnIf(false)] bool condition, [CallerArgumentExpression("value")] string name = null!, [CallerArgumentExpression("condition")] string message = null!)
-        where T : notnull
     {
         if (!condition)
         {

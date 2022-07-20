@@ -100,7 +100,7 @@ public class Vec<T> : IVector<T>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
-            this.ValidateArg(Storage is not null);
+            Storage.ValidateArg(Storage is not null);
             Debug.Assert(index < _count);
             return ref Storage[index];
         }
@@ -312,7 +312,7 @@ public class Vec<T> : IVector<T>
     /// <inheritdoc />
     int IList<T>.IndexOf(T item) => this.IndexOf(in item);
 
-    /// <inheritdoc cref="List{T}.Insert"/>
+    /// <inheritdoc/>
     [CLSCompliant(false)]
     public void Insert(int index, in T value)
     {
@@ -387,7 +387,7 @@ public class Vec<T> : IVector<T>
     /// <inheritdoc cref="List{T}.RemoveAt"/>
     public void RemoveAt(int index)
     {
-        this.ValidateArg(Storage is not null);
+        Storage.ValidateArg(Storage is not null);
         var remaining = _count - index - 1;
         Array.Copy(Storage, index + 1, Storage, index, remaining);
         Storage[--_count] = default!;
