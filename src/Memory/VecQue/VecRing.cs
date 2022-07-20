@@ -327,7 +327,7 @@ public class VecRing<T> : IVector<T>
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator()"/>
     [Pure]
-    public VecIter<T> GetEnumerator()
+    public MemIter<T> GetEnumerator()
     {
         return new(Storage, _head, Length);
     }

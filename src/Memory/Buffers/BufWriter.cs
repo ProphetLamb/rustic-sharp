@@ -6,9 +6,6 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 
-using Rustic.Memory;
-using Rustic.Memory.Common;
-
 namespace Rustic.Memory;
 
 /// <summary>
@@ -384,7 +381,7 @@ public class BufWriter<T> :
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
     [Pure]
-    public VecIter<T> GetEnumerator() => new(Buffer, 0, _index);
+    public MemIter<T> GetEnumerator() => new(Buffer, 0, _index);
 
     /// <inheritdoc />
     IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();

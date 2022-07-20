@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
+using static Rustic.Option;
 
 namespace Rustic.Memory;
 
@@ -10,7 +13,7 @@ namespace Rustic.Memory;
 ///     Enumerates the elements of a segment of an array.
 /// </summary>
 /// <typeparam name="T">The type of items of the array.</typeparam>
-public struct VecIter<T>
+public struct MemIter<T>
     : IEnumerator<T>, IReadOnlyList<T>
 {
     private T[]? _array;
@@ -24,7 +27,7 @@ public struct VecIter<T>
     /// <param name="array">The array to iterate.</param>
     /// <param name="offset">The index of the first element to iterate.</param>
     /// <param name="count">The number of elements to iterate.</param>
-    public VecIter(T[]? array, int offset, int count)
+    public MemIter(T[]? array, int offset, int count)
     {
         offset.ValidateArgRange(offset >= 0);
         count.ValidateArgRange(count >= 0);
@@ -93,7 +96,7 @@ public struct VecIter<T>
 
 
     /// <summary>
-    ///     Returns the segment represented by the <see cref="VecIter{T}"/> as a span.
+    ///     Returns the segment represented by the <see cref="MemIter{T}"/> as a span.
     /// </summary>
     /// <returns>The span representing the segment.</returns>
     [Pure]
@@ -103,14 +106,14 @@ public struct VecIter<T>
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
     [Pure]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public VecIter<T> GetEnumerator()
+    public MemIter<T> GetEnumerator()
     {
         if (_pos == -1)
         {
             return this;
         }
 
-        return new VecIter<T>(_array, _offset, _count);
+        return new MemIter<T>(_array, _offset, _count);
     }
 
     /// <inheritdoc />
@@ -148,34 +151,39 @@ public struct VecIter<T>
     /// <summary>
     ///     Instantiates a new <see cref="ArraySegment{T}"/> representing the same segment as the iterator.
     /// </summary>
-    /// <param name="segment">The iterator.</param>
-    public static implicit operator ArraySegment<T>(VecIter<T> segment) => segment.Array is not null ? new(segment.Array, segment.Offset, segment.Length) : default;
+    public static implicit operator ArraySegment<T>(MemIter<T> segment) => segment.Array is not null ? new(segment.Array, segment.Offset, segment.Length) : default;
+
+    /// <summary>
+    ///    Instantiates a new <see cref="ReadOnlyMemory{T}"/> representing the same segment as the iterator.
+    /// </summary>
+    public static implicit operator Memory<T>(MemIter<T> segment) => segment.Array is not null ? new(segment.Array, segment.Offset, segment.Length) : default;
 }
+
 /// <summary>
 ///     Extension methods for <see cref="ArraySegment{T}"/> and <see cref="Array"/>.
 /// </summary>
 public static class VecIterExtensions
 {
     /// <summary>
-    ///     Initializes a new <see cref="VecIter{T}"/> for the segment.
+    ///     Initializes a new <see cref="MemIter{T}"/> for the segment.
     /// </summary>
     /// <param name="segment">The segment.</param>
     /// <typeparam name="T">The type of elements in the array.</typeparam>
     [Pure]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static VecIter<T> GetIterator<T>(this ArraySegment<T> segment) => new(segment.Array, segment.Offset, segment.Count);
+    public static MemIter<T> ToIterator<T>(this ArraySegment<T> segment) => new(segment.Array, segment.Offset, segment.Count);
 
     /// <summary>
-    ///     Initializes a new <see cref="VecIter{T}"/> for the array.
+    ///     Initializes a new <see cref="MemIter{T}"/> for the array.
     /// </summary>
     /// <param name="array">The array.</param>
     /// <typeparam name="T">The type of elements in the array.</typeparam>
     [Pure]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static VecIter<T> GetIterator<T>(this T[] array) => new(array, 0, array.Length);
+    public static MemIter<T> ToIterator<T>(this T[] array) => new(array, 0, array.Length);
 
     /// <summary>
-    ///     Initializes a new <see cref="VecIter{T}"/> for the array.
+    ///     Initializes a new <see cref="MemIter{T}"/> for the array.
     /// </summary>
     /// <param name="array">The array.</param>
     /// <param name="offset">The zero-based index of the first element in the array.</param>
@@ -184,10 +192,10 @@ public static class VecIterExtensions
     ///
     [Pure]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static VecIter<T> GetIterator<T>(this T[] array, int offset) => new(array, offset, array.Length - offset);
+    public static MemIter<T> ToIterator<T>(this T[] array, int offset) => new(array, offset, array.Length - offset);
 
     /// <summary>
-    ///     Initializes a new <see cref="VecIter{T}"/> for the array.
+    ///     Initializes a new <see cref="MemIter{T}"/> for the array.
     /// </summary>
     /// <param name="array">The array.</param>
     /// <param name="offset">The zero-based index of the first element in the array.</param>
@@ -195,5 +203,15 @@ public static class VecIterExtensions
     /// <typeparam name="T">The type of elements in the array.</typeparam>
     [Pure]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static VecIter<T> GetIterator<T>(this T[] array, int offset, int count) => new(array, offset, count);
+    public static MemIter<T> ToIterator<T>(this T[] array, int offset, int count) => new(array, offset, count);
+
+    /// <summary>
+    ///     Attempts to initializes a new <see cref="MemIter{T}"/> for the <see cref="ReadOnlyMemory{T}"/>.
+    /// </summary>
+    public static Option<MemIter<T>> TryToIterator<T>(in this ReadOnlyMemory<T> mem) => MemoryMarshal.TryGetArray(mem, out ArraySegment<T> arr) ? Some(arr.ToIterator()) : default;
+
+    /// <summary>
+    ///     Attempts to initializes a new <see cref="MemIter{T}"/> for the <see cref="Memory{T}"/>.
+    /// </summary>
+    public static Option<MemIter<T>> TryToIterator<T>(in this Memory<T> mem) => TryToIterator((ReadOnlyMemory<T>)mem);
 }
