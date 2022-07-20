@@ -47,7 +47,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Text", "tests\Text\Text.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Memory", "src\Memory\Memory\Memory.csproj", "{EA246A79-10ED-45BF-AB0F-7DE2F32257EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VecRing", "src\Memory\VecRing\VecRing.csproj", "{ABA7BCAE-A372-4E9B-9A21-2F75588FCB07}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VecQue", "src\Memory\VecQue\VecQue.csproj", "{ABA7BCAE-A372-4E9B-9A21-2F75588FCB07}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

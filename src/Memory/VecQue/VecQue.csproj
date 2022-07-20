@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Assembly Info">
-    <Product>Rustic.Memory.VecRing</Product>
+    <Product>Rustic.Memory.VecQue</Product>
     <AssemblyName>$(Product)</AssemblyName>
     <AssemblyTitle>$(Product)</AssemblyTitle>
     <PackageId>$(Product)</PackageId>
