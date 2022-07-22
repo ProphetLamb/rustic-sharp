@@ -8,11 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Memory\Bit\Bit.csproj" />
-    <ProjectReference Include="..\..\src\Memory\Buffers\Buffers.csproj" />
-    <ProjectReference Include="..\..\src\Memory\Common\Common.csproj" />
-    <ProjectReference Include="..\..\src\Memory\Inline\Inline.csproj" />
-    <ProjectReference Include="..\..\src\Memory\Vec\Vec.csproj" />
+    <ProjectReference Include="..\..\src\Memory\Memory\Memory.csproj" />
   </ItemGroup>
 
   <ItemGroup>

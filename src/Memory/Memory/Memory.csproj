@@ -26,6 +26,7 @@
     <ProjectReference Include="..\Common\Common.csproj"/>
     <ProjectReference Include="..\Inline\Inline.csproj"/>
     <ProjectReference Include="..\Vec\Vec.csproj"/>
+    <ProjectReference Include="..\VecQue\VecQue.csproj"/>
   </ItemGroup>
 
 </Project>
