@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 
@@ -12,7 +13,7 @@ using static Rustic.Option;
 namespace Rustic.Memory;
 
 /// <summary>
-///     Represents a strongly typed FILO list of object that can be accessed by ref. Provides a similar interface as <see cref="List{T}"/>.
+///     Represents a strongly typed LIFO list of object that can be accessed by ref. Provides a similar interface as <see cref="List{T}"/>.
 /// </summary>
 /// <typeparam name="T">The type of items of the list.</typeparam>
 [DebuggerDisplay("Length = {Count}")]
@@ -20,7 +21,12 @@ namespace Rustic.Memory;
 public class VecQue<T> : IVector<T>
 {
     /// <summary>
-    /// The internal storage.
+    ///     Defines the behavior of the <see cref="VecQue{T}"/> when the capacity is exceeded.
+    /// </summary>
+    protected readonly GrowthStrategy GrowthStrategy;
+
+    /// <summary>
+    ///     The internal storage
     /// </summary>
     protected T[]? Storage;
 
@@ -29,7 +35,17 @@ public class VecQue<T> : IVector<T>
     /// <summary>
     ///     Initializes a new list.
     /// </summary>
+    /// <param name="growthStrategy">The growth strategy</param>
+    public VecQue(GrowthStrategy growthStrategy)
+    {
+        GrowthStrategy = growthStrategy;
+    }
+
+    /// <summary>
+    ///     Initializes a new list.
+    /// </summary>
     public VecQue()
+        : this(GrowthStrategy.Exponential)
     {
     }
 
@@ -37,9 +53,29 @@ public class VecQue<T> : IVector<T>
     ///     Initializes a new list with a initial buffer.
     /// </summary>
     /// <param name="initialBuffer">The initial buffer.</param>
-    public VecQue(T[] initialBuffer)
+    /// <param name="growthStrategy">The growth strategy</param>
+    public VecQue(T[] initialBuffer, GrowthStrategy growthStrategy)
+        : this(growthStrategy)
     {
         Storage = initialBuffer;
+        _length = _tail = 0;
+    }
+    /// <summary>
+    ///     Initializes a new list with a initial buffer.
+    /// </summary>
+    /// <param name="initialBuffer">The initial buffer.</param>
+    public VecQue(T[] initialBuffer)
+        : this(initialBuffer, GrowthStrategy.Exponential) { }
+
+    /// <summary>
+    ///     Initializes a new list with a specified minimum initial capacity.
+    /// </summary>
+    /// <param name="initialMinimumCapacity">The minimum initial capacity.</param>
+    /// <param name="growthStrategy">The growth strategy</param>
+    public VecQue(int initialMinimumCapacity, GrowthStrategy growthStrategy)
+        : this(growthStrategy)
+    {
+        Storage = new T[initialMinimumCapacity];
         _length = _tail = 0;
     }
 
@@ -48,11 +84,7 @@ public class VecQue<T> : IVector<T>
     /// </summary>
     /// <param name="initialMinimumCapacity">The minimum initial capacity.</param>
     public VecQue(int initialMinimumCapacity)
-    {
-        Storage = new T[initialMinimumCapacity];
-        _length = _tail = 0;
-    }
-
+        : this(initialMinimumCapacity, GrowthStrategy.Exponential) { }
 
     /// <inheritdoc />
     public int Capacity => (Storage?.Length) ?? 0;
@@ -635,20 +667,20 @@ public class VecQue<T> : IVector<T>
             return (wrappedReqIndex - additionalCapacity, true); // Sufficient capacity available from Top to Head.
         }
 
-        // Insufficient contiguous capacity available, realign.
-        GrowAndUnwrap(additionalCapacity);
+        // Insufficient capacity available
+        Grow(additionalCapacity, true);
         Debug.Assert(reqIndex <= Capacity, "GrowAndUnwrap must align the buffer to TopVirtual == HeadVirtual hence Tail = 0 and HeadVirtual + additionalCapacity <= Capacity");
 
         return (reqIndex - additionalCapacity, false);
     }
 
     /// <summary>
-    ///     Grows the buffer by alt east additionalCapacity and a multiple of two.
+    ///     Grows the buffer by at least additionalCapacity.
     /// </summary>
     /// <remarks>
-    ///    Always sets Tail to 0.
+    ///    Reforms the buffer, so that Tail is 0 and HeadVirtual is Head.
     /// </remarks>
-    private void GrowAndUnwrap(int additionalCapacity)
+    protected virtual void GrowContiguous(int additionalCapacity)
     {
         if (Storage is null)
         {
@@ -656,13 +688,61 @@ public class VecQue<T> : IVector<T>
             return;
         }
 
-        int newCapacity = (Capacity*2).Max(Capacity + additionalCapacity);
+        int newCapacity = (Capacity * 2).Max(Capacity + additionalCapacity);
         var newStorage = new T[newCapacity];
 
         bool success = TryCopyTo(newStorage.AsSpan(0, Length));
         Debug.Assert(success, "This can never fail!");
 
         Storage = newStorage;
+    }
+
+    protected virtual void GrowFixedSize(int additionalCapacity, bool requireContiguous)
+    {
+        if (Storage is null)
+        {
+            Storage = new T[additionalCapacity];
+            return;
+        }
+
+        if (requireContiguous)
+        {
+            if (additionalCapacity > Tail)
+            {
+                ThrowGrowFixedSize(nameof(Tail));
+            }
+            ShiftRightInternal(Tail);
+            return;
+        }
+
+        if (additionalCapacity > Capacity)
+        {
+            ThrowGrowFixedSize(nameof(Capacity));
+        }
+        int tail = (Tail - additionalCapacity).PosMod(Capacity);
+        RotateLeft(additionalCapacity);
+    }
+
+    /// <summary>
+    ///     Grows the buffer according to the growth stragety.
+    /// </summary>
+    /// <paramref name="additionalCapacity" >Indicates whether to reforms the buffer, so that Tail is 0 and HeadVirtual is Head.</paramref>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void Grow(int additionalCapacity, bool requireContiguous = false)
+    {
+        switch (GrowthStrategy)
+        {
+            case GrowthStrategy.Exponential:
+                GrowContiguous(additionalCapacity);
+                break;
+            case GrowthStrategy.FixedSizeRotate:
+                GrowFixedSize(additionalCapacity, requireContiguous);
+                break;
+            default:
+                ThrowUnknownGrowthStrategy();
+                break;
+        }
+
         _tail = 0;
     }
 
@@ -697,14 +777,14 @@ public class VecQue<T> : IVector<T>
             return default;
         }
 
-        var (available, growReq) = GetRotateRequirements(wrapping);
+        var growReq = GetShiftRequirements(wrapping);
         if (growReq != 0)
         {
-            GrowAndUnwrap(growReq);
+            Grow(growReq, true);
         }
         else
         {
-            RotateRightInternal(available);
+            ShiftRightInternal(wrapping);
         }
 
         return Storage.AsSpan(Tail, Length);
@@ -714,49 +794,74 @@ public class VecQue<T> : IVector<T>
     ///     Returns the requirements for a rotation by amount
     /// </summary>
     /// <remarks>
-    ///     If the rotation is cheap returns (available, 0), otherwise returns (available, growReq), where
-    ///
-    ///     - available is the amount of elements currently available,
-    ///
-    ///     - growReq is the amount of elements that would be required to rotate.
+    ///     If the rotation is cheap returns 0, otherwise the amount of elements that would be required to rotate.
     /// </remarks>
     [Pure]
-    private (int AvailableCapacity, int GrowthRequired) GetRotateRequirements(int amount)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private int GetShiftRequirements(int amount)
     {
         int available = Capacity - Length;
         int growReq = Math.Max(amount - available, 0);
-        return (available, growReq);
+        return growReq;
     }
 
+    /// <summary>
+    ///    Rotates the ringbuffer to the left by amount, effectively shifting elements to the right.
+    /// </summary>
     public void RotateLeft(int amount)
+    {
+        // Normalize shift amount
+        int tail = Tail;
+        int newTail = (tail + amount).PosMod(Capacity);
+        int shift = tail - newTail;
+
+    }
+
+    /// <summary>
+    ///    Rotates the ringbuffer to the left by amount, effectively shifting elements to the right.
+    /// </summary>
+    public void RotateRight(int amount)
+    {
+
+    }
+
+
+    /// <summary>
+    ///    Rotates the ringbuffer to the left by amount, by shifting elements to the right.
+    /// </summary>
+    public void ShiftLeft(int amount)
     {
         while (amount != 0)
         {
-            amount %= Capacity;
+            amount = amount.PosMod(Capacity);
             if (amount * 2 > Capacity)
             {
                 // Cheaper to rotate right
-                RotateRight(Capacity - amount);
+                ShiftRight(Capacity - amount);
                 return;
             }
 
-            var (_, growthRequired) = GetRotateRequirements(amount);
+            var growthRequired = GetShiftRequirements(amount);
             if (growthRequired == 0)
             {
-                RotateLeftInternal(amount);
+                ShiftLeftInternal(amount);
                 return;
             }
 
             int offset = Tail;
-            GrowAndUnwrap(growthRequired); // Rotates right by Tail, so Tail = 0.
+            Grow(growthRequired, true); // Rotates right by Tail, so Tail = 0.
             amount += offset;
         }
     }
 
-    private void RotateLeftInternal(int amount)
+    /// <summary>
+    ///    Rotates the ringbuffer to the left by amount, by moving the elements in the range [Tail, Head) to the right.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected void ShiftLeftInternal(int amount)
     {
         int tail = Tail;
-        MoveLeft(tail, Length, amount);
+        MoveRight(tail, Length, amount);
         _tail = tail + amount;
     }
 
@@ -805,35 +910,42 @@ public class VecQue<T> : IVector<T>
         }
     }
 
-    private void RotateRight(int amount)
+    /// <summary>
+    ///    Rotates the ringbuffer to the right by amount, by shifting elements to the left.
+    /// </summary>
+    public void ShiftRight(int amount)
     {
         while (amount != 0)
         {
-            amount %= Capacity;
+            amount = amount.PosMod(Capacity);
             if (amount * 2 > Capacity)
             {
                 // Cheaper to rotate left
-                RotateLeft(Capacity - amount);
+                ShiftLeft(Capacity - amount);
                 return;
             }
 
-            var (_, growthRequired) = GetRotateRequirements(amount);
+            var growthRequired = GetShiftRequirements(amount);
             if (growthRequired == 0)
             {
-                RotateRightInternal(amount);
+                ShiftRightInternal(amount);
                 return;
             }
 
             int offset = Tail;
-            GrowAndUnwrap(growthRequired); // Rotates right by Tail, so Tail = 0.
+            Grow(growthRequired, true); // Rotates right by Tail, so Tail = 0.
             amount -= offset;
         }
     }
 
-    private void RotateRightInternal(int amount)
+    /// <summary>
+    ///    Rotates the ringbuffer to the right by amount, by moving the elements in the range [Tail, Head) to the left.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected void ShiftRightInternal(int amount)
     {
         int tail = Tail;
-        MoveRight(tail, Length, amount);
+        MoveLeft(tail, Length, amount);
         _tail = tail - amount;
     }
 
@@ -901,4 +1013,22 @@ public class VecQue<T> : IVector<T>
         var storage = MakeContiguous(); // maybe expensive
         storage.Slice(start, count).Reverse();
     }
+
+    [DoesNotReturn]
+    [DebuggerStepThrough]
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    internal static void ThrowGrowFixedSize(string max)
+    {
+        throw new ArgumentOutOfRangeException("additionalCapacity",
+            $"Cannot grow the fixed size buffer by more than {max} by rotating");
+    }
+
+    [DoesNotReturn]
+    [DebuggerStepThrough]
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void ThrowUnknownGrowthStrategy()
+    {
+        throw new InvalidOperationException("Unknown growth strategy");
+    }
+
 }

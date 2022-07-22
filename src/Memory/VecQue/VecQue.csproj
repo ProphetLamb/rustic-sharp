@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Attributes\Attributes.csproj" />
     <ProjectReference Include="..\..\Common\Common.csproj" />
     <ProjectReference Include="..\..\Functional\Functional.csproj" />
     <ProjectReference Include="..\Common\Common.csproj" />
