@@ -402,6 +402,15 @@ public class Vec<T> : IVector<T>
         }
     }
 
+    public void Swap(int i, int j)
+    {
+        i.ValidateArgRange((uint)i < (uint)Length);
+        j.ValidateArgRange((uint)j < (uint)Length);
+        T swp = Storage![j];
+        Storage[j] = Storage[i];
+        Storage[i] = swp;
+    }
+
     /// <inheritdoc  />
     public void Reverse(int start, int count)
     {

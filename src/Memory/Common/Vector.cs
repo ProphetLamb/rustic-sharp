@@ -263,6 +263,9 @@ public interface IVector<T>
     /// <param name="count">The length of the range to remove.</param>
     void RemoveRange(int start, int count);
 
+    /// <summary>Swaps the elments at indicies `j`, and `i`.</summary>
+    void Swap(int i, int j);
+
     /// <summary>Sorts a range of elements in the vector using the specified <paramref name="comparer"/>.</summary>
     /// <typeparam name="C">The type of the comparer.</typeparam>
     /// <param name="start">The zero-based starting index of the range to sort.</param>
@@ -350,8 +353,8 @@ public static class VectorTraits
     {
         index.ValidateArgRange(index >= 0 && index < self.Count);
         var last = self.Count - 1;
-        self[index] = self[last];
-        self.RemoveAt(last); // Should not copy when removing the last element.
+        self.Swap(index, last);
+        self.RemoveAt(last); // Should be cheap.
     }
 
     /// <summary>Removes the element at the specified <paramref name="index"/> from the vector by over-writing it with the last element.</summary>
