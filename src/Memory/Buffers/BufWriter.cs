@@ -460,6 +460,15 @@ public class BufWriter<T> :
         }
     }
 
+    public void Swap(int i, int j)
+    {
+        i.ValidateArgRange((uint)i < (uint)Length);
+        j.ValidateArgRange((uint)j < (uint)Length);
+        ref T lhs = ref Buffer![i];
+        ref T rhs = ref Buffer[j];
+        (rhs, lhs) = (lhs, rhs);
+    }
+
     /// <inheritdoc />
     public void Sort<C>(int start, int count, in C comparer)
         where C : IComparer<T>

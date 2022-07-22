@@ -491,19 +491,18 @@ public class Vec<T> : IVector<T>
     {
         Debug.Assert(additionalCapacityBeyondPos > 0);
 
-        if (Storage is not null)
-        {
-            int len = _count;
-            Debug.Assert(len > Storage.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
-
-            var temp = new T[(len + additionalCapacityBeyondPos).Max(Storage.Length * 2)];
-            Storage.AsSpan(0, len).CopyTo(temp.AsSpan(0, len));
-            Storage = temp;
-        }
-        else
+        if (Storage is null)
         {
             Storage = new T[(int)Math.Max(16u, (uint)additionalCapacityBeyondPos)];
+            return;
         }
+
+        int len = _count;
+        Debug.Assert(len > Storage.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
+
+        var temp = new T[(len + additionalCapacityBeyondPos).Max(Storage.Length * 2)];
+        Storage.AsSpan(0, len).CopyTo(temp.AsSpan(0, len));
+        Storage = temp;
     }
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
