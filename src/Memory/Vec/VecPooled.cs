@@ -10,7 +10,7 @@ namespace Rustic.Memory;
 ///     The list allocated from a <see cref="ArrayPool{T}"/>.
 /// </summary>
 /// <typeparam name="T">The type of items of the list.</typeparam>
-public class PoolVec<T>
+public class VecPooled<T>
     : Vec<T>, IDisposable
 {
     /// <summary>The pool from which to rent and to wich to return the internal storage.</summary>
@@ -18,7 +18,7 @@ public class PoolVec<T>
 
     /// <summary>Initializes a new list.</summary>
     /// <param name="pool">The pool from which to allocate.</param>
-    public PoolVec(ArrayPool<T>? pool = null)
+    public VecPooled(ArrayPool<T>? pool = null)
     {
         Pool = pool ?? ArrayPool<T>.Shared;
     }
@@ -26,7 +26,7 @@ public class PoolVec<T>
     /// <summary>Initializes a new list with a initial buffer.</summary>
     /// <param name="initialBuffer">The initial buffer.</param>
     /// <param name="pool">The pool from which to allocate.</param>
-    public PoolVec(T[] initialBuffer, ArrayPool<T>? pool = null)
+    public VecPooled(T[] initialBuffer, ArrayPool<T>? pool = null)
         : base(initialBuffer)
     {
         Pool = pool ?? ArrayPool<T>.Shared;
@@ -35,7 +35,7 @@ public class PoolVec<T>
     /// <summary>Initializes a new list with a specified minimum initial capacity.</summary>
     /// <param name="initialMinimumCapacity">The minimum initial capacity.</param>
     /// <param name="pool">The pool from which to allocate.</param>
-    public PoolVec(int initialMinimumCapacity, ArrayPool<T>? pool = null)
+    public VecPooled(int initialMinimumCapacity, ArrayPool<T>? pool = null)
     {
         Pool = pool ?? ArrayPool<T>.Shared;
         Storage = Pool.Rent(initialMinimumCapacity);
