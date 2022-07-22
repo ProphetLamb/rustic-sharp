@@ -17,7 +17,7 @@ namespace Rustic.Memory;
 /// <typeparam name="T">The type of items of the list.</typeparam>
 [DebuggerDisplay("Length = {Count}")]
 [DebuggerTypeProxy(typeof(IReadOnlyCollectionDebugView<>))]
-public class VecRing<T> : IVector<T>
+public class VecQue<T> : IVector<T>
 {
     /// <summary>
     /// The internal storage.
@@ -29,7 +29,7 @@ public class VecRing<T> : IVector<T>
     /// <summary>
     ///     Initializes a new list.
     /// </summary>
-    public VecRing()
+    public VecQue()
     {
     }
 
@@ -37,7 +37,7 @@ public class VecRing<T> : IVector<T>
     ///     Initializes a new list with a initial buffer.
     /// </summary>
     /// <param name="initialBuffer">The initial buffer.</param>
-    public VecRing(T[] initialBuffer)
+    public VecQue(T[] initialBuffer)
     {
         Storage = initialBuffer;
         _headVirtual = _tail = 0;
@@ -47,7 +47,7 @@ public class VecRing<T> : IVector<T>
     ///     Initializes a new list with a specified minimum initial capacity.
     /// </summary>
     /// <param name="initialMinimumCapacity">The minimum initial capacity.</param>
-    public VecRing(int initialMinimumCapacity)
+    public VecQue(int initialMinimumCapacity)
     {
         Storage = new T[initialMinimumCapacity];
         _headVirtual = _tail = 0;
