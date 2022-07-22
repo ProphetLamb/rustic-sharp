@@ -531,4 +531,22 @@ public static class Arithmetic
         return (nuint)RotateRight((uint)value, offset);
 #endif
     }
+
+    /// <summary>
+    /// Computes the modulo of the specified dividend and divisor. Negative values of the divisor wrap around to the positive domain.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int PosMod(in this int x, in int m)
+    {
+        return (x % m + m) % m;
+    }
+
+    /// <summary>
+    /// Computes the modulo of the specified dividend and divisor. Negative values of the divisor wrap around to the positive domain.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static long PosMod(in this long x, in long m)
+    {
+        return (x % m + m) % m;
+    }
 }
