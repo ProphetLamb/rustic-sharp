@@ -406,9 +406,9 @@ public class Vec<T> : IVector<T>
     {
         i.ValidateArgRange((uint)i < (uint)Length);
         j.ValidateArgRange((uint)j < (uint)Length);
-        T swp = Storage![j];
-        Storage[j] = Storage[i];
-        Storage[i] = swp;
+        ref T lhs = ref Storage![i];
+        ref T rhs = ref Storage[j];
+        (rhs, lhs) = (lhs, rhs);
     }
 
     /// <inheritdoc  />
@@ -417,8 +417,7 @@ public class Vec<T> : IVector<T>
         GuardRange(start, count);
         if (count != 0)
         {
-            Debug.Assert(Storage is not null);
-            Array.Reverse(Storage, start, count);
+            Array.Reverse(Storage!, start, count);
         }
     }
 

@@ -580,6 +580,15 @@ public class VecQue<T> : IVector<T>
         RemoveInternal(start, count);
     }
 
+    public void Swap(int i, int j)
+    {
+        i.ValidateArgRange((uint)i < (uint)Length);
+        j.ValidateArgRange((uint)j < (uint)Length);
+        ref T lhs = ref this[i];
+        ref T rhs = ref this[j];
+        (rhs, lhs) = (lhs, rhs);
+    }
+
     private void RemoveInternal(int start, int count)
     {
         var (primaryStart, primaryEnd, wrappedStart, wrappedEnd) = RangeAbsolute(start, count);
