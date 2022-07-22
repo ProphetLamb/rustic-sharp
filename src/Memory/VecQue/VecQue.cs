@@ -24,7 +24,7 @@ public class VecQue<T> : IVector<T>
     /// </summary>
     protected T[]? Storage;
 
-    private int _tail, _headVirtual;
+    private int _tail, _length;
 
     /// <summary>
     ///     Initializes a new list.
@@ -40,7 +40,7 @@ public class VecQue<T> : IVector<T>
     public VecQue(T[] initialBuffer)
     {
         Storage = initialBuffer;
-        _headVirtual = _tail = 0;
+        _length = _tail = 0;
     }
 
     /// <summary>
@@ -50,7 +50,7 @@ public class VecQue<T> : IVector<T>
     public VecQue(int initialMinimumCapacity)
     {
         Storage = new T[initialMinimumCapacity];
-        _headVirtual = _tail = 0;
+        _length = _tail = 0;
     }
 
 
@@ -58,44 +58,43 @@ public class VecQue<T> : IVector<T>
     public int Capacity => (Storage?.Length) ?? 0;
 
     /// <summary>
-    ///     The virtual position of the head, no wrapping is performed. Hence head may exceed the capacity.
-    /// </summary>
-    public int HeadVirtual => _headVirtual;
-
-    /// <summary>
-    ///     The absolute position of the tail, always less then <see cref="HeadVirtual"/>.
+    ///     The absolute position of the tail
     /// </summary>
     public int Tail => _tail;
 
     /// <summary>
     ///     The absolute position of the head, wrapped if necessary.
     /// </summary>
-    public int Head => IndexAbsolute(HeadVirtual).Index;
-
-    public int Top => Capacity - Tail;
+    public int Head => IndexAbsolute(Length).Index;
 
     /// <summary>
-    ///     Indicates whether the head is wrapped, or not.
+    ///     The virtual position of the Top, no wrapping is performed. Hence top may exceed the capacity.
     /// </summary>
-    public bool IsWrapped
-    {
-        [Pure]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => IndexAbsolute(HeadVirtual).IsWrapped;
-    }
+    /// <remarks>
+    ///     Computes `Tail + Length`.
+    /// </remarks>
+    public int HeadVirtual => Tail + Length;
+
+    /// <summary>
+    ///     The capacity in the primary partition of the ringbuffer.
+    /// </summary>
+    /// <remarks>
+    ///    Computes `Capacity - Tail`.
+    /// </remarks>
+    public int TopCapacity => Capacity - Tail;
 
     /// <inheritdoc cref="IVector{T}.Count" />
     public int Length
     {
         [Pure]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _headVirtual - _tail;
+        get => _length;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
             Debug.Assert(value >= 0);
-            Debug.Assert(Storage is null || value + HeadVirtual <= Capacity);
-            _tail = _headVirtual + value;
+            Debug.Assert(Storage is null || value <= Capacity);
+            _length = value;
         }
     }
 
@@ -123,7 +122,7 @@ public class VecQue<T> : IVector<T>
         get
         {
             Storage.ValidateArg(Storage is not null);
-            Debug.Assert(index + HeadVirtual < Tail);
+            Debug.Assert(index + Length < Tail);
             return ref Storage[IndexAbsolute(index).Index];
         }
     }
@@ -133,6 +132,7 @@ public class VecQue<T> : IVector<T>
 
     ref readonly T IReadOnlyVector<T>.this[int index] => ref this[index];
 
+    /// <inheritdoc />
     public ref T this[Index index] => ref this[index.GetOffset(Length)];
 
     ref readonly T IReadOnlyVector<T>.this[Index index] => ref this[index];
@@ -221,6 +221,7 @@ public class VecQue<T> : IVector<T>
         return IndexOf<IEqualityComparer<T>>(start, count, in item, EqualityComparer<T>.Default);
     }
 
+    [Pure]
     private int IndexOfValueType(int start, int count, in T item)
     {
         GuardRange(start, count);
@@ -259,10 +260,13 @@ public class VecQue<T> : IVector<T>
 
     /// <inheritdoc cref="IList{T}.IndexOf(T)"/>
     [CLSCompliant(false)]
+    [Pure]
     public int IndexOf(in T item) => IndexOf(0, Length, in item);
 
+    [Pure]
     int IList<T>.IndexOf(T item) => IndexOf(in item);
 
+    [Pure]
     public bool Contains(T item) => IndexOf(item) >= 0;
 
     /// <inheritdoc />
@@ -314,6 +318,7 @@ public class VecQue<T> : IVector<T>
         return LastIndexOf<IEqualityComparer<T>>(start, count, in item, EqualityComparer<T>.Default);
     }
 
+    [Pure]
     private int LastIndexOfValueType(int start, int count, in T item)
     {
         GuardRange(start, count);
@@ -411,7 +416,7 @@ public class VecQue<T> : IVector<T>
     [Pure]
     public MemIter<T> GetEnumerator()
     {
-        return new(Storage, _headVirtual, Length);
+        return new(Storage, Tail, Length);
     }
 
     [Pure]
@@ -448,7 +453,7 @@ public class VecQue<T> : IVector<T>
             return;
         }
         _tail = 0;
-        _headVirtual = 0;
+        _length = 0;
     }
 
     public void AddRange(ReadOnlySpan<T> items)
@@ -457,7 +462,7 @@ public class VecQue<T> : IVector<T>
         int headVirtual = _headVirtual;
         var (head, _) = IndexAbsolute(headVirtual);
         items.CopyTo(Storage.AsSpan(head, items.Length));
-        _headVirtual = headVirtual + items.Length;
+        _length += items.Length;
     }
 
     /// <summary>
@@ -468,9 +473,8 @@ public class VecQue<T> : IVector<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<T> AppendSpan(int length)
     {
-        var headVirtual = _headVirtual;
-        Reserve(length);
-        _headVirtual = headVirtual + length;
+        (int head, bool _) = ReserveInternal(length);
+        _length += length;
 
         var (head , _) = IndexAbsolute(headVirtual);
         return Storage.AsSpan(head, length);
@@ -529,9 +533,9 @@ public class VecQue<T> : IVector<T>
         {
             return default;
         }
-        int headVirtual = _headVirtual;
-        T result = Storage![IndexAbsolute(headVirtual).Index];
-        _headVirtual = headVirtual - 1;
+        int len = _length;
+        T result = Storage![IndexAbsolute(len).Index];
+        _length = len - 1;
         return Some(result);
     }
 
@@ -550,6 +554,7 @@ public class VecQue<T> : IVector<T>
     /// <inheritdoc />
     public void RemoveAt(int index) => RemoveRange(index, 1);
 
+    /// <inheritdoc />
     public void RemoveRange(int start, int count)
     {
         GuardRange(start, count);
