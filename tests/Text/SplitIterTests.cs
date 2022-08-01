@@ -3,6 +3,7 @@ using System.Linq;
 
 using NUnit.Framework;
 
+using Rustic.Memory;
 using Rustic.Text;
 
 namespace Rustic.Text.Tests
@@ -32,7 +33,7 @@ namespace Rustic.Text.Tests
         public void IterDoubleTest()
         {
             var sep = Dummy.AsSpan().Split(" .".AsSpan());
-            using Rustic.Memory.PoolBufWriter<string> buf = new();
+            using PoolBufWriter<string> buf = new();
             while (sep.MoveNext())
             {
                 buf.Add(sep.Current.ToString());
