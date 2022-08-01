@@ -11,6 +11,27 @@ public readonly partial struct PeHeader
     private const ulong U16Max = UInt16.MaxValue;
     private const ulong U32Top = U32Max + 1; // == (1 << 32)
 
+    public static (PeHeader, uint) FromFileComputeChecksum(string filePath) =>
+        FromFileComputeChecksum(new FileInfo(filePath));
+
+    public static (PeHeader, uint) FromFileComputeChecksum(FileInfo info)
+    {
+        using FileStream fs = info.OpenRead();
+        // Read the header
+        PeHeader header = FromStreamInternal(fs, info.FullName);
+        // Reset the stream, this should be cheap, as the default buffer for file streams is 1 page = 4096bytes,
+        // and the header is well short of that.
+        fs.Seek(0, SeekOrigin.Begin);
+        // Determine checksum offset
+        // PeHeader Address + COFF header size + Standard COFF Fields size + offset in Windows Specific Fields,
+        // see https://i0.wp.com/practicalsecurityanalytics.com/wp-content/uploads/2019/10/1024px-Portable_Executable_32_bit_Structure_in_SVG_fixed.svg_.jpg?w=1024&ssl=1
+        nuint checksumPos = header.DosHeader.NewHeaderAddress +  0x0058;
+        nuint length = (nuint)info.Length;
+        // Compute the checksum
+        uint checksum = ComputeImageChecksum(fs, in checksumPos, in length);
+        return (header, checksum);
+    }
+
     /// <summary>
     /// Computes the IMAGHELP compatible checksum of a PE image <see cref="data"/>.
     /// </summary>
@@ -21,7 +42,7 @@ public readonly partial struct PeHeader
     /// <remarks>
     /// The checksum is similar to CRC32.
     /// </remarks>
-    private static uint ComputeImageChecksum(Stream data, in int checksumPos, in int length)
+    private static uint ComputeImageChecksum(Stream data, in nuint checksumPos, in nuint length)
     {
         // Based on https://practicalsecurityanalytics.com/pe-checksum/
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -36,8 +57,8 @@ public readonly partial struct PeHeader
 
         BinaryReader reader = new(data);
         ulong checksum = 0;
-        nint start = checksumPos / 4, stop = length / 4, remainder = length % 4;
-        for (nint i = 0; i < start; i++)
+        nuint start = checksumPos / 4, stop = length / 4, remainder = length % 4;
+        for (nuint i = 0; i < start; i++)
         {
             ulong temp = reader.ReadUInt32();
             PermuteChecksum(ref checksum, in temp);
@@ -46,7 +67,7 @@ public readonly partial struct PeHeader
         // Discard DWORD at checksum
         _ = reader.ReadUInt32();
 
-        for (nint i = start + 1; i < stop; i++)
+        for (nuint i = start + 1; i < stop; i++)
         {
             ulong temp = reader.ReadUInt32();
             PermuteChecksum(ref checksum, in temp);
@@ -56,7 +77,7 @@ public readonly partial struct PeHeader
         {
             // Pad remainder and permute checksum
             Span<byte> temp = stackalloc byte[8];
-            for (nint i = 0; i < 8; i++)
+            for (nuint i = 0; i < 8; i++)
             {
                 temp[(int)i] = i < remainder ? reader.ReadByte() : (byte)0;
             }

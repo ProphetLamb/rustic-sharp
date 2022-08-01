@@ -39,7 +39,13 @@ public readonly partial struct PeHeader
     /// </summary>
     public readonly ImmutableArray<ImageSectionHeader> ImageSectionHeaders;
 
-    private PeHeader(UInt32 peHeaderSignature, ImageDosHeader dosHeader, ImageFileHeader fileHeader, ImageOptionalHeader32 optionalHeader32, ImageOptionalHeader64 optionalHeader64, ImmutableArray<ImageSectionHeader> imageSectionHeaders)
+    /// <summary>
+    /// The **optional** path to the file that contains the header.
+    /// </summary>
+    public readonly string? FilePath;
+
+
+    private PeHeader(UInt32 peHeaderSignature, ImageDosHeader dosHeader, ImageFileHeader fileHeader, ImageOptionalHeader32 optionalHeader32, ImageOptionalHeader64 optionalHeader64, ImmutableArray<ImageSectionHeader> imageSectionHeaders, string? filePath)
     {
         Signature = peHeaderSignature;
         DosHeader = dosHeader;
@@ -47,25 +53,35 @@ public readonly partial struct PeHeader
         OptionalHeader32 = optionalHeader32;
         OptionalHeader64 = optionalHeader64;
         ImageSectionHeaders = imageSectionHeaders;
+        FilePath = filePath;
     }
 
     /// <summary>Opens the file for reading, reads and returns the PE header.</summary>
     /// <param name="filePath">The path to the file to read.</param>
     /// <returns>The PE header read.</returns>
-    public static PeHeader FromFile(string filePath)
+    public static PeHeader FromFile(string filePath) => FromFile(new FileInfo(filePath));
+
+    /// <summary>Opens the file for reading, reads and returns the PE header.</summary>
+    /// <param name="info">The information of the file to read.</param>
+    /// <returns>The PE header read.</returns>
+    public static PeHeader FromFile(FileInfo info)
     {
         // Read in the DLL or EXE and get the timestamp
-        using FileStream stream = new(filePath, FileMode.Open, FileAccess.Read);
-        return FromStream(stream);
+        using FileStream stream = info.OpenRead();
+        return FromStreamInternal(stream, info.FullName);
     }
+
+
 
     /// <summary>Reads the PE header in binary from the stream.</summary>
     /// <param name="stream">The stream to read from.</param>
     /// <returns>The PE header read.</returns>
-    public static PeHeader FromStream(Stream stream)
+    public static PeHeader FromStream(Stream stream) => FromStreamInternal(stream, null);
+
+    private static PeHeader FromStreamInternal(Stream stream, string? filePath)
     {
         // See https://0xrick.github.io/win-internals/pe3/ for more information on how the PE header is found.
-        using BinaryReader reader = new(stream);
+        BinaryReader reader = new(stream);
         ImageDosHeader dosHeader = reader.ReadStruct<ImageDosHeader>();
 
         // Follow pointer to PE header
@@ -97,7 +113,7 @@ public readonly partial struct PeHeader
             imageSectionHeaders.Add(reader.ReadStruct<ImageSectionHeader>());
         }
 
-        return new(peHeadersSignature, dosHeader, fileHeader, optionalHeader32, optionalHeader64, imageSectionHeaders.MoveToImmutable());
+        return new(peHeadersSignature, dosHeader, fileHeader, optionalHeader32, optionalHeader64, imageSectionHeaders.MoveToImmutable(), filePath);
     }
 
     /// <summary>
