@@ -532,40 +532,47 @@ public static class Arithmetic
 #endif
     }
 
+    // Benchmarks show, that the bitwise iterative approach is significantly faster: https://gist.github.com/ec6c6fe21f7b2b59fb604d116d8b6261
+    // |                            Method | Base | Exponent |      Mean |     Error |    StdDev |    Median | Rank | Allocated |
+    // |---------------------------------- |----- |--------- |----------:|----------:|----------:|----------:|-----:|----------:|
+    // |       Benchmark_pow_bitwise_qword |   10 |        6 |  4.375 ns | 0.0421 ns | 0.0352 ns |  4.376 ns |    1 |         - |
+    // |     Benchmark_pow_bitwise_ptrsize |   12 |        6 |  4.806 ns | 0.0978 ns | 0.0915 ns |  4.792 ns |    2 |         - |
+    // |       Benchmark_pow_bitwise_qword |   12 |        5 |  4.854 ns | 0.0742 ns | 0.0579 ns |  4.849 ns |    2 |         - |
+    // |       Benchmark_pow_bitwise_qword |   18 |        5 |  4.942 ns | 0.0912 ns | 0.0761 ns |  4.909 ns |    2 |         - |
+    // ...
+    // |   Benchmark_pow_native_cast_dword |   18 |        9 | 38.327 ns | 0.7831 ns | 0.7692 ns | 38.248 ns |   12 |         - |
+    // | Benchmark_pow_native_cast_ptrsize |   12 |        5 | 45.079 ns | 3.4366 ns | 9.9154 ns | 40.139 ns |   13 |         - |
+    // |   Benchmark_pow_native_cast_dword |   10 |        5 | 78.301 ns | 1.2663 ns | 1.1226 ns | 78.322 ns |   14 |         - |
+
+    /// <summary>
+    /// Computes the base <paramref name="a"/> to the power of <paramref name="n"/>.
+    /// </summary>
+    /// <param name="a">The base</param>
+    /// <param name="n">The exponent</param>
+    /// <returns>The result of the operation <c>a^n</c>.</returns>
     public static uint Pow(this uint a, uint n)
     {
-        uint ans = 1;
-
-        while (n > 0)
-        {
-            uint even = (n & 1);
-
-            // Check if current LSB is set
-            ans *= even > 0 ? a : 1;
-            a *= a;
-
-            // Right shift
-            n >>= 1;
-        }
-        return ans;
+        // Benchmarks show that there is a small benefit to running on native sized integer
+        return (uint)Pow((nuint)a, (nuint)n);
     }
+
+    /// <summary>
+    /// Computes the base <paramref name="a"/> to the power of <paramref name="n"/>.
+    /// </summary>
+    /// <param name="a">The base</param>
+    /// <param name="n">The exponent</param>
+    /// <returns>The result of the operation <c>a^n</c>.</returns>
     public static int Pow(this int a, int n)
     {
-        int ans = 1;
-
-        while (n > 0)
-        {
-            int even = (n & 1);
-
-            // Check if current LSB is set
-            ans *= even > 0 ? a : 1;
-            a *= a;
-
-            // Right shift
-            n >>= 1;
-        }
-        return ans;
+        return (int)Pow((nint)a, (nint)n);
     }
+
+    /// <summary>
+    /// Computes the base <paramref name="a"/> to the power of <paramref name="n"/>.
+    /// </summary>
+    /// <param name="a">The base</param>
+    /// <param name="n">The exponent</param>
+    /// <returns>The result of the operation <c>a^n</c>.</returns>
     public static ulong Pow(this ulong a, ulong n)
     {
         ulong ans = 1;
@@ -583,6 +590,13 @@ public static class Arithmetic
         }
         return ans;
     }
+
+    /// <summary>
+    /// Computes the base <paramref name="a"/> to the power of <paramref name="n"/>.
+    /// </summary>
+    /// <param name="a">The base</param>
+    /// <param name="n">The exponent</param>
+    /// <returns>The result of the operation <c>a^n</c>.</returns>
     public static long Pow(this long a, long n)
     {
         long ans = 1;
@@ -590,6 +604,54 @@ public static class Arithmetic
         while (n > 0)
         {
             long even = (n & 1);
+
+            // Check if current LSB is set
+            ans *= even > 0 ? a : 1;
+            a *= a;
+
+            // Right shift
+            n >>= 1;
+        }
+        return ans;
+    }
+
+    /// <summary>
+    /// Computes the base <paramref name="a"/> to the power of <paramref name="n"/>.
+    /// </summary>
+    /// <param name="a">The base</param>
+    /// <param name="n">The exponent</param>
+    /// <returns>The result of the operation <c>a^n</c>.</returns>
+    public static nuint Pow(this nuint a, nuint n)
+    {
+        nuint ans = 1;
+
+        while (n > 0)
+        {
+            nuint even = (n & 1);
+
+            // Check if current LSB is set
+            ans *= even > 0 ? a : 1;
+            a *= a;
+
+            // Right shift
+            n >>= 1;
+        }
+        return ans;
+    }
+
+    /// <summary>
+    /// Computes the base <paramref name="a"/> to the power of <paramref name="n"/>.
+    /// </summary>
+    /// <param name="a">The base</param>
+    /// <param name="n">The exponent</param>
+    /// <returns>The result of the operation <c>a^n</c>.</returns>
+    public static nint Pow(this nint a, nint n)
+    {
+        nint ans = 1;
+
+        while (n > 0)
+        {
+            nint even = (n & 1);
 
             // Check if current LSB is set
             ans *= even > 0 ? a : 1;
