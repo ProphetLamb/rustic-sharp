@@ -477,7 +477,7 @@ public static class Arithmetic
     /// <returns>The rotated value.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [CLSCompliant(false)]
-    public static nuint RotateLeft(this nuint value, in int offset)
+    public static nuint RotateLeft(in this nuint value, in int offset)
     {
 #if TARGET_64BIT
             return (nuint)RotateLeft((ulong)value, offset);
@@ -523,12 +523,81 @@ public static class Arithmetic
     /// <returns>The rotated value.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [CLSCompliant(false)]
-    public static nuint RotateRight(this nuint value, in int offset)
+    public static nuint RotateRight(in this nuint value, in int offset)
     {
 #if TARGET_64BIT
             return (nuint)RotateRight((ulong)value, offset);
 #else
         return (nuint)RotateRight((uint)value, offset);
 #endif
+    }
+
+    public static uint Pow(this uint a, uint n)
+    {
+        uint ans = 1;
+
+        while (n > 0)
+        {
+            uint even = (n & 1);
+
+            // Check if current LSB is set
+            ans *= even > 0 ? a : 1;
+            a *= a;
+
+            // Right shift
+            n >>= 1;
+        }
+        return ans;
+    }
+    public static int Pow(this int a, int n)
+    {
+        int ans = 1;
+
+        while (n > 0)
+        {
+            int even = (n & 1);
+
+            // Check if current LSB is set
+            ans *= even > 0 ? a : 1;
+            a *= a;
+
+            // Right shift
+            n >>= 1;
+        }
+        return ans;
+    }
+    public static ulong Pow(this ulong a, ulong n)
+    {
+        ulong ans = 1;
+
+        while (n > 0)
+        {
+            ulong even = (n & 1);
+
+            // Check if current LSB is set
+            ans *= even > 0 ? a : 1;
+            a *= a;
+
+            // Right shift
+            n >>= 1;
+        }
+        return ans;
+    }
+    public static long Pow(this long a, long n)
+    {
+        long ans = 1;
+
+        while (n > 0)
+        {
+            long even = (n & 1);
+
+            // Check if current LSB is set
+            ans *= even > 0 ? a : 1;
+            a *= a;
+
+            // Right shift
+            n >>= 1;
+        }
+        return ans;
     }
 }
