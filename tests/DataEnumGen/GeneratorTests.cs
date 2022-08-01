@@ -115,7 +115,7 @@ namespace Rustic.DataEnumGen.Tests.TestAssembly
             new[] { CSharpSyntaxTree.ParseText(source) },
             new[]
             {
-                MetadataReference.CreateFromFile(typeof(System.String).GetTypeInfo().Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(String).GetTypeInfo().Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(System.ComponentModel.DescriptionAttribute).GetTypeInfo().Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(ReadOnlySpan<char>).GetTypeInfo().Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(System.Collections.Generic.List<char>).GetTypeInfo().Assembly.Location),
