@@ -15,9 +15,13 @@ public readonly partial struct PeHeader
     /// Computes the IMAGHELP compatible checksum of a PE image <see cref="data"/>.
     /// </summary>
     /// <param name="data">The data of the PE image.</param>
-    /// <param name="checksumOffset">The byte offset at which the checksum should be, the WORD at this position is skipped.</param>
-    /// <returns>The IMAGHELP compatible checksum of the PE image. The value that should be at <paramref name="checksumOffset"/>.</returns>
-    private static uint ComputeImageChecksum(ReadOnlySpan<byte> data, in int checksumOffset)
+    /// <param name="checksumPos">The byte offset at which the checksum should be, the WORD at this position is skipped.</param>
+    /// <param name="length">The total number of bytes in the file, MUST also be equal to the total number of bytes readable from the <paramref name="data"/>-<see cref="Stream"/>.</param>
+    /// <returns>The IMAGHELP compatible checksum of the PE image. The value that should be at <paramref name="checksumPos"/>.</returns>
+    /// <remarks>
+    /// The checksum is similar to CRC32.
+    /// </remarks>
+    private static uint ComputeImageChecksum(Stream data, in int checksumPos, in int length)
     {
         // Based on https://practicalsecurityanalytics.com/pe-checksum/
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -30,38 +34,34 @@ public readonly partial struct PeHeader
             }
         }
 
+        BinaryReader reader = new(data);
         ulong checksum = 0;
-        nint start = checksumOffset / 4, stop = data.Length / 4, remainder = data.Length % 4;
-        unsafe
+        nint start = checksumPos / 4, stop = length / 4, remainder = length % 4;
+        for (nint i = 0; i < start; i++)
         {
-            // consume data in 4byte DWORD chunks
-            fixed (uint* dwordData = &MemoryMarshal.GetReference(data))
-            {
-                for (nint i = 0; i < start; i++)
-                {
-                    ulong temp = dwordData[i];
-                    PermuteChecksum(ref checksum, in temp);
-                }
-
-                for (nint i = start + 1; i < stop; i++)
-                {
-                    ulong temp = dwordData[i];
-                    PermuteChecksum(ref checksum, in temp);
-                }
-            }
+            ulong temp = reader.ReadUInt32();
+            PermuteChecksum(ref checksum, in temp);
         }
 
-        //Perform the same calculation on the padded remainder
+        // Discard DWORD at checksum
+        _ = reader.ReadUInt32();
+
+        for (nint i = start + 1; i < stop; i++)
+        {
+            ulong temp = reader.ReadUInt32();
+            PermuteChecksum(ref checksum, in temp);
+        }
+
         if (remainder != 0)
         {
-            Span<byte> temp = stackalloc byte[4];
-            nint off = data.Length - remainder;
-            for (nint i = 0; i < 4; i++)
+            // Pad remainder and permute checksum
+            Span<byte> temp = stackalloc byte[8];
+            for (nint i = 0; i < 8; i++)
             {
-                temp[(int)i] = i < remainder ? data[(int)(off + i)] : (byte)0;
+                temp[(int)i] = i < remainder ? reader.ReadByte() : (byte)0;
             }
-
-            ulong value = Types.ReadStruct<uint>(temp);
+            // the value may actually never exceed 2^32-1, but to reduce the number of casts we consume 64bit.
+            ulong value = Types.ReadStruct<ulong>(temp);
             PermuteChecksum(ref checksum, in value);
         }
 
