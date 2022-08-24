@@ -33,7 +33,7 @@ public static class LocalRandom
     public static string GetString(this Random random, ReadOnlySpan<char> alphabet, int length)
     {
         StrBuilder builder = length > 2048 ? new(length) : new(stackalloc char[length]);
-        for (int i = 0; i < length; i++)
+        for (var i = 0; i < length; i++)
         {
             builder.Append(random.ChooseFrom(alphabet));
         }
@@ -45,7 +45,7 @@ public static class LocalRandom
     /// <typeparam name="T">The type of the value.</typeparam>
     public static IEnumerable<T> ChooseMany<T>(this Random random, IReadOnlyList<T> collection, int number)
     {
-        for (int i = 0; i < number; i++)
+        for (var i = 0; i < number; i++)
         {
             yield return random.ChooseFrom(collection);
         }

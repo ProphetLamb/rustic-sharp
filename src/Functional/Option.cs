@@ -33,7 +33,7 @@ public static class Option
     /// <typeparam name="U"></typeparam>
     public static (Option<T>, Option<U>) Unzip<T, U>(in this Option<(T, U)> self)
     {
-        if (self.TrySome(out var zipped))
+        if (self.TrySome(out (T, U) zipped))
         {
             return (zipped.Item1, zipped.Item2);
         }
@@ -94,7 +94,7 @@ public static class Option
 
     public static IEnumerable<U> FilterMap<T, U>(this IEnumerable<T> sequence, Func<T, Option<U>> filterMap)
     {
-        foreach (var element in sequence)
+        foreach (T? element in sequence)
         {
             if (filterMap(element).TrySome(out U value))
             {
@@ -243,12 +243,12 @@ public readonly struct Option<T> : IEquatable<Option<T>>
     /// <summary>Zips the option with another then maps the value; otherwise, returns None.</summary>
     /// <typeparam name="U"></typeparam>
     /// <typeparam name="R"></typeparam>
-    public Option<R> Zip<U, R>(Option<U> other, Func<T, U, R> map) => Zip(other).TrySome(out var zipped) ? Some(map(zipped.Item1, zipped.Item2)) : default;
+    public Option<R> Zip<U, R>(Option<U> other, Func<T, U, R> map) => Zip(other).TrySome(out (T, U) zipped) ? Some(map(zipped.Item1, zipped.Item2)) : default;
     /// <summary>Zips the option with another then maps the value; otherwise, returns None.</summary>
     /// <typeparam name="U"></typeparam>
     /// <typeparam name="R"></typeparam>
     [CLSCompliant(false)]
-    public unsafe Option<R> Zip<U, R>(Option<U> other, delegate*<T, U, R> map) => Zip(other).TrySome(out var zipped) ? Some(map(zipped.Item1, zipped.Item2)) : default;
+    public unsafe Option<R> Zip<U, R>(Option<U> other, delegate*<T, U, R> map) => Zip(other).TrySome(out (T, U) zipped) ? Some(map(zipped.Item1, zipped.Item2)) : default;
 
     /// <summary>Returns <c>true</c> if Some value is equal to the <paramref name="value"/>; otherwise, <c>false</c>.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

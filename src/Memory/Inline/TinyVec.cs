@@ -111,22 +111,22 @@ public static class TinyVec
         {
             return default;
         }
-        var arg0 = en.Current;
+        T? arg0 = en.Current;
         if (!en.MoveNext())
         {
             return From(arg0);
         }
-        var arg1 = en.Current;
+        T? arg1 = en.Current;
         if (!en.MoveNext())
         {
             return From(arg0, arg1);
         }
-        var arg2 = en.Current;
+        T? arg2 = en.Current;
         if (!en.MoveNext())
         {
             return From(arg0, arg1, arg2);
         }
-        var arg3 = en.Current;
+        T? arg3 = en.Current;
         if (!en.MoveNext())
         {
             return From(arg0, arg1, arg2, arg3);
@@ -143,7 +143,7 @@ public static class TinyVec
         {
             args.Add(en.Current);
         }
-        var count = args.Length;
+        int count = args.Length;
         return new(args.ToSegment());
     }
 }
@@ -248,7 +248,8 @@ public readonly struct TinyVec<T>
         {
             return _params.AsSpan().TryCopyTo(destination);
         }
-        else if ((uint)_length <= (uint)destination.Length)
+
+        if ((uint)_length <= (uint)destination.Length)
         {
             SetBlock(destination);
             return true;
@@ -383,7 +384,7 @@ public readonly struct TinyVec<T>
         vsb.Append(Count.ToString(CultureInfo.InvariantCulture));
         vsb.Append(", Params = {");
 
-        var last = _length - 1;
+        int last = _length - 1;
         for (var i = 0; i < last; i++)
         {
             vsb.Append(this[i]!.ToString());
@@ -429,7 +430,7 @@ public readonly struct TinyVec<T>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
-            var index = _index + 1;
+            int index = _index + 1;
 
             if ((uint)index < (uint)_array.Count)
             {

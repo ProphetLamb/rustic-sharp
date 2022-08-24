@@ -90,7 +90,7 @@ namespace Rustic.DataEnumGen.Tests.TestAssembly
         DataEnumGen generator = new();
 
         GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-        driver = driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out var outputCompilation, out var generatorDiagnostics);
+        driver = driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out Compilation? outputCompilation, out var generatorDiagnostics);
 
         generatorDiagnostics.Should().NotContain(d => d.Severity == DiagnosticSeverity.Warning);
         outputCompilation.SyntaxTrees.Count().Should().Be(TEST_SOURCES_LEN + GEN_SOURCES_LEN);

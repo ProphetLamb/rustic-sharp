@@ -44,7 +44,7 @@ public sealed class OptionConverter<T> : JsonConverter<Option<T>>
 
         // Read exact property name "Some" or "None"
         reader.TokenType.ThrowIfNot(JsonTokenType.PropertyName);
-        string key = reader.GetKeyString();
+        string? key = reader.GetKeyString();
         reader.ReadOrThrow();
 
         if (key.Equals("Some", StringComparison.OrdinalIgnoreCase))
@@ -67,7 +67,7 @@ public sealed class OptionConverter<T> : JsonConverter<Option<T>>
     private Option<T> ReadInnerValue(ref Utf8JsonReader reader, JsonSerializerOptions options)
     {
         var converter = options.GetConverter<T>();
-        var v = converter.Read(ref reader, typeof(T), options);
+        T? v = converter.Read(ref reader, typeof(T), options);
         if (v is null)
         {
             return default;
@@ -79,7 +79,7 @@ public sealed class OptionConverter<T> : JsonConverter<Option<T>>
     public override void Write(Utf8JsonWriter writer, Option<T> value, JsonSerializerOptions options)
     {
         writer.WriteStartObject();
-        if (value.TrySome(out var inner))
+        if (value.TrySome(out T? inner))
         {
             writer.WritePropertyName("Some");
 

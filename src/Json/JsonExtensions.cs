@@ -72,7 +72,7 @@ public static class JsonExtensions
     /// <summary>Returns the string from the reader, throws if the string is null or empty.</summary>
     public static string GetKeyString(ref this Utf8JsonReader reader)
     {
-        var value = reader.GetString();
+        string? value = reader.GetString();
         if (value.IsWhiteSpace())
         {
             ThrowHelper.ThrowJsonException($"Unable to obtain the string key value. The value '{value}' is null or whitespace.");
@@ -91,7 +91,7 @@ public static class JsonExtensions
         }
         try
         {
-            var temp = converter.Read(ref self, typeof(T), options);
+            T? temp = converter.Read(ref self, typeof(T), options);
             if (temp is not null)
             {
                 value = temp;

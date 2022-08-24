@@ -173,9 +173,9 @@ public readonly struct IdxDef<T> : IFmtDef
     public bool TryGetValue(in ReadOnlySpan<char> key, out ReadOnlySpan<char> value)
     {
 #if NETSTANDARD2_1_OR_GREATER
-        if (!Int32.TryParse(key, NumberStyles.Integer, Format, out var idx))
+        if (!Int32.TryParse(key, NumberStyles.Integer, Format, out int idx))
 #else
-        if (!Int32.TryParse(key.ToString(), NumberStyles.Integer, Format, out var idx))
+        if (!Int32.TryParse(key.ToString(), NumberStyles.Integer, Format, out int idx))
 #endif
         {
             value = ReadOnlySpan<char>.Empty;
@@ -188,7 +188,7 @@ public readonly struct IdxDef<T> : IFmtDef
             return false;
         }
 
-        var arg = Arguments[idx];
+        object? arg = Arguments[idx];
         string? s;
         if (Format?.GetFormat(arg?.GetType()) is ICustomFormatter f)
         {
@@ -254,7 +254,7 @@ public readonly struct NamedDef<T> : IFmtDef
 
     public bool TryGetValue(in ReadOnlySpan<char> key, out ReadOnlySpan<char> value)
     {
-        if (!Arguments.TryGetValue(key.ToString(), out var arg))
+        if (!Arguments.TryGetValue(key.ToString(), out T? arg))
         {
             value = ReadOnlySpan<char>.Empty;
             return false;

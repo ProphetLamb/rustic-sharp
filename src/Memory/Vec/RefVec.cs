@@ -84,7 +84,7 @@ public ref struct RefVec<T>
         [Pure]
         get
         {
-            var offset = index.GetOffset(_pos);
+            int offset = index.GetOffset(_pos);
             index.ValidateArgRange(offset >= 0 && offset < Length);
             return ref _storage[offset];
         }
@@ -99,13 +99,13 @@ public ref struct RefVec<T>
         [Pure]
         get
         {
-            (var start, var count) = range.GetOffsetAndLength(_pos);
+            (int start, int count) = range.GetOffsetAndLength(_pos);
             GuardRange(range, start, count);
             return _storage.Slice(start, count);
         }
         set
         {
-            (var start, var count) = range.GetOffsetAndLength(_pos);
+            (int start, int count) = range.GetOffsetAndLength(_pos);
             GuardRange(range, start, count);
             range.ValidateArgRange(count == value.Length);
             value.CopyTo(_storage.Slice(start, count));
@@ -188,7 +188,7 @@ public ref struct RefVec<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add(in T value)
     {
-        var pos = _pos;
+        int pos = _pos;
 
         if ((uint)pos < (uint)_storage.Length)
         {
@@ -216,7 +216,7 @@ public ref struct RefVec<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<T> AppendSpan(int length)
     {
-        var origPos = _pos;
+        int origPos = _pos;
         if (origPos > _storage.Length - length)
         {
             Grow(length);
@@ -338,7 +338,7 @@ public ref struct RefVec<T>
             Grow(1);
         }
 
-        var remaining = _pos - index;
+        int remaining = _pos - index;
         _storage.Slice(index, remaining).CopyTo(_storage.Slice(index + 1));
         _storage[index] = value;
         _pos += 1;
@@ -349,14 +349,14 @@ public ref struct RefVec<T>
     {
         index.ValidateArgRange(index >= 0);
         index.ValidateArgRange(index <= Length);
-        var count = span.Length;
+        int count = span.Length;
 
         if (_pos > _storage.Length - count)
         {
             Grow(count);
         }
 
-        var remaining = _pos - index;
+        int remaining = _pos - index;
         _storage.Slice(index, remaining).CopyTo(_storage.Slice(index + count));
         span.CopyTo(_storage.Slice(index));
         _pos += count;
@@ -376,7 +376,7 @@ public ref struct RefVec<T>
             if (typeof(T).IsValueType)
             {
 
-                for (var i = _pos - 1; i >= 0; i--)
+                for (int i = _pos - 1; i >= 0; i--)
                 {
                     if (!EqualityComparer<T>.Default.Equals(item, _storage[i]))
                     {
@@ -392,7 +392,7 @@ public ref struct RefVec<T>
             comparer = EqualityComparer<T>.Default;
         }
 
-        for (var i = _pos - 1; i >= 0; i--)
+        for (int i = _pos - 1; i >= 0; i--)
         {
             if (!comparer.Equals(item, _storage[i]))
             {
@@ -411,7 +411,7 @@ public ref struct RefVec<T>
     /// <inheritdoc cref="List{T}.Remove"/>
     public bool Remove(in T item, IEqualityComparer<T>? comparer)
     {
-        var index = IndexOf(item, comparer);
+        int index = IndexOf(item, comparer);
         if (index >= 0)
         {
             RemoveAt(index);
@@ -424,7 +424,7 @@ public ref struct RefVec<T>
     /// <inheritdoc cref="List{T}.RemoveAt"/>
     public void RemoveAt(int index)
     {
-        var remaining = _pos - index - 1;
+        int remaining = _pos - index - 1;
         _storage.Slice(index + 1, remaining).CopyTo(_storage.Slice(index));
         _storage[--_pos] = default!;
     }
@@ -434,8 +434,8 @@ public ref struct RefVec<T>
     {
         GuardRange(start, count);
 
-        var end = _pos - count;
-        var remaining = end - start;
+        int end = _pos - count;
+        int remaining = end - start;
         _storage.Slice(start + count, remaining).CopyTo(_storage.Slice(start));
 
         if (_arrayToReturnToPool is not null)
@@ -573,7 +573,7 @@ public ref struct RefVec<T>
         sb.Append(", Values = [");
         if (Length < 10)
         {
-            var last = _pos - 1;
+            int last = _pos - 1;
             for (var i = 0; i < last; i++)
             {
                 sb.Append(_storage[i]);
@@ -616,7 +616,7 @@ public ref struct RefVec<T>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
-            var index = _index + 1;
+            int index = _index + 1;
             if ((uint)index < (uint)_list.Length)
             {
                 _index = index;
@@ -659,7 +659,7 @@ public static class RefVecExtensions
     public static bool SequenceEqual<T>(this RefVec<T> list, RefVec<T> other)
         where T : IEquatable<T>
     {
-        var count = list.Length;
+        int count = list.Length;
         if (count != other.Length)
         {
             return false;
@@ -685,7 +685,7 @@ public static class RefVecExtensions
         Debug.Assert(firstLength >= 0);
         Debug.Assert(secondLength >= 0);
 
-        var minLength = firstLength;
+        int minLength = firstLength;
         if (minLength > secondLength)
         {
             minLength = secondLength;
@@ -693,7 +693,7 @@ public static class RefVecExtensions
 
         for (var i = 0; i < minLength; i++)
         {
-            var result = comparer.Compare(Unsafe.Add(ref first, i), Unsafe.Add(ref second, i));
+            int result = comparer.Compare(Unsafe.Add(ref first, i), Unsafe.Add(ref second, i));
             if (result != 0)
             {
                 return result;

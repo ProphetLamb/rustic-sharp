@@ -40,7 +40,7 @@ public static class SeqSplitIterExtensions
         foreach (var seg in self)
         {
             O cur = new();
-            foreach (var itm in seg)
+            foreach (T? itm in seg)
             {
                 cur = aggregate(cur, itm);
             }
@@ -61,8 +61,8 @@ public static class SeqSplitIterExtensions
         using PoolBufWriter<O> buf = new();
         foreach (var seg in self)
         {
-            var cur = seed();
-            foreach (var itm in seg)
+            O? cur = seed();
+            foreach (T? itm in seg)
             {
                 cur = aggregate(cur, itm);
             }
@@ -265,10 +265,10 @@ public ref struct SeqSplitIter<T, S>
         do
         {
             _tokenizer.FinalizeToken();
-            var head = _tokenizer.Length;
-            foreach (var sep in _separators)
+            int head = _tokenizer.Length;
+            foreach (S? sep in _separators)
             {
-                if (_tokenizer.Peek(sep, out var h, out var l) && head > h)
+                if (_tokenizer.Peek(sep, out int h, out int l) && head > h)
                 {
                     _sepLen = l;
                     head = h;

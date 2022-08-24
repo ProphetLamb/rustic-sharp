@@ -54,7 +54,7 @@ public struct RentArray<T> : IEnumerable<T>, IDisposable
 
     public void Add(in T item)
     {
-        var pos = Count;
+        int pos = Count;
         var array = Array;
 
         if (pos >= Capacity)
@@ -104,7 +104,7 @@ public struct RentArray<T> : IEnumerable<T>, IDisposable
         var pool = ExactPool;
         if (pool is null || pool.Length <= length)
         {
-            var cap = length.Max(16).Max((pool?.Length ?? 0) * 2);
+            int cap = length.Max(16).Max((pool?.Length ?? 0) * 2);
             var newPool = new T[]?[cap];
             pool?.AsSpan().CopyTo(newPool.AsSpan());
             ExactPool = newPool;

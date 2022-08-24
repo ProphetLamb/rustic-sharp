@@ -57,7 +57,7 @@ internal readonly struct GenContext
         // The enum suffix frees up the name of the enum for us to use.
         if (enumName.EndsWith("enum", StringComparison.OrdinalIgnoreCase))
         {
-            var name = enumName.Remove(enumName.Length - 4, 4);
+            string? name = enumName.Remove(enumName.Length - 4, 4);
             if (!String.IsNullOrWhiteSpace(name))
             {
                 return name;
@@ -76,12 +76,12 @@ internal readonly struct GenContext
 
         EnumDeclFlags flags = 0;
 
-        var flagsAttr = enumModel.FindTypeAttr(static (m, _) => m.GetTypeName() == Const.FlagsSymbol);
+        AttributeSyntax? flagsAttr = enumModel.FindTypeAttr(static (m, _) => m.GetTypeName() == Const.FlagsSymbol);
         flags |= flagsAttr is null ? 0 : EnumDeclFlags.FlagsEnum;
 
-        var enumDecl = enumModel.Node;
-        var members = ImmutableArray.CreateBuilder<EnumContext>(enumDecl.Members.Count);
-        foreach (var memberSyntax in enumDecl.Members)
+        EnumDeclarationSyntax? enumDecl = enumModel.Node;
+        ImmutableArray<EnumContext>.Builder? members = ImmutableArray.CreateBuilder<EnumContext>(enumDecl.Members.Count);
+        foreach (EnumMemberDeclarationSyntax? memberSyntax in enumDecl.Members)
         {
             if (memberSyntax is EnumMemberDeclarationSyntax memberDecl)
             {
@@ -89,23 +89,23 @@ internal readonly struct GenContext
             }
         }
 
-        var (nsDecl, nestingDecls) = enumDecl.GetHierarchy<BaseTypeDeclarationSyntax>();
+        (NamespaceDeclarationSyntax? nsDecl, var nestingDecls) = enumDecl.GetHierarchy<BaseTypeDeclarationSyntax>();
         return new GenContext(flags, nsDecl, nestingDecls, enumDecl, members.MoveToImmutable());
     }
 
     public static EnumContext CollectMemberInfo(SynModel<EnumMemberDeclarationSyntax> model)
     {
-        var dataEnumAttr = model.FindMemAttr(static (m, a) => m.Model.GetTypeName(a) == Const.DataEnumSymbol);
+        AttributeSyntax? dataEnumAttr = model.FindMemAttr(static (m, a) => m.Model.GetTypeName(a) == Const.DataEnumSymbol);
         TypeSyntax? dataType = null;
-        var typeArg = dataEnumAttr?.ArgumentList?.Arguments[0];
+        AttributeArgumentSyntax? typeArg = dataEnumAttr?.ArgumentList?.Arguments[0];
         if (typeArg?.Expression is TypeOfExpressionSyntax tof)
         {
             dataType = tof.Type;
         }
 
-        var descrAttr = model.FindMemAttr(static (m, a) => m.Model.GetTypeName(a) == Const.DescriptionSymbol);
+        AttributeSyntax? descrAttr = model.FindMemAttr(static (m, a) => m.Model.GetTypeName(a) == Const.DescriptionSymbol);
         string? descr = null;
-        var descrArg = descrAttr?.ArgumentList?.Arguments[0];
+        AttributeArgumentSyntax? descrArg = descrAttr?.ArgumentList?.Arguments[0];
         if (descrArg?.Expression is LiteralExpressionSyntax literal)
         {
             descr = literal.Token.ValueText;

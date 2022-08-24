@@ -35,7 +35,7 @@ public class DataEnumGen : IIncrementalGenerator
             return;
         }
 
-        foreach (var ctx in declsCtx)
+        foreach (GenContext ctx in declsCtx)
         {
             SrcBuilder text = new(2048);
             Generate(text, in ctx);
@@ -127,7 +127,7 @@ internal readonly struct EnumExtensionsGen
             Name(in ctx);
             Description(in ctx);
             Values(in ctx);
-            foreach (var mem in ctx.GetMembers())
+            foreach (MemberContext mem in ctx.GetMembers())
             {
                 Is(mem);
             }
@@ -191,8 +191,8 @@ internal readonly struct EnumExtensionsGen
             Text.Stmt(Const.MethodInlineAttr);
             using (Text.Decl("get"))
             {
-                using var array = Text.Coll($"return new {ctx.Symbol}[] ");
-                foreach (var mem in ctx.GetMembers())
+                using SrcBuilder.SrcColl array = Text.Coll($"return new {ctx.Symbol}[] ");
+                foreach (MemberContext mem in ctx.GetMembers())
                 {
                     array.Add(mem.Symbol);
                 }
@@ -244,7 +244,7 @@ internal readonly struct EnumDataGen
             {
                 Ctor(in ctx);
                 SerCtor(in ctx);
-                foreach (var mem in ctx.GetMembers())
+                foreach (MemberContext mem in ctx.GetMembers())
                 {
                     Factory(mem);
                 }
@@ -252,15 +252,15 @@ internal readonly struct EnumDataGen
 
             using (Text.Region("Members"))
             {
-                foreach (var mem in ctx.GetMembers())
+                foreach (MemberContext mem in ctx.GetMembers())
                 {
                     IsEnum(in mem);
                 }
-                foreach (var mem in ctx.GetDataMembers())
+                foreach (MemberContext mem in ctx.GetDataMembers())
                 {
                     TryEnum(in mem);
                 }
-                foreach (var mem in ctx.GetDataMembers())
+                foreach (MemberContext mem in ctx.GetDataMembers())
                 {
                     ExpectEnum(in mem);
                 }
@@ -290,7 +290,7 @@ internal readonly struct EnumDataGen
         Text.Stmt("[FieldOffset(0)]")
             .Stmt($"public readonly {ctx.Symbol} Value;");
 
-        foreach (var mem in ctx.GetDataMembers())
+        foreach (MemberContext mem in ctx.GetDataMembers())
         {
             Text.Stmt($"[FieldOffset(sizeof({ctx.Symbol}))]")
                 .Stmt($"public readonly {mem.Mem.TypeName} {mem.Mem.Symbol}Unchecked;");
@@ -302,7 +302,7 @@ internal readonly struct EnumDataGen
         using (Text.Decl($"private {ctx.EnumDataSymbol}", in ctx, (in GenContext context, ref SrcBuilder.SrcColl p) =>
         {
             p.Add($"in {context.Symbol} value");
-            foreach (var mem in context.GetDataMembers())
+            foreach (MemberContext mem in context.GetDataMembers())
             {
                 p.Add($"in {mem.Mem.TypeName} {mem.Mem.NameLower}");
             }
@@ -319,7 +319,7 @@ internal readonly struct EnumDataGen
             static (MemberContext ctx) => $"{ctx.Symbol}",
             static (t, ctx) =>
             {
-                foreach (var cur in ctx.Gen.GetDataMembers())
+                foreach (MemberContext cur in ctx.Gen.GetDataMembers())
                 {
                     if (!cur.Eq(ctx))
                     {
@@ -330,7 +330,7 @@ internal readonly struct EnumDataGen
             },
             static (t, ctx) =>
             {
-                foreach (var mem in ctx.GetEnumerator())
+                foreach (MemberContext mem in ctx.GetEnumerator())
                 {
                     t.Stmt($"this.{mem.Mem.Symbol}Unchecked = default!;");
                 }
@@ -348,9 +348,9 @@ internal readonly struct EnumDataGen
             }
         }))
         {
-            using var args = Text.Call($"return new {ctx.Gen.EnumDataSymbol}");
+            using SrcBuilder.SrcColl args = Text.Call($"return new {ctx.Gen.EnumDataSymbol}");
             args.Add(ctx.Symbol);
-            foreach (var e in ctx.Gen.GetDataMembers())
+            foreach (MemberContext e in ctx.Gen.GetDataMembers())
             {
                 args.Add(e.Eq(ctx) ? "value" : "default!");
             }
@@ -471,7 +471,7 @@ internal readonly struct EnumDataGen
                 static (MemberContext ctx) => ctx.Symbol,
                 static (t, ctx) =>
                 {
-                    foreach (var e in ctx.Gen.GetDataMembers())
+                    foreach (MemberContext e in ctx.Gen.GetDataMembers())
                     {
                         if (!e.Eq(ctx))
                         {
@@ -482,7 +482,7 @@ internal readonly struct EnumDataGen
                 },
                 static (t, ctx) =>
                 {
-                    foreach (var e in ctx.GetEnumerator())
+                    foreach (MemberContext e in ctx.GetEnumerator())
                     {
                         t.Stmt($"this.{e.Mem.Symbol}Unchecked = default!;");
                     }

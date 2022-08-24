@@ -53,7 +53,7 @@ public static class SplitIterExtensions
         foreach (var seg in self)
         {
             O cur = new();
-            foreach (var itm in seg)
+            foreach (T? itm in seg)
             {
                 cur = aggregate(cur, itm);
             }
@@ -72,8 +72,8 @@ public static class SplitIterExtensions
         using PoolBufWriter<O> buf = new();
         foreach (var seg in self)
         {
-            var cur = seed();
-            foreach (var itm in seg)
+            O? cur = seed();
+            foreach (T? itm in seg)
             {
                 cur = aggregate(cur, itm);
             }
@@ -253,8 +253,8 @@ public ref struct SplitIter<T>
         do
         {
             _tokenizer.FinalizeToken();
-            var head = _tokenizer.Length;
-            if (_tokenizer.PeekUntilAny(_separators, out var h))
+            int head = _tokenizer.Length;
+            if (_tokenizer.PeekUntilAny(_separators, out int h))
             {
                 head = h;
             }

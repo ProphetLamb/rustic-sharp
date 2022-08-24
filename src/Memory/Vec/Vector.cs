@@ -23,8 +23,8 @@ public static class VectorExtensions
     [Pure]
     public static ReadOnlySpan<T> AsSpan<T>(this Vec<T> self, Index index)
     {
-        var len = self.Count;
-        var off = index.GetOffset(len);
+        int len = self.Count;
+        int off = index.GetOffset(len);
         return self.AsSpan(off, len - off);
     }
 
@@ -34,7 +34,7 @@ public static class VectorExtensions
     [Pure]
     public static ReadOnlySpan<T> AsSpan<T>(this Vec<T> self, Range range)
     {
-        var (off, cnt) = range.GetOffsetAndLength(self.Count);
+        (int off, int cnt) = range.GetOffsetAndLength(self.Count);
         return self.AsSpan(off, cnt);
     }
 }

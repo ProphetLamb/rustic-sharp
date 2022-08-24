@@ -12,7 +12,7 @@ public static class DiagnosticsExtensions
     [DebuggerStepThrough]
     public static bool AnyWarning(in this ImmutableArray<Diagnostic> diagnostics)
     {
-        foreach (var d in diagnostics)
+        foreach (Diagnostic? d in diagnostics)
         {
             if (d.Severity >= DiagnosticSeverity.Warning)
             {
@@ -26,7 +26,7 @@ public static class DiagnosticsExtensions
     [DebuggerStepThrough]
     public static bool AnyError(in this ImmutableArray<Diagnostic> diagnostics)
     {
-        foreach (var d in diagnostics)
+        foreach (Diagnostic? d in diagnostics)
         {
             if (d.Severity >= DiagnosticSeverity.Warning && d.IsWarningAsError || d.Severity == DiagnosticSeverity.Error)
             {

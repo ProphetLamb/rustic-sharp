@@ -74,8 +74,8 @@ public struct HashCode
 
     private static unsafe uint GenerateGlobalSeed()
     {
-        using var crypt = RandomNumberGenerator.Create();
-        byte[] rno = new byte[sizeof(uint)];
+        using RandomNumberGenerator? crypt = RandomNumberGenerator.Create();
+        var rno = new byte[sizeof(uint)];
         crypt.GetBytes(rno);
         return BitConverter.ToUInt32(rno, 0);
     }
@@ -89,7 +89,7 @@ public struct HashCode
         // over a larger space, so diffusing the bits may help the
         // collection work more efficiently.
 
-        uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
+        var hc1 = (uint)(value1?.GetHashCode() ?? 0);
 
         uint hash = MixEmptyState();
         hash += 4;
@@ -102,8 +102,8 @@ public struct HashCode
 
     public static int Combine<T1, T2>(T1 value1, T2 value2)
     {
-        uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
-        uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
+        var hc1 = (uint)(value1?.GetHashCode() ?? 0);
+        var hc2 = (uint)(value2?.GetHashCode() ?? 0);
 
         uint hash = MixEmptyState();
         hash += 8;
@@ -117,9 +117,9 @@ public struct HashCode
 
     public static int Combine<T1, T2, T3>(T1 value1, T2 value2, T3 value3)
     {
-        uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
-        uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
-        uint hc3 = (uint)(value3?.GetHashCode() ?? 0);
+        var hc1 = (uint)(value1?.GetHashCode() ?? 0);
+        var hc2 = (uint)(value2?.GetHashCode() ?? 0);
+        var hc3 = (uint)(value3?.GetHashCode() ?? 0);
 
         uint hash = MixEmptyState();
         hash += 12;
@@ -134,10 +134,10 @@ public struct HashCode
 
     public static int Combine<T1, T2, T3, T4>(T1 value1, T2 value2, T3 value3, T4 value4)
     {
-        uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
-        uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
-        uint hc3 = (uint)(value3?.GetHashCode() ?? 0);
-        uint hc4 = (uint)(value4?.GetHashCode() ?? 0);
+        var hc1 = (uint)(value1?.GetHashCode() ?? 0);
+        var hc2 = (uint)(value2?.GetHashCode() ?? 0);
+        var hc3 = (uint)(value3?.GetHashCode() ?? 0);
+        var hc4 = (uint)(value4?.GetHashCode() ?? 0);
 
         Initialize(out uint v1, out uint v2, out uint v3, out uint v4);
 
@@ -155,11 +155,11 @@ public struct HashCode
 
     public static int Combine<T1, T2, T3, T4, T5>(T1 value1, T2 value2, T3 value3, T4 value4, T5 value5)
     {
-        uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
-        uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
-        uint hc3 = (uint)(value3?.GetHashCode() ?? 0);
-        uint hc4 = (uint)(value4?.GetHashCode() ?? 0);
-        uint hc5 = (uint)(value5?.GetHashCode() ?? 0);
+        var hc1 = (uint)(value1?.GetHashCode() ?? 0);
+        var hc2 = (uint)(value2?.GetHashCode() ?? 0);
+        var hc3 = (uint)(value3?.GetHashCode() ?? 0);
+        var hc4 = (uint)(value4?.GetHashCode() ?? 0);
+        var hc5 = (uint)(value5?.GetHashCode() ?? 0);
 
         Initialize(out uint v1, out uint v2, out uint v3, out uint v4);
 
@@ -179,12 +179,12 @@ public struct HashCode
 
     public static int Combine<T1, T2, T3, T4, T5, T6>(T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6)
     {
-        uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
-        uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
-        uint hc3 = (uint)(value3?.GetHashCode() ?? 0);
-        uint hc4 = (uint)(value4?.GetHashCode() ?? 0);
-        uint hc5 = (uint)(value5?.GetHashCode() ?? 0);
-        uint hc6 = (uint)(value6?.GetHashCode() ?? 0);
+        var hc1 = (uint)(value1?.GetHashCode() ?? 0);
+        var hc2 = (uint)(value2?.GetHashCode() ?? 0);
+        var hc3 = (uint)(value3?.GetHashCode() ?? 0);
+        var hc4 = (uint)(value4?.GetHashCode() ?? 0);
+        var hc5 = (uint)(value5?.GetHashCode() ?? 0);
+        var hc6 = (uint)(value6?.GetHashCode() ?? 0);
 
         Initialize(out uint v1, out uint v2, out uint v3, out uint v4);
 
@@ -205,13 +205,13 @@ public struct HashCode
 
     public static int Combine<T1, T2, T3, T4, T5, T6, T7>(T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6, T7 value7)
     {
-        uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
-        uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
-        uint hc3 = (uint)(value3?.GetHashCode() ?? 0);
-        uint hc4 = (uint)(value4?.GetHashCode() ?? 0);
-        uint hc5 = (uint)(value5?.GetHashCode() ?? 0);
-        uint hc6 = (uint)(value6?.GetHashCode() ?? 0);
-        uint hc7 = (uint)(value7?.GetHashCode() ?? 0);
+        var hc1 = (uint)(value1?.GetHashCode() ?? 0);
+        var hc2 = (uint)(value2?.GetHashCode() ?? 0);
+        var hc3 = (uint)(value3?.GetHashCode() ?? 0);
+        var hc4 = (uint)(value4?.GetHashCode() ?? 0);
+        var hc5 = (uint)(value5?.GetHashCode() ?? 0);
+        var hc6 = (uint)(value6?.GetHashCode() ?? 0);
+        var hc7 = (uint)(value7?.GetHashCode() ?? 0);
 
         Initialize(out uint v1, out uint v2, out uint v3, out uint v4);
 
@@ -233,14 +233,14 @@ public struct HashCode
 
     public static int Combine<T1, T2, T3, T4, T5, T6, T7, T8>(T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6, T7 value7, T8 value8)
     {
-        uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
-        uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
-        uint hc3 = (uint)(value3?.GetHashCode() ?? 0);
-        uint hc4 = (uint)(value4?.GetHashCode() ?? 0);
-        uint hc5 = (uint)(value5?.GetHashCode() ?? 0);
-        uint hc6 = (uint)(value6?.GetHashCode() ?? 0);
-        uint hc7 = (uint)(value7?.GetHashCode() ?? 0);
-        uint hc8 = (uint)(value8?.GetHashCode() ?? 0);
+        var hc1 = (uint)(value1?.GetHashCode() ?? 0);
+        var hc2 = (uint)(value2?.GetHashCode() ?? 0);
+        var hc3 = (uint)(value3?.GetHashCode() ?? 0);
+        var hc4 = (uint)(value4?.GetHashCode() ?? 0);
+        var hc5 = (uint)(value5?.GetHashCode() ?? 0);
+        var hc6 = (uint)(value6?.GetHashCode() ?? 0);
+        var hc7 = (uint)(value7?.GetHashCode() ?? 0);
+        var hc8 = (uint)(value8?.GetHashCode() ?? 0);
 
         Initialize(out uint v1, out uint v2, out uint v3, out uint v4);
 
@@ -363,7 +363,7 @@ public struct HashCode
         // To see what's really going on here, have a look at the Combine
         // methods.
 
-        uint val = (uint)value;
+        var val = (uint)value;
 
         // Storing the value of _length locally shaves of quite a few bytes
         // in the resulting machine code.

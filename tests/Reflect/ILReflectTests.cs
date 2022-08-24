@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 
 using FluentAssertions;
 
@@ -24,7 +25,7 @@ public class ILReflectTests
     [Test]
     public void Can_Get_Property_Getter()
     {
-        var propertyInfo = typeof(TestObject).GetProperty("SomeProperty");
+        PropertyInfo propertyInfo = typeof(TestObject).GetProperty("SomeProperty");
         MemberGetter<object, object> getter = null;
 
         Assert.DoesNotThrow(() => { getter = propertyInfo.DelegateForGet(); });
@@ -34,8 +35,8 @@ public class ILReflectTests
     [Test]
     public void Can_Get_Property()
     {
-        var testObject = new TestObject();
-        var propertyInfo = typeof(TestObject).GetProperty("SomeProperty");
+        TestObject testObject = new TestObject();
+        PropertyInfo propertyInfo = typeof(TestObject).GetProperty("SomeProperty");
         var getter = propertyInfo.DelegateForGet();
 
         Assert.AreEqual(0, getter(testObject));
@@ -44,7 +45,7 @@ public class ILReflectTests
     [Test]
     public void Can_Get_Property_Setter()
     {
-        var propertyInfo = typeof(TestObject).GetProperty("SomeProperty");
+        PropertyInfo propertyInfo = typeof(TestObject).GetProperty("SomeProperty");
         MemberSetter<object, object> setter = null;
 
         Assert.DoesNotThrow(() => { setter = propertyInfo.DelegateForSet(); });
@@ -54,9 +55,9 @@ public class ILReflectTests
     [Test]
     public void Can_Set_Property()
     {
-        var testObject = new TestObject();
+        TestObject testObject = new TestObject();
         var testObjectAsObj = (object)testObject;
-        var propertyInfo = typeof(TestObject).GetProperty("SomeProperty");
+        PropertyInfo propertyInfo = typeof(TestObject).GetProperty("SomeProperty");
         var setter = propertyInfo.DelegateForSet();
         const int valueToSet = 123;
 
@@ -67,7 +68,7 @@ public class ILReflectTests
     [Test]
     public void Can_Get_Field_Getter()
     {
-        var fieldInfo = typeof(TestObject).GetField("SomeField");
+        FieldInfo fieldInfo = typeof(TestObject).GetField("SomeField");
         MemberGetter<object, object> getter = null;
 
         Assert.DoesNotThrow(() => { getter = fieldInfo.DelegateForGet(); });
@@ -77,8 +78,8 @@ public class ILReflectTests
     [Test]
     public void Can_Get_Field()
     {
-        var testObject = new TestObject();
-        var fieldInfo = typeof(TestObject).GetField("SomeField");
+        TestObject testObject = new TestObject();
+        FieldInfo fieldInfo = typeof(TestObject).GetField("SomeField");
         var getter = fieldInfo.DelegateForGet();
 
         Assert.AreEqual(5, getter(testObject));
@@ -87,7 +88,7 @@ public class ILReflectTests
     [Test]
     public void Can_Get_Field_Setter()
     {
-        var fieldInfo = typeof(TestObject).GetField("SomeField");
+        FieldInfo fieldInfo = typeof(TestObject).GetField("SomeField");
         MemberSetter<object, object> setter = null;
 
         Assert.DoesNotThrow(() => { setter = fieldInfo.DelegateForSet(); });
@@ -97,9 +98,9 @@ public class ILReflectTests
     [Test]
     public void Can_Set_Field()
     {
-        var testObject = new TestObject();
+        TestObject testObject = new TestObject();
         var testObjectAsObj = (object)testObject;
-        var fieldInfo = typeof(TestObject).GetField("SomeField");
+        FieldInfo fieldInfo = typeof(TestObject).GetField("SomeField");
         var setter = fieldInfo.DelegateForSet();
         const int valueToSet = 123;
 
@@ -110,7 +111,7 @@ public class ILReflectTests
     [Test]
     public void Can_Get_Readonly_Field_Getter()
     {
-        var fieldInfo = typeof(TestObject).GetField("SomeReadonlyField");
+        FieldInfo fieldInfo = typeof(TestObject).GetField("SomeReadonlyField");
         MemberGetter<object, object> getter = null;
 
         Assert.DoesNotThrow(() => { getter = fieldInfo.DelegateForGet(); });
@@ -120,8 +121,8 @@ public class ILReflectTests
     [Test]
     public void Can_Get_Readonly_Field()
     {
-        var testObject = new TestObject();
-        var fieldInfo = typeof(TestObject).GetField("SomeReadonlyField");
+        TestObject testObject = new TestObject();
+        FieldInfo fieldInfo = typeof(TestObject).GetField("SomeReadonlyField");
         var getter = fieldInfo.DelegateForGet();
 
         Assert.AreEqual(55, getter(testObject));
@@ -130,7 +131,7 @@ public class ILReflectTests
     [Test]
     public void Can_Get_Const_Field_Getter()
     {
-        var fieldInfo = typeof(TestObject).GetField("SomeConstField");
+        FieldInfo fieldInfo = typeof(TestObject).GetField("SomeConstField");
         MemberGetter<object, object> getter = null;
 
         Assert.DoesNotThrow(() => { getter = fieldInfo.DelegateForGet(); });
@@ -140,8 +141,8 @@ public class ILReflectTests
     [Test]
     public void Can_Get_Const_Field()
     {
-        var testObject = new TestObject();
-        var fieldInfo = typeof(TestObject).GetField("SomeConstField");
+        TestObject testObject = new TestObject();
+        FieldInfo fieldInfo = typeof(TestObject).GetField("SomeConstField");
         var getter = fieldInfo.DelegateForGet();
 
         Assert.AreEqual("This is a const field", getter(testObject));
@@ -150,7 +151,7 @@ public class ILReflectTests
     [Test]
     public void Cant_Set_Const_Field()
     {
-        var fieldInfo = typeof(TestObject).GetField("SomeConstField");
+        FieldInfo fieldInfo = typeof(TestObject).GetField("SomeConstField");
 
         Assert.Throws<NotSupportedException>(() => fieldInfo.DelegateForSet());
     }
@@ -158,7 +159,7 @@ public class ILReflectTests
     [Test]
     public void Can_Get_Readonly_Backing_Field_Getter()
     {
-        var propertyInfo = typeof(TestObject).GetProperty("SomeReadonlyProperty");
+        PropertyInfo propertyInfo = typeof(TestObject).GetProperty("SomeReadonlyProperty");
         MemberGetter<object, object> getter = null;
 
         Assert.DoesNotThrow(() => { getter = propertyInfo.DelegateForGet(); });
@@ -168,8 +169,8 @@ public class ILReflectTests
     [Test]
     public void Can_Get_Readonly_Backing_Field()
     {
-        var testObject = new TestObject();
-        var propertyInfo = typeof(TestObject).GetProperty("SomeReadonlyProperty");
+        TestObject testObject = new TestObject();
+        PropertyInfo propertyInfo = typeof(TestObject).GetProperty("SomeReadonlyProperty");
         var getter = propertyInfo.DelegateForGet();
 
         Assert.AreEqual(55, getter(testObject));
@@ -178,7 +179,7 @@ public class ILReflectTests
     [Test]
     public void Can_Get_Const_Backing_Field_Getter()
     {
-        var propertyInfo = typeof(TestObject).GetProperty("SomeConstProperty");
+        PropertyInfo propertyInfo = typeof(TestObject).GetProperty("SomeConstProperty");
         MemberGetter<object, object> getter = null;
 
         Assert.DoesNotThrow(() => { getter = propertyInfo.DelegateForGet(); });
@@ -188,8 +189,8 @@ public class ILReflectTests
     [Test]
     public void Can_Get_Const_Backing_Field()
     {
-        var testObject = new TestObject();
-        var propertyInfo = typeof(TestObject).GetProperty("SomeConstProperty");
+        TestObject testObject = new TestObject();
+        PropertyInfo propertyInfo = typeof(TestObject).GetProperty("SomeConstProperty");
         var getter = propertyInfo.DelegateForGet();
 
         Assert.AreEqual("This is a const field", getter(testObject));

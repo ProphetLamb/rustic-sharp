@@ -196,7 +196,7 @@ public static class Arithmetic
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Abs(in this int v)
     {
-        var mask = v >> ((sizeof(int) * 8) - 1);
+        int mask = v >> ((sizeof(int) * 8) - 1);
         return (v + mask) ^ mask;
     }
 
@@ -204,7 +204,7 @@ public static class Arithmetic
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static long Abs(in this long v)
     {
-        var mask = v >> ((sizeof(long) * 8) - 1);
+        long mask = v >> ((sizeof(long) * 8) - 1);
         return (v + mask) ^ mask;
     }
 
@@ -214,7 +214,7 @@ public static class Arithmetic
     {
         unsafe
         {
-            var mask = v >> ((sizeof(nint) * 8) - 1);
+            nint mask = v >> ((sizeof(nint) * 8) - 1);
             return (v + mask) ^ mask;
         }
     }
@@ -313,7 +313,7 @@ public static class Arithmetic
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Log10(in this uint value)
     {
-        var l2 = ((Log2(value) + 1) * 1233) >> 12;
+        int l2 = ((Log2(value) + 1) * 1233) >> 12;
         return l2 - (value < Int32Power10[l2] ? 1 : 0);
     }
 
@@ -322,7 +322,7 @@ public static class Arithmetic
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Log10(in this ulong value)
     {
-        var l2 = ((Log2(value) + 1) * 1233) >> 12;
+        int l2 = ((Log2(value) + 1) * 1233) >> 12;
         return l2 - (value < Int64Power10[l2] ? 1 : 0);
     }
 

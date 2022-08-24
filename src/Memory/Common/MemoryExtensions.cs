@@ -70,8 +70,8 @@ public static class MemoryExtensions
         int outI = 0, leftI = 0, rightI = 0;
         while ((leftI < set.Length) & (rightI < other.Length))
         {
-            var v1 = set[leftI];
-            var v2 = other[rightI];
+            T? v1 = set[leftI];
+            T? v2 = other[rightI];
             output[outI++] = v1.CompareTo(v2) <= 0 ? v1 : v2;
             leftI = v1.CompareTo(v2) <= 0 ? leftI + 1 : leftI;
             rightI = v1.CompareTo(v2) >= 0 ? rightI + 1 : rightI;
@@ -93,8 +93,8 @@ public static class MemoryExtensions
         int outI = 0, leftI = 0, rightI = 0;
         while ((leftI < set.Length) & (rightI < other.Length))
         {
-            var v1 = set[leftI];
-            var v2 = other[rightI];
+            T? v1 = set[leftI];
+            T? v2 = other[rightI];
             output[outI++] = comparer.Compare(v1, v2) <= 0 ? v1 : v2;
             leftI = comparer.Compare(v1, v2) <= 0 ? leftI + 1 : leftI;
             rightI = comparer.Compare(v1, v2) >= 0 ? rightI + 1 : rightI;

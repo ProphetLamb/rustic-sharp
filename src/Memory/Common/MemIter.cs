@@ -31,7 +31,7 @@ public struct MemIter<T>
     {
         offset.ValidateArgRange(offset >= 0);
         count.ValidateArgRange(count >= 0);
-        var arrayLength = (array?.Length) ?? 0;
+        int arrayLength = (array?.Length) ?? 0;
         count.ValidateArgRange(count <= arrayLength - offset);
 
         _array = array;
@@ -131,7 +131,7 @@ public struct MemIter<T>
     /// <inheritdoc />
     public bool MoveNext()
     {
-        var index = _pos + 1;
+        int index = _pos + 1;
 
         if ((uint)index < (uint)_count)
         {
@@ -208,7 +208,7 @@ public static class VecIterExtensions
     /// <summary>
     ///     Attempts to initializes a new <see cref="MemIter{T}"/> for the <see cref="ReadOnlyMemory{T}"/>.
     /// </summary>
-    public static Option<MemIter<T>> TryToIterator<T>(in this ReadOnlyMemory<T> mem) => MemoryMarshal.TryGetArray(mem, out ArraySegment<T> arr) ? Some(arr.ToIterator()) : default;
+    public static Option<MemIter<T>> TryToIterator<T>(in this ReadOnlyMemory<T> mem) => MemoryMarshal.TryGetArray(mem, out var arr) ? Some(arr.ToIterator()) : default;
 
     /// <summary>
     ///     Attempts to initializes a new <see cref="MemIter{T}"/> for the <see cref="Memory{T}"/>.

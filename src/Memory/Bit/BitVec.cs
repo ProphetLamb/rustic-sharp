@@ -24,8 +24,8 @@ public ref struct BitVec
     /// <param name="capacity">The lower limit to the number of bits the collection can contain.</param>
     public BitVec(int capacity)
     {
-        var cap = Arithmetic.IntsToContainBits(capacity);
-        var temp = ArrayPool<int>.Shared.Rent(cap);
+        int cap = Arithmetic.IntsToContainBits(capacity);
+        int[]? temp = ArrayPool<int>.Shared.Rent(cap);
         _returnToPool = temp;
         _raw = new BitSet(temp);
         _pos = 0;
@@ -65,7 +65,7 @@ public ref struct BitVec
     public void Add(bool value)
     {
         Reserve(1);
-        var pos = _pos;
+        int pos = _pos;
         _raw.Set(pos, Convert.ToInt32(value));
         _pos = pos + 1;
     }
@@ -85,8 +85,8 @@ public ref struct BitVec
     {
         Debug.Assert(Count > Capacity - additionalCapacityBeyondPos);
 
-        var req = (Capacity * 2).Max(Count + additionalCapacityBeyondPos);
-        var temp = ArrayPool<int>.Shared.Rent(Arithmetic.IntsToContainBits(req));
+        int req = (Capacity * 2).Max(Count + additionalCapacityBeyondPos);
+        int[]? temp = ArrayPool<int>.Shared.Rent(Arithmetic.IntsToContainBits(req));
         Span<int> span = temp;
         _raw.RawStorage.CopyTo(span);
         _raw = new(span);
@@ -104,7 +104,7 @@ public ref struct BitVec
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void ReturnToPool()
     {
-        var temp = _returnToPool;
+        int[]? temp = _returnToPool;
         _returnToPool = null;
         if (temp is not null)
         {

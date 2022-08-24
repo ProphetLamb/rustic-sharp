@@ -109,7 +109,7 @@ public static class ReadOnlyVectorTraits
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int IndexOf<T>(this IReadOnlyVector<T> self, Range range, in T item)
     {
-        var (off, cnt) = range.GetOffsetAndLength(self.Count);
+        (int off, int cnt) = range.GetOffsetAndLength(self.Count);
         return self.IndexOf(off, cnt, item);
     }
 
@@ -119,7 +119,7 @@ public static class ReadOnlyVectorTraits
     public static int IndexOf<T, E>(this IReadOnlyVector<T> self, Range range, in T item, in E comparer)
         where E : IEqualityComparer<T>
     {
-        var (off, cnt) = range.GetOffsetAndLength(self.Count);
+        (int off, int cnt) = range.GetOffsetAndLength(self.Count);
         return self.IndexOf(off, cnt, item, comparer);
     }
 
@@ -145,7 +145,7 @@ public static class ReadOnlyVectorTraits
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int LastIndexOf<T>(this IReadOnlyVector<T> self, Range range, in T item)
     {
-        var (off, cnt) = range.GetOffsetAndLength(self.Count);
+        (int off, int cnt) = range.GetOffsetAndLength(self.Count);
         return self.LastIndexOf(off, cnt, item);
     }
 
@@ -155,7 +155,7 @@ public static class ReadOnlyVectorTraits
     public static int LastIndexOf<T, E>(this IReadOnlyVector<T> self, Range range, in T item, E comparer)
         where E : IEqualityComparer<T>
     {
-        var (off, cnt) = range.GetOffsetAndLength(self.Count);
+        (int off, int cnt) = range.GetOffsetAndLength(self.Count);
         return self.LastIndexOf(off, cnt, item, comparer);
     }
 
@@ -181,7 +181,7 @@ public static class ReadOnlyVectorTraits
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int BinarySearch<T>(this IReadOnlyVector<T> self, Range range, in T item)
     {
-        var (off, cnt) = range.GetOffsetAndLength(self.Count);
+        (int off, int cnt) = range.GetOffsetAndLength(self.Count);
         return self.BinarySearch(off, cnt, item);
     }
 
@@ -191,7 +191,7 @@ public static class ReadOnlyVectorTraits
     public static int BinarySearch<T, C>(this IReadOnlyVector<T> self, Range range, in T item, C comparer)
         where C : IComparer<T>
     {
-        var (off, cnt) = range.GetOffsetAndLength(self.Count);
+        (int off, int cnt) = range.GetOffsetAndLength(self.Count);
         return self.BinarySearch(off, cnt, item, comparer);
     }
 
@@ -299,14 +299,14 @@ public static class VectorTraits
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void InsertRange<T>(this IVector<T> self, Index index, ReadOnlySpan<T> values)
     {
-        var off = index.GetOffset(self.Count);
+        int off = index.GetOffset(self.Count);
         self.InsertRange(off, values);
     }
 
     /// <inheritdoc cref="List{T}.Remove"/>
     public static bool Remove<T>(this IVector<T> self, in T item)
     {
-        var index = self.IndexOf(in item);
+        int index = self.IndexOf(in item);
         if (index >= 0)
         {
             self.RemoveAt(index);
@@ -320,7 +320,7 @@ public static class VectorTraits
     public static bool Remove<T, E>(this IVector<T> self, in T item, E comparer)
         where E : IEqualityComparer<T>
     {
-        var index = self.IndexOf(in item, comparer);
+        int index = self.IndexOf(in item, comparer);
         if (index >= 0)
         {
             self.RemoveAt(index);
@@ -334,7 +334,7 @@ public static class VectorTraits
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void RemoveRange<T>(this IVector<T> self, Range range)
     {
-        var (off, cnt) = range.GetOffsetAndLength(self.Count);
+        (int off, int cnt) = range.GetOffsetAndLength(self.Count);
         self.RemoveRange(off, cnt);
     }
 
@@ -342,7 +342,7 @@ public static class VectorTraits
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void RemoveAt<T>(this IVector<T> self, Index index)
     {
-        var off = index.GetOffset(self.Count);
+        int off = index.GetOffset(self.Count);
         self.RemoveAt(off);
     }
 
@@ -352,7 +352,7 @@ public static class VectorTraits
     public static void SwapRemove<T>(this IVector<T> self, int index)
     {
         index.ValidateArgRange(index >= 0 && index < self.Count);
-        var last = self.Count - 1;
+        int last = self.Count - 1;
         self.Swap(index, last);
         self.RemoveAt(last); // Should be cheap.
     }
@@ -362,7 +362,7 @@ public static class VectorTraits
     /// <remarks>No block of elements in moved. The order of the vector is disturbed.</remarks>
     public static void SwapRemove<T>(this IVector<T> self, Index index)
     {
-        var off = index.GetOffset(self.Count);
+        int off = index.GetOffset(self.Count);
         self.SwapRemove(off);
     }
 
@@ -392,7 +392,7 @@ public static class VectorTraits
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Reverse<T>(this IVector<T> self, Range range)
     {
-        var (off, cnt) = range.GetOffsetAndLength(self.Count);
+        (int off, int cnt) = range.GetOffsetAndLength(self.Count);
         self.Reverse(off, cnt);
     }
 

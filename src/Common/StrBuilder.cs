@@ -217,7 +217,7 @@ public ref struct StrBuilder
             Grow(count);
         }
 
-        var remaining = _pos - index;
+        int remaining = _pos - index;
         _chars.Slice(index, remaining).CopyTo(_chars.Slice(index + count));
         _chars.Slice(index, count).Fill(value);
         _pos += count;
@@ -235,7 +235,7 @@ public ref struct StrBuilder
             Grow(1);
         }
 
-        var remaining = _pos - index;
+        int remaining = _pos - index;
         _chars.Slice(index, remaining).CopyTo(_chars.Slice(index + 1));
         _chars[index] = value;
         _pos += 1;
@@ -253,14 +253,14 @@ public ref struct StrBuilder
             return;
         }
 
-        var count = value!.Length;
+        int count = value!.Length;
 
         if (_pos > _chars.Length - count)
         {
             Grow(count);
         }
 
-        var remaining = _pos - index;
+        int remaining = _pos - index;
         _chars.Slice(index, remaining).CopyTo(_chars.Slice(index + count));
         value
 #if !NET6_0_OR_GREATER
@@ -277,7 +277,7 @@ public ref struct StrBuilder
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Append(char value)
     {
-        var pos = _pos;
+        int pos = _pos;
         if ((uint)pos < (uint)_chars.Length)
         {
             _chars[pos] = value;
@@ -301,7 +301,7 @@ public ref struct StrBuilder
             return;
         }
 
-        var pos = _pos;
+        int pos = _pos;
         if (value!.Length == 1 && (uint)pos < (uint)_chars.Length) // very common case, e.g. appending strings from NumberFormatInfo like separators, percent symbols, etc.
         {
             _chars[pos] = value[0];
@@ -315,7 +315,7 @@ public ref struct StrBuilder
 
     private void AppendSlow(string s)
     {
-        var pos = _pos;
+        int pos = _pos;
         if (pos > _chars.Length - s.Length)
         {
             Grow(s.Length);
@@ -363,7 +363,7 @@ public ref struct StrBuilder
             return;
         }
 
-        var pos = _pos;
+        int pos = _pos;
         if (pos > _chars.Length - length)
         {
             Grow(length);
@@ -384,7 +384,7 @@ public ref struct StrBuilder
     /// <param name="value">The span to append.</param>
     public void Append(ReadOnlySpan<char> value)
     {
-        var pos = _pos;
+        int pos = _pos;
         if (pos > _chars.Length - value.Length)
         {
             Grow(value.Length);
@@ -402,7 +402,7 @@ public ref struct StrBuilder
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<char> AppendSpan(int length)
     {
-        var origPos = _pos;
+        int origPos = _pos;
         if (origPos > _chars.Length - length)
         {
             Grow(length);
@@ -434,11 +434,11 @@ public ref struct StrBuilder
         Debug.Assert(_pos > _chars.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
 
         // Make sure to let Rent throw an exception if the caller has a bug and the desired capacity is negative
-        var poolArray = ArrayPool<char>.Shared.Rent((_pos + additionalCapacityBeyondPos).Max(_chars.Length * 2));
+        char[]? poolArray = ArrayPool<char>.Shared.Rent((_pos + additionalCapacityBeyondPos).Max(_chars.Length * 2));
 
         _chars.Slice(0, _pos).CopyTo(poolArray);
 
-        var toReturn = _arrayToReturnToPool;
+        char[]? toReturn = _arrayToReturnToPool;
         _chars = _arrayToReturnToPool = poolArray;
         if (toReturn is not null)
         {
@@ -450,7 +450,7 @@ public ref struct StrBuilder
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Dispose()
     {
-        var toReturn = _arrayToReturnToPool;
+        char[]? toReturn = _arrayToReturnToPool;
         this = default; // for safety, to avoid using pooled array if this instance is erroneously appended to again
         if (toReturn is not null)
         {

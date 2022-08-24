@@ -15,9 +15,9 @@ public static class SyntaxExtensions
     public static AttributeSyntax? FindMemAttr<M>(this SynModel<M> member, Func<SynModel<M>, AttributeSyntax, bool> predicate)
         where M : MemberDeclarationSyntax
     {
-        foreach (var attrListSyntax in member.Node.AttributeLists)
+        foreach (AttributeListSyntax? attrListSyntax in member.Node.AttributeLists)
         {
-            foreach (var attrSyntax in attrListSyntax.Attributes)
+            foreach (AttributeSyntax? attrSyntax in attrListSyntax.Attributes)
             {
                 if (predicate(member, attrSyntax))
                 {
@@ -32,9 +32,9 @@ public static class SyntaxExtensions
     public static AttributeSyntax? FindTypeAttr<T>(this SynModel<T> type, Func<SynModel<T>, AttributeSyntax, bool> predicate)
         where T : BaseTypeDeclarationSyntax
     {
-        foreach (var attrListSyntax in type.Node.AttributeLists)
+        foreach (AttributeListSyntax? attrListSyntax in type.Node.AttributeLists)
         {
-            foreach (var attrSyntax in attrListSyntax.Attributes)
+            foreach (AttributeSyntax? attrSyntax in attrListSyntax.Attributes)
             {
                 if (predicate(type, attrSyntax))
                 {
@@ -49,7 +49,7 @@ public static class SyntaxExtensions
     public static (NamespaceDeclarationSyntax, ImmutableArray<P>) GetHierarchy<P>(this CSharpSyntaxNode node)
         where P : MemberDeclarationSyntax
     {
-        var nesting = ImmutableArray.CreateBuilder<P>(16);
+        ImmutableArray<P>.Builder? nesting = ImmutableArray.CreateBuilder<P>(16);
         SyntaxNode? p = node;
         while ((p = p?.Parent) is not null)
         {
@@ -71,13 +71,13 @@ public static class SyntaxExtensions
     public static string? GetTypeName(this SemanticModel model, SyntaxNode node)
     {
         // Are we a type?
-        var typeInfo = model.GetTypeInfo(node);
+        TypeInfo typeInfo = model.GetTypeInfo(node);
         if (typeInfo.Type is not null)
         {
             return typeInfo.Type.ToDisplayString();
         }
 
-        var decl = model.GetDeclaredSymbol(node);
+        ISymbol? decl = model.GetDeclaredSymbol(node);
         // Are we of a type?
         if (decl?.ContainingType is not null)
         {
@@ -89,10 +89,10 @@ public static class SyntaxExtensions
 
     public static IEnumerable<T> CollectSyntax<T>(this Compilation comp, Func<SyntaxNode, CancellationToken, bool> predicate, Func<Compilation, SyntaxNode, CancellationToken, T> transform)
     {
-        foreach (var tree in comp.SyntaxTrees)
+        foreach (SyntaxTree? tree in comp.SyntaxTrees)
         {
             CancellationToken ct = new();
-            if (tree.TryGetRoot(out var root))
+            if (tree.TryGetRoot(out SyntaxNode? root))
             {
                 Stack<SyntaxNode> stack = new(64);
                 stack.Push(root);
@@ -100,7 +100,7 @@ public static class SyntaxExtensions
                 SyntaxNode node;
                 while ((node = stack.Pop()) is not null)
                 {
-                    foreach (var child in node.ChildNodesAndTokens())
+                    foreach (SyntaxNodeOrToken child in node.ChildNodesAndTokens())
                     {
                         if (child.IsNode)
                         {

@@ -54,7 +54,7 @@ public class ILEmitter
     public ILEmitter initobj(Type type) { Gen.Emit(OpCodes.Initobj, type); return this; }
     public ILEmitter newobj(ConstructorInfo ctor) { Gen.Emit(OpCodes.Newobj, ctor); return this; }
     public ILEmitter Throw() { Gen.Emit(OpCodes.Throw); return this; }
-    public ILEmitter throw_new(Type type) { var exp = type.GetConstructor(Type.EmptyTypes); newobj(exp).Throw(); return this; }
+    public ILEmitter throw_new(Type type) { ConstructorInfo exp = type.GetConstructor(Type.EmptyTypes); newobj(exp).Throw(); return this; }
     public ILEmitter stelem_ref() { Gen.Emit(OpCodes.Stelem_Ref); return this; }
     public ILEmitter ldelem_ref() { Gen.Emit(OpCodes.Ldelem_Ref); return this; }
     public ILEmitter ldlen() { Gen.Emit(OpCodes.Ldlen); return this; }

@@ -207,7 +207,7 @@ public ref struct Tokenizer<T>
             return false;
         }
 
-        var head = Head;
+        int head = Head;
         if (head < position)
         {
             _tokenLength = position - head;
@@ -230,7 +230,7 @@ public ref struct Tokenizer<T>
     public bool Read<S>(in S expectedSequence, out int len)
         where S : IEnumerable<T>
     {
-        var success = Peek(expectedSequence, out var head, out len);
+        bool success = Peek(expectedSequence, out int head, out len);
         Head = head;
         return success;
     }
@@ -246,7 +246,7 @@ public ref struct Tokenizer<T>
     public bool TryRead<S>(in S expectedSequence, out int len)
         where S : IEnumerable<T>
     {
-        if (Peek(expectedSequence, out var head, out len))
+        if (Peek(expectedSequence, out int head, out len))
         {
             Head = head;
             return true;
@@ -285,7 +285,7 @@ public ref struct Tokenizer<T>
             {
                 if (typeof(T).IsValueType)
                 {
-                    foreach (var match in expectedSequence)
+                    foreach (T? match in expectedSequence)
                     {
                         if (head >= _source.Length)
                         {
@@ -317,7 +317,7 @@ public ref struct Tokenizer<T>
                 comparer = EqualityComparer<T>.Default;
             }
 
-            foreach (var match in expectedSequence)
+            foreach (T? match in expectedSequence)
             {
                 if (head >= _source.Length)
                 {
@@ -355,7 +355,7 @@ public ref struct Tokenizer<T>
     public bool ReadNext<S>(in S expectedSequence)
         where S : IEnumerable<T>
     {
-        var success = PeekNext(expectedSequence, out var head);
+        bool success = PeekNext(expectedSequence, out int head);
         Head = head;
         return success;
     }
@@ -370,7 +370,7 @@ public ref struct Tokenizer<T>
     public bool TryReadNext<S>(in S expectedSequence)
         where S : IEnumerable<T>
     {
-        if (PeekNext(expectedSequence, out var head))
+        if (PeekNext(expectedSequence, out int head))
         {
             Head = head;
             return true;
@@ -403,7 +403,7 @@ public ref struct Tokenizer<T>
         {
             if (typeof(T).IsValueType)
             {
-                foreach (var match in expectedSequence)
+                foreach (T? match in expectedSequence)
                 {
                     if (head >= _source.Length)
                     {
@@ -429,7 +429,7 @@ public ref struct Tokenizer<T>
             comparer = EqualityComparer<T>.Default;
         }
 
-        foreach (var match in expectedSequence)
+        foreach (T? match in expectedSequence)
         {
             if (head >= _source.Length)
             {
@@ -461,7 +461,7 @@ public ref struct Tokenizer<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Read(in TinySpan<T> expectedSequence)
     {
-        var success = Peek(expectedSequence, out var head);
+        bool success = Peek(expectedSequence, out int head);
         Head = head;
         return success;
     }
@@ -474,7 +474,7 @@ public ref struct Tokenizer<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryRead(in TinySpan<T> expectedSequence)
     {
-        if (Peek(expectedSequence, out var head))
+        if (Peek(expectedSequence, out int head))
         {
             Head = head;
             return true;
@@ -549,7 +549,7 @@ public ref struct Tokenizer<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool ReadNext(in TinySpan<T> expectedSequence)
     {
-        var success = PeekNext(expectedSequence, out var head);
+        bool success = PeekNext(expectedSequence, out int head);
         Head = head;
         return success;
     }
@@ -562,7 +562,7 @@ public ref struct Tokenizer<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryReadNext(in TinySpan<T> expectedSequence)
     {
-        if (PeekNext(expectedSequence, out var head))
+        if (PeekNext(expectedSequence, out int head))
         {
             Head = head;
             return true;
@@ -641,7 +641,7 @@ public ref struct Tokenizer<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool ReadAny(in TinySpan<T> expected)
     {
-        var success = PeekAny(expected);
+        bool success = PeekAny(expected);
         Head += 1;
         return success;
     }
@@ -671,13 +671,13 @@ public ref struct Tokenizer<T>
     [Pure]
     public bool PeekAny(in TinySpan<T> expected)
     {
-        var head = Head;
+        int head = Head;
         if (head == _source.Length)
         {
             return false;
         }
 
-        var current = _source[head];
+        T? current = _source[head];
         var comparer = _comparer;
 
         if (comparer is null)
@@ -717,7 +717,7 @@ public ref struct Tokenizer<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool ReadUntilAny(in TinySpan<T> expected)
     {
-        var success = PeekUntilAny(expected, out var head);
+        bool success = PeekUntilAny(expected, out int head);
         Head = head;
         return success;
     }
@@ -730,7 +730,7 @@ public ref struct Tokenizer<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryReadUntilAny(in TinySpan<T> expected)
     {
-        if (PeekUntilAny(expected, out var head))
+        if (PeekUntilAny(expected, out int head))
         {
             Head = head;
             return true;
@@ -763,7 +763,7 @@ public ref struct Tokenizer<T>
             {
                 do
                 {
-                    var current = _source[head];
+                    T? current = _source[head];
                     for (var i = 0; i < expected.Length; i++)
                     {
                         // ValueType: Devirtualize with EqualityComparer<TValue>.Default intrinsic
@@ -788,7 +788,7 @@ public ref struct Tokenizer<T>
 
         do
         {
-            var current = _source[head];
+            T? current = _source[head];
             for (var i = 0; i < expected.Length; i++)
             {
                 if (!comparer.Equals(expected[i], current))

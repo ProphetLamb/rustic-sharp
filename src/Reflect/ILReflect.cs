@@ -46,8 +46,8 @@ public static class ILReflect
     /// <typeparam name="T">The target type.</typeparam>
     public static CtorInvoker<T> DelegateForCtor<T>(this Type type, params Type[] paramTypes)
     {
-        var key = GetKey(CtorInvokerName, type, type, paramTypes);
-        if (Cache.TryGetValue(key, out var result))
+        Key key = GetKey(CtorInvokerName, type, type, paramTypes);
+        if (Cache.TryGetValue(key, out Delegate? result))
         {
             return (CtorInvoker<T>)result;
         }
@@ -86,8 +86,8 @@ public static class ILReflect
             ThrowHelper.ThrowInvalidOperationException($"Property {property.Name} is not readable.");
         }
 
-        var key = GetKey<T, R>(PropertyGetterName, property);
-        if (Cache.TryGetValue(key, out var result))
+        Key key = GetKey<T, R>(PropertyGetterName, property);
+        if (Cache.TryGetValue(key, out Delegate? result))
         {
             return (MemberGetter<T, R>)result;
         }
@@ -119,8 +119,8 @@ public static class ILReflect
             ThrowHelper.ThrowInvalidOperationException($"Property {property.Name} is not writable.");
         }
 
-        var key = GetKey<T, V>(PropertySetterName, property);
-        if (Cache.TryGetValue(key, out var result))
+        Key key = GetKey<T, V>(PropertySetterName, property);
+        if (Cache.TryGetValue(key, out Delegate? result))
         {
             return (MemberSetter<T, V>)result;
         }
@@ -147,8 +147,8 @@ public static class ILReflect
     /// <typeparam name="R">The return type.</typeparam>
     public static MemberGetter<T, R> DelegateForGet<T, R>(this FieldInfo field)
     {
-        var key = GetKey<T, R>(FieldGetterName, field);
-        if (Cache.TryGetValue(key, out var result))
+        Key key = GetKey<T, R>(FieldGetterName, field);
+        if (Cache.TryGetValue(key, out Delegate? result))
         {
             return (MemberGetter<T, R>)result;
         }
@@ -175,8 +175,8 @@ public static class ILReflect
     /// <typeparam name="V">The type of the value.</typeparam>
     public static MemberSetter<T, V> DelegateForSet<T, V>(this FieldInfo field)
     {
-        var key = GetKey<T, V>(FieldSetterName, field);
-        if (Cache.TryGetValue(key, out var result))
+        Key key = GetKey<T, V>(FieldSetterName, field);
+        if (Cache.TryGetValue(key, out Delegate? result))
         {
             return (MemberSetter<T, V>)result;
         }
@@ -203,8 +203,8 @@ public static class ILReflect
     /// <typeparam name="R">The return type.</typeparam>
     public static MethodCaller<T, R> DelegateForCall<T, R>(this MethodInfo method)
     {
-        var key = GetKey<T, R>(MethodCallerName, method);
-        if (Cache.TryGetValue(key, out var result))
+        Key key = GetKey<T, R>(MethodCallerName, method);
+        if (Cache.TryGetValue(key, out Delegate? result))
         {
             return (MethodCaller<T, R>)result;
         }
@@ -280,22 +280,22 @@ public static class ILReflect
     /// <typeparam name="T">The target type.</typeparam>
     public static (T, Type) GenDebugAssembly<T>(string name, FieldInfo? field, PropertyInfo? property, MethodInfo? method, Type? targetType, Type[] ctorParamTypes)
     {
-        var asmName = new AssemblyName("Asm");
-        var asmBuilder = AssemblyBuilder.DefineDynamicAssembly(asmName, AssemblyBuilderAccess.RunAndCollect);
-        var modBuilder = asmBuilder.DefineDynamicModule(name);
-        var typeBuilder = modBuilder.DefineType("Test", TypeAttributes.Public);
+        AssemblyName? asmName = new AssemblyName("Asm");
+        AssemblyBuilder? asmBuilder = AssemblyBuilder.DefineDynamicAssembly(asmName, AssemblyBuilderAccess.RunAndCollect);
+        ModuleBuilder? modBuilder = asmBuilder.DefineDynamicModule(name);
+        TypeBuilder? typeBuilder = modBuilder.DefineType("Test", TypeAttributes.Public);
 
-        var weakTyping = typeof(T) == typeof(object);
+        bool weakTyping = typeof(T) == typeof(object);
 
         ILGenerator Build(string methodName, Type returnType, Type[] parameterTypes)
         {
-            var methodBuilder = typeBuilder.DefineMethod(methodName, MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Static, CallingConventions.Standard, returnType, parameterTypes);
+            MethodBuilder? methodBuilder = typeBuilder.DefineMethod(methodName, MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Static, CallingConventions.Standard, returnType, parameterTypes);
             return methodBuilder.GetILGenerator();
         }
 
         if (field != null)
         {
-            var fieldType = weakTyping ? typeof(object) : field.FieldType;
+            Type? fieldType = weakTyping ? typeof(object) : field.FieldType;
             using (RentArray<Type> paramTypes = new(2) { typeof(T).MakeByRefType(), fieldType })
             {
                 Emit.Gen = Build("FieldSetter", typeof(void), paramTypes);
@@ -310,7 +310,7 @@ public static class ILReflect
 
         if (property != null)
         {
-            var propType = weakTyping ? typeof(object) : property.PropertyType;
+            Type? propType = weakTyping ? typeof(object) : property.PropertyType;
             using (RentArray<Type> paramTypes = new(2) { typeof(T).MakeByRefType(), propType })
             {
                 Emit.Gen = Build("PropertySetter", typeof(void), paramTypes);
@@ -325,7 +325,7 @@ public static class ILReflect
 
         if (method != null)
         {
-            var returnType = weakTyping || method.ReturnType == typeof(void) ? typeof(object) : method.ReturnType;
+            Type? returnType = weakTyping || method.ReturnType == typeof(void) ? typeof(object) : method.ReturnType;
             using RentArray<Type> paramTypes = new(2) { typeof(T), typeof(object[]) };
             Emit.Gen = Build("MethodCaller", returnType, paramTypes);
             GenMethodInvocation<T>(method);
@@ -338,8 +338,8 @@ public static class ILReflect
             GenCtor<T>(targetType, ctorParamTypes);
         }
 
-        var type = typeBuilder.CreateType()!;
-        var target = (T)asmBuilder.CreateInstance(name)!;
+        Type? type = typeBuilder.CreateType()!;
+        T? target = (T)asmBuilder.CreateInstance(name)!;
         return (target, type);
     }
 
@@ -358,12 +358,12 @@ public static class ILReflect
         where D : class
         where M : MemberInfo
     {
-        var dynMethod = new DynamicMethod(dynMethodName, returnType, paramTypes, true);
+        DynamicMethod? dynMethod = new DynamicMethod(dynMethodName, returnType, paramTypes, true);
 
         Emit.Gen = dynMethod.GetILGenerator();
         generator(member);
 
-        var result = dynMethod.CreateDelegate(typeof(D));
+        Delegate? result = dynMethod.CreateDelegate(typeof(D));
         Cache[key] = result;
         return (D)(object)result;
     }
@@ -372,18 +372,18 @@ public static class ILReflect
     {
         // arg0: object[] arguments
         // goal: return new T(arguments)
-        var targetType = typeof(T) == typeof(object) ? type : typeof(T);
+        Type? targetType = typeof(T) == typeof(object) ? type : typeof(T);
 
         if (targetType.IsValueType && paramTypes.Length == 0)
         {
-            var tmp = Emit.declocal(targetType);
+            LocalBuilder? tmp = Emit.declocal(targetType);
             Emit.ldloca(tmp)
                 .initobj(targetType)
                 .ldloc(0);
         }
         else
         {
-            var ctor = targetType.GetConstructor(paramTypes);
+            ConstructorInfo? ctor = targetType.GetConstructor(paramTypes);
             if (ctor is null)
             {
                 ThrowInvalidCtorParams(targetType, paramTypes);
@@ -411,12 +411,12 @@ public static class ILReflect
 
     private static void GenMethodInvocation<T>(MethodInfo method)
     {
-        var weaklyTyped = typeof(T) == typeof(object);
+        bool weaklyTyped = typeof(T) == typeof(object);
 
         // push target if not static (instance-method. in that case first arg is always 'this')
         if (!method.IsStatic)
         {
-            var targetType = weaklyTyped ? method.DeclaringType : typeof(T);
+            Type? targetType = weaklyTyped ? method.DeclaringType : typeof(T);
             Debug.Assert(targetType is not null);
 
             Emit.declocal(targetType);
@@ -438,8 +438,8 @@ public static class ILReflect
                 .ldc_i4(i)		// push index
                 .ldelem_ref();	// pop array, index and push array[index]
 
-            var param = prams[i];
-            var dataType = param.ParameterType;
+            ParameterInfo? param = prams[i];
+            Type? dataType = param.ParameterType;
 
             if (dataType.IsByRef)
             {
@@ -448,7 +448,7 @@ public static class ILReflect
 
             Debug.Assert(dataType is not null);
 
-            var tmp = Emit.declocal(dataType);
+            LocalBuilder? tmp = Emit.declocal(dataType);
             Emit.unbox_any(dataType)
                 .stloc(tmp)
                 .ifbyref_ldloca_else_ldloc(tmp, param.ParameterType);
@@ -459,13 +459,13 @@ public static class ILReflect
 
         // if method wasn't static that means we declared a temp local to load the target
         // that means our local variables index for the arguments start from 1
-        var localVarStart = method.IsStatic ? 0 : 1;
+        int localVarStart = method.IsStatic ? 0 : 1;
         for (var i = 0; i < prams.Length; i++)
         {
-            var paramType = prams[i].ParameterType;
+            Type? paramType = prams[i].ParameterType;
             if (paramType.IsByRef)
             {
-                var byRefType = paramType.GetElementType();
+                Type? byRefType = paramType.GetElementType();
                 Debug.Assert(byRefType is not null);
 
                 Emit.ldarg1()
@@ -596,8 +596,8 @@ public static class ILReflect
 
     private static unsafe void GenMemberSetter<T>(MemberInfo member, Type memberType, bool isStatic, delegate*<ILEmitter, MemberInfo, void> set)
     {
-        var targetType = typeof(T);
-        var stronglyTyped = targetType != typeof(object);
+        Type? targetType = typeof(T);
+        bool stronglyTyped = targetType != typeof(object);
 
         // if we're static set member immediately
         if (isStatic)
@@ -745,7 +745,7 @@ public static class ILReflect
     internal static Key GetKey(string callerName, Type target, Type ret, Type[] paramTypes)
     {
         HashCode paramHash = new();
-        foreach (var t in paramTypes)
+        foreach (Type? t in paramTypes)
         {
             paramHash.Add(t);
         }

@@ -14,14 +14,14 @@ namespace Rustic.Text.Tests
         public void IterEmpty()
         {
             string? v = null;
-            var arr = v.AsSpan().Split(" ").ToArray();
+            string[]? arr = v.AsSpan().Split(" ").ToArray();
             Assert.AreEqual(Array.Empty<string>(), arr);
         }
 
         [Test]
         public void IterSoloTest()
         {
-            var arr = Dummy.AsSpan().Split(" ").ToArray();
+            string[]? arr = Dummy.AsSpan().Split(" ").ToArray();
             var probe = new[] { "I", "hate", "code", "that", "is", "not", "working", "as", "intended...", "I", "am", "clearly", "in", "the", "wrong", "profession!" };
             Assert.AreEqual(probe, arr);
         }
@@ -30,7 +30,7 @@ namespace Rustic.Text.Tests
         public void IterDoubleTest()
         {
             var iter = Dummy.AsSpan().Split(" ",".");
-            var arr = iter.ToArray();
+            string[]? arr = iter.ToArray();
             var probe = new[] { "I", "hate", "code", "that", "is", "not", "working", "as", "intended", "", "", "", "I", "am", "clearly", "in", "the", "wrong", "profession!" };
             Assert.AreEqual(probe, arr);
         }
@@ -38,7 +38,7 @@ namespace Rustic.Text.Tests
         [Test]
         public void IterTripleTest()
         {
-            var arr = Dummy.AsSpan().Split(" ", ".", "-").ToArray();
+            string[]? arr = Dummy.AsSpan().Split(" ", ".", "-").ToArray();
             var probe = new[] { "I", "hate", "code", "that", "is", "not", "working", "as", "intended", "", "", "", "I", "am", "clearly", "in", "the", "wrong", "profession!" };
             Assert.AreEqual(probe, arr);
         }
@@ -46,14 +46,14 @@ namespace Rustic.Text.Tests
         [Test]
         public void IterRemoveEmptyTest()
         {
-            var arr = Dummy.AsSpan().Split(".", SplitOptions.RemoveEmptyEntries).ToArray();
+            string[]? arr = Dummy.AsSpan().Split(".", SplitOptions.RemoveEmptyEntries).ToArray();
             var probe = new[] { "I hate code that is not working as intended", " I am clearly in the wrong profession!" };
             Assert.AreEqual(probe, arr);
         }
         [Test]
         public void IterIncludeSeparatorsTest()
         {
-            var arr = Dummy.AsSpan().Split(" ", SplitOptions.IncludeSeparator).ToArray();
+            string[]? arr = Dummy.AsSpan().Split(" ", SplitOptions.IncludeSeparator).ToArray();
             var probe = new[]
             {
                 "I ", "hate ", "code ", "that ", "is ", "not ", "working ", "as ", "intended... ", "I ", "am ", "clearly ", "in ", "the ", "wrong ", "profession!"

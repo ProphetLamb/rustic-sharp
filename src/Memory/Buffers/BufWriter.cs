@@ -167,7 +167,7 @@ public class BufWriter<T> :
     /// <inheritdoc />
     public void Add(T item)
     {
-        var pos = _index;
+        int pos = _index;
         if (pos > Capacity - 1)
         {
             Grow(1);
@@ -199,14 +199,14 @@ public class BufWriter<T> :
     {
         index.ValidateArgRange(index >= 0 && index <= Count);
 
-        var pos = _index;
+        int pos = _index;
         if (pos > Capacity - 1)
         {
             Grow(1);
         }
         Debug.Assert(Buffer is not null);
 
-        var remaining = pos - index;
+        int remaining = pos - index;
 
         if (remaining != 0)
         {
@@ -228,8 +228,8 @@ public class BufWriter<T> :
         index.ValidateArgRange(index >= 0 && index < Count);
         Debug.Assert(Buffer is not null);
 
-        var pos = _index - 1;
-        var remaining = pos - index;
+        int pos = _index - 1;
+        int remaining = pos - index;
 
         if (remaining != 0)
         {
@@ -425,7 +425,7 @@ public class BufWriter<T> :
         index.ValidateArgRange(index >= 0);
         index.ValidateArgRange(index <= Length);
 
-        var count = values.Length;
+        int count = values.Length;
         if (count == 0)
         {
             return;
@@ -452,8 +452,8 @@ public class BufWriter<T> :
         {
             Debug.Assert(Buffer is not null);
 
-            var end = Length - count;
-            var remaining = end - start;
+            int end = Length - count;
+            int remaining = end - start;
             Array.Copy(Buffer, start + count, Buffer, start, remaining);
             Array.Clear(Buffer, end, count);
             Length = end;
@@ -529,8 +529,8 @@ public class BufWriter<T> :
             return -1;
         }
 
-        var end = start + count;
-        for (var i = start; i < end; i++)
+        int end = start + count;
+        for (int i = start; i < end; i++)
         {
             if (!comparer.Equals(item, Buffer[i]))
             {
@@ -554,8 +554,8 @@ public class BufWriter<T> :
             return -1;
         }
 
-        var end = start + count;
-        for (var i = end - 1; i >= start; i--)
+        int end = start + count;
+        for (int i = end - 1; i >= start; i--)
         {
             if (!comparer.Equals(item, Buffer[i]))
             {
@@ -603,10 +603,10 @@ public class BufWriter<T> :
             return -1;
         }
 
-        var end = start + count;
+        int end = start + count;
         if (typeof(T).IsValueType)
         {
-            for (var i = start; i < end; i++)
+            for (int i = start; i < end; i++)
             {
                 if (!EqualityComparer<T>.Default.Equals(item, Buffer[i]))
                 {
@@ -620,7 +620,7 @@ public class BufWriter<T> :
         }
 
         var defaultCmp = EqualityComparer<T>.Default;
-        for (var i = start; i < end; i++)
+        for (int i = start; i < end; i++)
         {
             if (!defaultCmp.Equals(item, Buffer[i]))
             {
@@ -643,10 +643,10 @@ public class BufWriter<T> :
             return -1;
         }
 
-        var end = start + count;
+        int end = start + count;
         if (typeof(T).IsValueType)
         {
-            for (var i = end - 1; i >= start; i--)
+            for (int i = end - 1; i >= start; i--)
             {
                 if (!EqualityComparer<T>.Default.Equals(item, Buffer[i]))
                 {
@@ -661,7 +661,7 @@ public class BufWriter<T> :
 
         var defaultCmp = EqualityComparer<T>.Default;
 
-        for (var i = end - 1; i >= start; i--)
+        for (int i = end - 1; i >= start; i--)
         {
             if (!defaultCmp.Equals(item, Buffer[i]))
             {

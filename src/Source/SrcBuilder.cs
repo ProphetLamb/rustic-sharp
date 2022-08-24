@@ -197,7 +197,7 @@ public class SrcBuilder
 
     public SrcBuilder Outdent()
     {
-        var level = IndentLevel;
+        int level = IndentLevel;
         if (level > 0)
         {
             IndentLevel = level - 1;
@@ -311,7 +311,7 @@ public class SrcBuilder
     public SrcBlock Decl(string definition, ParamsAction parameters)
     {
         AppendIndent(definition);
-        var p = Params();
+        SrcColl p = Params();
         parameters(ref p);
         p.Dispose();
         return Block();
@@ -321,7 +321,7 @@ public class SrcBuilder
     public SrcBlock Decl<C>(string definition, in C ctx, ParamsAction<C> parameters)
     {
         AppendIndent(definition);
-        var p = Params();
+        SrcColl p = Params();
         parameters(in ctx, ref p);
         p.Dispose();
         NL();
@@ -347,13 +347,13 @@ public class SrcBuilder
     {
         using (Switch(value))
         {
-            foreach (var b in source)
+            foreach (T? b in source)
             {
                 string? constant = caseConstant(b);
                 if (constant is not null)
                 {
-                    using var c = Case(constant);
-                    var returned = caseBlock(this, b);
+                    using SrcCase c = Case(constant);
+                    CaseStyle returned = caseBlock(this, b);
                     if ((returned & CaseStyle.NoBreak) != 0)
                     {
                         c.Returned();
@@ -362,8 +362,8 @@ public class SrcBuilder
             }
             if (defaultBlock is not null)
             {
-                using var c = Case(default);
-                var returned = defaultBlock(this, source);
+                using SrcCase c = Case(default);
+                CaseStyle returned = defaultBlock(this, source);
                 if ((returned & CaseStyle.NoBreak) != 0)
                 {
                     c.Returned();
@@ -377,7 +377,7 @@ public class SrcBuilder
     {
         using (Switch(value))
         {
-            foreach (var b in source)
+            foreach (T? b in source)
             {
                 string? constant = caseConstant(b);
                 if (constant is not null)

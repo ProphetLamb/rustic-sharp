@@ -117,13 +117,13 @@ public class UserComparer : IComparer<User>, System.Collections.IComparer
             return -1;
         }
 
-        var firstNameComparison = String.CompareOrdinal(x.FirstName, y.FirstName);
+        int firstNameComparison = String.CompareOrdinal(x.FirstName, y.FirstName);
         if (firstNameComparison != 0)
         {
             return firstNameComparison;
         }
 
-        var lastNameComparison = String.CompareOrdinal(x.LastName, y.LastName);
+        int lastNameComparison = String.CompareOrdinal(x.LastName, y.LastName);
         if (lastNameComparison != 0)
         {
             return lastNameComparison;

@@ -68,7 +68,7 @@ namespace Rustic.DataEnumGen.Run.Tests
         [Test]
         public void TestCtorEnumEqData()
         {
-            var minV = Minimum((0, 123));
+            DummyData minV = Minimum((0, 123));
             Dummy min = minV;
 
             minV.Value.Should().Be(min);

@@ -33,10 +33,10 @@ internal static class TinySpanExtensions
     public static int Count<T>(in this TinySpan<T> self)
     {
         var count = 0;
-        var en = self.GetEnumerator();
+        TinySpan<T>.Enumerator en = self.GetEnumerator();
         while (en.MoveNext())
         {
-            var item = en.Current;
+            T item = en.Current;
             count += 1;
         }
         return count;

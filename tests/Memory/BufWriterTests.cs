@@ -87,7 +87,7 @@ public class BufWriterTests
 
         for (var i = 0; i < 100; i++)
         {
-            var user = Randomizer.Seed.ChooseFrom(SampleData.Users);
+            User user = Randomizer.Seed.ChooseFrom(SampleData.Users);
             list.IndexOf(user).Should().Be(reference.IndexOf(user));
         }
 
@@ -102,8 +102,8 @@ public class BufWriterTests
 
         for (var i = 0; i < 100; i++)
         {
-            var user = Randomizer.Seed.ChooseFrom(SampleData.Users);
-            var index = Randomizer.Seed.Next(0, reference.Count);
+            User user = Randomizer.Seed.ChooseFrom(SampleData.Users);
+            int index = Randomizer.Seed.Next(0, reference.Count);
             reference.Insert(index, user);
             list.Insert(index, user);
         }
@@ -124,7 +124,7 @@ public class BufWriterTests
             increment = Randomizer.Seed.Next(2, 10);
 
             var users = SampleData.Users.AsSpan(i, increment).ToArray();
-            var index = Randomizer.Seed.Next(0, reference.Count);
+            int index = Randomizer.Seed.Next(0, reference.Count);
             reference.InsertRange(index, users);
             list.InsertRange(index, users);
         }
@@ -146,7 +146,7 @@ public class BufWriterTests
 
         for (var i = 0; i < 100; i++)
         {
-            var user = Randomizer.Seed.ChooseFrom(SampleData.Users);
+            User user = Randomizer.Seed.ChooseFrom(SampleData.Users);
             list.LastIndexOf(user).Should().Be(reference.LastIndexOf(user));
         }
 
@@ -164,7 +164,7 @@ public class BufWriterTests
 
         for (var i = 0; i < 100; i++)
         {
-            var user = Randomizer.Seed.ChooseFrom(SampleData.Users);
+            User user = Randomizer.Seed.ChooseFrom(SampleData.Users);
             list.Remove(user).Should().Be(reference.Remove(user));
         }
 
@@ -186,7 +186,7 @@ public class BufWriterTests
 
         for (var i = 0; i < 100; i++)
         {
-            var index = Randomizer.Seed.Next(0, list.Count);
+            int index = Randomizer.Seed.Next(0, list.Count);
             list.RemoveAt(index);
             reference.RemoveAt(index);
         }
@@ -211,7 +211,7 @@ public class BufWriterTests
         {
             increment = Randomizer.Seed.Next(2, 10);
 
-            var index = Randomizer.Seed.Next(0, list.Count - increment);
+            int index = Randomizer.Seed.Next(0, list.Count - increment);
             list.RemoveRange(index, increment);
             reference.RemoveRange(index, increment);
         }
@@ -254,7 +254,7 @@ public class BufWriterTests
     {
         new BufWriter<User>().Sort();
         BufWriter<User> list = new();
-        foreach (var user in SampleData.Users)
+        foreach (User user in SampleData.Users)
         {
             list.Add(user);
         }
