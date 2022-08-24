@@ -58,7 +58,6 @@ public class VecQue<T> : IVector<T>
         : this(growthStrategy)
     {
         Storage = initialBuffer;
-        _length = _tail = 0;
     }
     /// <summary>
     ///     Initializes a new list with a initial buffer.
@@ -75,8 +74,7 @@ public class VecQue<T> : IVector<T>
     public VecQue(int initialMinimumCapacity, GrowthStrategy growthStrategy)
         : this(growthStrategy)
     {
-        Storage = new T[initialMinimumCapacity];
-        _length = _tail = 0;
+        Grow(initialMinimumCapacity);
     }
 
     /// <summary>
@@ -92,7 +90,24 @@ public class VecQue<T> : IVector<T>
     /// <summary>
     ///     The absolute position of the tail
     /// </summary>
-    public int Tail => _tail;
+    public int Tail
+    {
+        get => _tail;
+    }
+
+    /// <summary>
+    ///     Assigns the Tail field the specified value in range [0..Capacity)
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside of [0..Capacity)</exception>
+    protected void SetTailValue(in int value)
+    {
+        if ((nuint)value >= (nuint)Capacity)
+        {
+            ThrowHelper.ThrowArgumentOutOfRangeException(nameof(value), value, "Must be in range [0..Capacity)");
+        }
+
+        _tail = value;
+    }
 
     /// <summary>
     ///     The absolute position of the head, wrapped if necessary.
@@ -129,7 +144,6 @@ public class VecQue<T> : IVector<T>
             _length = value;
         }
     }
-
 
     /// <inheritdoc cref="IVector{T}.Count" />
     public int Count => Length;
@@ -187,7 +201,7 @@ public class VecQue<T> : IVector<T>
             return -1;
         }
 
-        var (primaryStart, primaryEnd, wrappedStart, wrappedEnd) = RangeAbsolute(start, count);
+        (int primaryStart, int primaryEnd, int wrappedStart, int wrappedEnd) = RangeAbsolute(start, count);
         // primary loop
         for (int i = primaryStart; i < primaryEnd; i++)
         {
@@ -285,7 +299,7 @@ public class VecQue<T> : IVector<T>
             return -1;
         }
 
-        var (primaryStart, primaryEnd, wrappedStart, wrappedEnd) = RangeAbsolute(start, count);
+        (int primaryStart, int primaryEnd, int wrappedStart, int wrappedEnd) = RangeAbsolute(start, count);
         // primary loop
         for (int i = primaryStart; i < primaryEnd; i++)
         {
@@ -334,7 +348,7 @@ public class VecQue<T> : IVector<T>
             return -1;
         }
 
-        var (primaryStart, primaryEnd, wrappedStart, wrappedEnd) = RangeAbsolute(start, count);
+        (int primaryStart, int primaryEnd, int wrappedStart, int wrappedEnd) = RangeAbsolute(start, count);
         // wrapped loop
         for (int i = wrappedEnd - 1; i >= wrappedStart; i--)
         {
@@ -382,7 +396,7 @@ public class VecQue<T> : IVector<T>
             return -1;
         }
 
-        var (primaryStart, primaryEnd, wrappedStart, wrappedEnd) = RangeAbsolute(start, count);
+        (int primaryStart, int primaryEnd, int wrappedStart, int wrappedEnd) = RangeAbsolute(start, count);
         // wrapped loop
         for (int i = wrappedEnd - 1; i >= wrappedStart; i--)
         {
@@ -412,7 +426,7 @@ public class VecQue<T> : IVector<T>
     [Pure]
     public int BinarySearch<C>(int start, int count, in T item, in C comparer) where C : IComparer<T>
     {
-        var (primaryStart, primaryCount, wrappedStart, wrappedCount) = RangeAbsoluteWithCount(start, count);
+        (int primaryStart, int primaryCount, int wrappedStart, int wrappedCount) = RangeAbsoluteWithCount(start, count);
         int primaryPos = Storage.AsSpan(primaryStart, primaryCount).BinarySearch(item, comparer);
         if (primaryPos >= 0)
         {
@@ -448,7 +462,7 @@ public class VecQue<T> : IVector<T>
         {
             return false;
         }
-        var (primaryStart, primaryEnd, wrappedStart, wrappedEnd) = RangeAbsolute(0, Length);
+        (int primaryStart, int primaryEnd, int wrappedStart, int wrappedEnd) = RangeAbsolute(0, Length);
         int primaryCount = primaryEnd - primaryStart;
         int wrappedCount = wrappedEnd - wrappedStart;
         return Storage.AsSpan(primaryStart, primaryCount).TryCopyTo(destination.Slice(0, primaryCount))
@@ -499,9 +513,10 @@ public class VecQue<T> : IVector<T>
         _length = 0;
     }
 
+    /// <inheritdoc cref="List{T}.AddRange"/>
     public void AddRange(ReadOnlySpan<T> items)
     {
-        (int head, bool _) = ReserveInternal(items.Length);
+        (int head, _) = ReserveInternal(items.Length);
         items.CopyTo(Storage.AsSpan(head, items.Length));
         _length += items.Length;
     }
@@ -514,7 +529,7 @@ public class VecQue<T> : IVector<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<T> AppendSpan(int length)
     {
-        (int head, bool _) = ReserveInternal(length);
+        (int head, _) = ReserveInternal(length);
         _length += length;
 
         return Storage.AsSpan(head, length);
@@ -541,7 +556,7 @@ public class VecQue<T> : IVector<T>
     {
         start.ValidateArgRange((uint)start <= (uint)Length);
         _= ReserveInternal(count);
-        MoveLeft(start, Length - start, count);
+        MoveLeftVirtual(start, Length - start, count);
         return IndexAbsolute(start).Index;
     }
 
@@ -623,7 +638,7 @@ public class VecQue<T> : IVector<T>
 
     private void RemoveInternal(int start, int count)
     {
-        var (primaryStart, primaryEnd, wrappedStart, wrappedEnd) = RangeAbsolute(start, count);
+        (int primaryStart, int primaryEnd, int wrappedStart, int wrappedEnd) = RangeAbsolute(start, count);
         int primaryCount = primaryEnd - primaryStart;
         if (primaryCount != 0)
         {
@@ -664,14 +679,13 @@ public class VecQue<T> : IVector<T>
         int wrappedReqIndex = reqIndex - cap;
         if (wrappedReqIndex <= Tail)
         {
-            return (wrappedReqIndex - additionalCapacity, true); // Sufficient capacity available from Top to Head.
+            return (wrappedReqIndex - additionalCapacity, true); // Sufficient capacity available from Head to Tail.
         }
 
         // Insufficient capacity available
         Grow(additionalCapacity, true);
-        Debug.Assert(reqIndex <= Capacity, "GrowAndUnwrap must align the buffer to TopVirtual == HeadVirtual hence Tail = 0 and HeadVirtual + additionalCapacity <= Capacity");
-
-        return (reqIndex - additionalCapacity, false);
+        int idx = GetContiguousCapacityIndexVirtual(additionalCapacity, out int wrapping);
+        return (idx, wrapping >= 0);
     }
 
     /// <summary>
@@ -695,8 +709,14 @@ public class VecQue<T> : IVector<T>
         Debug.Assert(success, "This can never fail!");
 
         Storage = newStorage;
+        _tail = 0;
     }
 
+    /// <summary>
+    ///     If <paramref name="requireContiguous"/> rotates the buffer to make <paramref name="additionalCapacity"/> available as a contiguous block of memory.;
+    ///     if sufficient capacity is available does nothing;
+    ///     otherwise throws.
+    /// </summary>
     protected virtual void GrowFixedSize(int additionalCapacity, bool requireContiguous)
     {
         if (Storage is null)
@@ -705,45 +725,81 @@ public class VecQue<T> : IVector<T>
             return;
         }
 
-        if (requireContiguous)
-        {
-            if (additionalCapacity > Tail)
-            {
-                ThrowGrowFixedSize(nameof(Tail));
-            }
-            ShiftRightInternal(Tail);
-            return;
-        }
-
-        if (additionalCapacity > Capacity)
+        if (additionalCapacity + Length > Capacity)
         {
             ThrowGrowFixedSize(nameof(Capacity));
         }
-        int tail = (Tail - additionalCapacity).PosMod(Capacity);
-        RotateLeft(additionalCapacity);
+
+        if (!requireContiguous)
+        {
+            return;
+        }
+
+        if (GetContiguousCapacityIndexVirtual(additionalCapacity, out _) >= 0)
+        {
+            return;
+        }
+
+        MoveLeftVirtual(Tail, Length, Tail);
+        _tail = 0;
+    }
+
+    /// <summary>
+    ///     Returns whether the ringbuffer contains amount consecutive elements.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected int GetContiguousCapacityIndexVirtual(int amount, out int wrapping)
+    {
+        wrapping = HeadVirtual - Capacity;
+        if (wrapping < 0 && -wrapping >= amount) // Sufficient capacity, unwrapped head
+        {
+            return Length + wrapping;
+        }
+
+        if (wrapping >= 0 && Tail - wrapping >= amount) // Sufficient capacity, wrapped head
+        {
+            return wrapping;
+        }
+
+        return -1;
     }
 
     /// <summary>
     ///     Grows the buffer according to the growth stragety.
     /// </summary>
-    /// <paramref name="additionalCapacity" >Indicates whether to reforms the buffer, so that Tail is 0 and HeadVirtual is Head.</paramref>
+    /// <paramref name="requireContiguous" >
+    ///     Indicates whether the <paramref name="additionalCapacity"/> must be available as a contiguous block of memory.
+    /// </paramref>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void Grow(int additionalCapacity, bool requireContiguous = false)
     {
+        if (Length + additionalCapacity < Capacity)
+        {
+            if (!requireContiguous)
+            {
+                // Sufficient non-contiguous capacity available
+                return;
+            }
+
+            if (GetContiguousCapacityIndexVirtual(additionalCapacity, out _) >= 0)
+            {
+                // Sufficient contiguous capacity available
+                return;
+            }
+        }
+
         switch (GrowthStrategy)
         {
             case GrowthStrategy.Exponential:
                 GrowContiguous(additionalCapacity);
                 break;
-            case GrowthStrategy.FixedSizeRotate:
+            case GrowthStrategy.FixedSizeAlign:
                 GrowFixedSize(additionalCapacity, requireContiguous);
                 break;
             default:
                 ThrowUnknownGrowthStrategy();
                 break;
         }
-
-        _tail = 0;
     }
 
     /// <summary>
@@ -777,103 +833,21 @@ public class VecQue<T> : IVector<T>
             return default;
         }
 
-        var growReq = GetShiftRequirements(wrapping);
+        int growReq = GetShiftRequirements(wrapping);
         if (growReq != 0)
         {
             Grow(growReq, true);
         }
         else
         {
-            ShiftRightInternal(wrapping);
+            MoveLeftVirtual(Tail, Length, wrapping);
+            _tail = 0;
         }
 
         return Storage.AsSpan(Tail, Length);
     }
 
-    /// <summary>
-    ///     Returns the requirements for a rotation by amount
-    /// </summary>
-    /// <remarks>
-    ///     If the rotation is cheap returns 0, otherwise the amount of elements that would be required to rotate.
-    /// </remarks>
-    [Pure]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private int GetShiftRequirements(int amount)
-    {
-        int available = Capacity - Length;
-        int growReq = Math.Max(amount - available, 0);
-        return growReq;
-    }
-
-    /// <summary>
-    ///    Rotates the ringbuffer to the left by amount, effectively shifting elements to the right.
-    /// </summary>
-    public void RotateLeft(int amount)
-    {
-        // Normalize shift amount
-        int tail = Tail;
-        int newTail = (tail + amount).PosMod(Capacity);
-        int shift = tail - newTail;
-
-    }
-
-    /// <summary>
-    ///    Rotates the ringbuffer to the left by amount, effectively shifting elements to the right.
-    /// </summary>
-    public void RotateRight(int amount)
-    {
-
-    }
-
-
-    /// <summary>
-    ///    Rotates the ringbuffer to the left by amount, by shifting elements to the right.
-    /// </summary>
-    public void ShiftLeft(int amount)
-    {
-        while (amount != 0)
-        {
-            amount = amount.PosMod(Capacity);
-            if (amount * 2 > Capacity)
-            {
-                // Cheaper to rotate right
-                ShiftRight(Capacity - amount);
-                return;
-            }
-
-            var growthRequired = GetShiftRequirements(amount);
-            if (growthRequired == 0)
-            {
-                ShiftLeftInternal(amount);
-                return;
-            }
-
-            int offset = Tail;
-            Grow(growthRequired, true); // Rotates right by Tail, so Tail = 0.
-            amount += offset;
-        }
-    }
-
-    /// <summary>
-    ///    Rotates the ringbuffer to the left by amount, by moving the elements in the range [Tail, Head) to the right.
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    protected void ShiftLeftInternal(int amount)
-    {
-        int tail = Tail;
-        MoveRight(tail, Length, amount);
-        _tail = tail + amount;
-    }
-
-    /// <summary>
-    /// Moves a range of elements to the left.
-    /// </summary>
-    /// <remarks>
-    ///     Requires a `amount` elements to be available.
-    ///
-    ///     Does not check for valid offsets.
-    /// </remarks>
-    private void MoveLeft(int startIndex, int count, int amount)
+    protected void MoveLeftVirtual(int startIndex, int count, int amount)
     {
         Debug.Assert(Length + amount <= Capacity, "Insufficient overhead capacity available");
 
@@ -911,87 +885,19 @@ public class VecQue<T> : IVector<T>
     }
 
     /// <summary>
-    ///    Rotates the ringbuffer to the right by amount, by shifting elements to the left.
-    /// </summary>
-    public void ShiftRight(int amount)
-    {
-        while (amount != 0)
-        {
-            amount = amount.PosMod(Capacity);
-            if (amount * 2 > Capacity)
-            {
-                // Cheaper to rotate left
-                ShiftLeft(Capacity - amount);
-                return;
-            }
-
-            var growthRequired = GetShiftRequirements(amount);
-            if (growthRequired == 0)
-            {
-                ShiftRightInternal(amount);
-                return;
-            }
-
-            int offset = Tail;
-            Grow(growthRequired, true); // Rotates right by Tail, so Tail = 0.
-            amount -= offset;
-        }
-    }
-
-    /// <summary>
-    ///    Rotates the ringbuffer to the right by amount, by moving the elements in the range [Tail, Head) to the left.
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    protected void ShiftRightInternal(int amount)
-    {
-        int tail = Tail;
-        MoveLeft(tail, Length, amount);
-        _tail = tail - amount;
-    }
-
-    /// <summary>
-    /// Moves a range of elements to the right.
+    ///     Returns the requirements for a rotation by amount
     /// </summary>
     /// <remarks>
-    ///     Requires `amount` elements to be available.
-    ///
-    ///     Does not check for valid offsets.
+    ///     If the rotation is cheap returns 0, otherwise the amount of elements that would be required to rotate.
     /// </remarks>
-    private void MoveRight(int startIndex, int count, int amount)
+    [Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private int GetShiftRequirements(int amount)
     {
-        Debug.Assert(Length + amount <= Capacity, "Insufficient overhead capacity available");
-
-        var (primaryStart, primaryCount, wrappedStart, wrappedCount) = RangeAbsoluteWithCount(startIndex, count);
-        if (primaryCount > 0)
-        {
-            // Inside the primary/unwrapped partition
-            Storage.AsSpan(primaryStart, primaryCount).CopyTo(Storage.AsSpan(primaryStart - amount, primaryCount));
-        }
-
-        if (wrappedCount <= 0)
-        {
-            return;
-        }
-
-        // Inside the wrapped partition
-        // Compute destination for primary window, this may require unwrapping.
-        var (dstPrimaryStart, dstPrimaryCount, dstWrappedStart, dstWrappedCount) = RangeAbsoluteWithCount(wrappedStart - amount, wrappedCount);
-        if (dstPrimaryCount > 0)
-        {
-            // Move wrapping partition to primary partition, if any
-
-            // We know that [primaryStart..primaryEnd) in the primary partition, so [primaryStart..primaryEnd)-amount
-            // may never overlap with Tail, because amount is defined as the minimum available capacity.
-            Storage.AsSpan(wrappedStart, dstPrimaryCount).CopyTo(Storage.AsSpan(dstPrimaryStart, dstPrimaryCount));
-        }
-
-        if (dstWrappedCount > 0)
-        {
-            // Move wrapping partition, if any
-            Storage.AsSpan(wrappedStart + dstPrimaryCount, dstWrappedCount).CopyTo(Storage.AsSpan(dstWrappedStart, dstWrappedCount));
-        }
+        int available = Capacity - Length;
+        int growReq = Math.Max(amount - available, 0);
+        return growReq;
     }
-
 
     /// <inheritdoc />
     public void Sort<C>(int start, int count, in C comparer) where C : IComparer<T>

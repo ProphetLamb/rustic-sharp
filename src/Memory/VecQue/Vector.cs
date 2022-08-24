@@ -16,7 +16,7 @@ public enum GrowthStrategy
     /// For FIFO queues, this is the last added element.
     /// For LIFO queues, this is the first added element.
     /// </remarks>
-    FixedSizeRotate,
+    FixedSizeAlign,
 }
 
 public static class VectorExtensions
