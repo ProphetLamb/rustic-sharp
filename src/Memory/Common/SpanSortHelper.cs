@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Rustic.Memory.Common;
 
-#if !(NET5_0_OR_GREATER || NET5_0)
+#if !NET5_0_OR_GREATER
 
 // Source: https://source.dot.net/#System.Private.CoreLib/ArraySortHelper.cs
 /// <summary>Provides the function <see cref="SpanSortHelper{T}.Sort"/> with which a <see cref="Span{T}"/> can be sorted.</summary>
