@@ -401,16 +401,25 @@ public readonly ref struct TinySpan<T>
 
     /// <summary>Retrieves the backing span of the <see cref="TinySpan{T}"/> or allocates a array which is returned as a span.</summary>
     /// <returns>The span containing all items.</returns>
+    /// <remarks>When using .NET Standard 2.1 or greater, or .NET Core 2.1 or greater the operation always is cheap and never allocates.</remarks>
     public ReadOnlySpan<T> ToSpan() => ToSpan(false);
 
     /// <summary>Returns the span representation of the <see cref="TinySpan{T}"/>.</summary>
     /// <param name="onlyIfCheap">Whether return an empty span instead of allocating an array, if no span is backing the <see cref="TinySpan{T}"/>.</param>
     /// <returns>The span containing all items.</returns>
+    /// <remarks>When using .NET Standard 2.1 or greater, or .NET Core 2.1 or greater the operation always is cheap and never allocates.</remarks>
     public ReadOnlySpan<T> ToSpan(bool onlyIfCheap)
     {
-        if (onlyIfCheap || IsEmpty || !_values.IsEmpty)
+        if (IsEmpty || !_values.IsEmpty)
         {
             return _values;
+        }
+
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        return MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef(in _arg0), _length);
+#endif
+        if (onlyIfCheap) {
+            return default;
         }
 
         var array = _length switch

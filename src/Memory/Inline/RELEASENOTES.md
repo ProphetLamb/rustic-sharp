@@ -1,3 +1,7 @@
+# Version 0.6
+
+- Optimize ToSpan performance for newer framework versions
+
 # Version 0.5
 
 - Build pipeline
