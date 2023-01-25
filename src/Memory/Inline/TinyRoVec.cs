@@ -304,9 +304,8 @@ public readonly struct TinyRoVec<T>
     }
 
     /// <inheritdoc/>
-    public override int GetHashCode()
-    {
-        return base.GetHashCode();
+    public override int GetHashCode() {
+        return Count;
     }
 
     /// <summary>
