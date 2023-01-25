@@ -7,14 +7,6 @@ namespace Rustic.Json;
 
 public static class JsonExtensions
 {
-    /// <summary>Configures the <see cref="JsonSerializerOptions"/> for <see cref="Option{T}"/> structures.</summary>
-    /// <typeparam name="T">The type of the Option value.</typeparam>
-    public static JsonSerializerOptions ConfigureOptions<T>(this JsonSerializerOptions self)
-    {
-        self.Converters.Add(new OptionConverter<T>());
-        return self;
-    }
-
     /// <summary>Attempts to enumerate the objects in the <see cref="JsonElement"/>.</summary>
     public static bool TryEnumerateObject(in this JsonElement self, [NotNullWhen(true)] out JsonElement.ObjectEnumerator enumerator)
     {

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 
-using Rustic;
 using Rustic.Memory;
 
 namespace Rustic.Text;

@@ -22,7 +22,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Common\Common.csproj" />
-    <ProjectReference Include="..\..\Functional\Functional.csproj" />
     <ProjectReference Include="..\Buffers\Buffers.csproj" />
   </ItemGroup>
 
