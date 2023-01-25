@@ -274,7 +274,9 @@ public readonly ref struct TinyRoSpan<T>
         get
         {
             ThrowHelper.ArgumentInRange(index, index >= 0 && index < Length);
-
+            if (!_values.IsEmpty) {
+                return _values[index];
+            }
             return index switch
             {
                 0 => _arg0!,

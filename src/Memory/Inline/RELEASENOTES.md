@@ -2,6 +2,7 @@
 
 - Optimize ToSpan performance for newer framework versions
 - Rename TinyRoSpan and TinyRoVec
+-	Fix bug preferring inline data when array is backing
 
 # Version 0.5
 

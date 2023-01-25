@@ -217,6 +217,9 @@ public readonly struct TinyRoVec<T>
         get
         {
             ThrowHelper.ArgumentInRange(index, index >= 0 && index < Count);
+            if (_params.Array is not null) {
+                return _params.Array[index];
+            }
             return index switch
             {
                 0 => _arg0!,
