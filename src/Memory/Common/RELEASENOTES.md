@@ -1,6 +1,7 @@
 # Version 0.6
 
 - Merge Rustic.Memory.Common namespace into Rustic.Memory
+- Mark classes as sealed when possible
 
 # Version 0.5
 

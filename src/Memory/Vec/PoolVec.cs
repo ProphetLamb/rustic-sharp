@@ -10,17 +10,17 @@ namespace Rustic.Memory;
 ///     The list allocated from a <see cref="ArrayPool{T}"/>.
 /// </summary>
 /// <typeparam name="T">The type of items of the list.</typeparam>
-public class PoolVec<T>
+public sealed class PoolVec<T>
     : Vec<T>, IDisposable
 {
     /// <summary>The pool from which to rent and to wich to return the internal storage.</summary>
-    protected ArrayPool<T> Pool;
+    private readonly ArrayPool<T> _pool;
 
     /// <summary>Initializes a new list.</summary>
     /// <param name="pool">The pool from which to allocate.</param>
     public PoolVec(ArrayPool<T>? pool = null)
     {
-        Pool = pool ?? ArrayPool<T>.Shared;
+        _pool = pool ?? ArrayPool<T>.Shared;
     }
 
     /// <summary>Initializes a new list with a initial buffer.</summary>
@@ -29,7 +29,7 @@ public class PoolVec<T>
     public PoolVec(T[] initialBuffer, ArrayPool<T>? pool = null)
         : base(initialBuffer)
     {
-        Pool = pool ?? ArrayPool<T>.Shared;
+        _pool = pool ?? ArrayPool<T>.Shared;
     }
 
     /// <summary>Initializes a new list with a specified minimum initial capacity.</summary>
@@ -37,8 +37,8 @@ public class PoolVec<T>
     /// <param name="pool">The pool from which to allocate.</param>
     public PoolVec(int initialMinimumCapacity, ArrayPool<T>? pool = null)
     {
-        Pool = pool ?? ArrayPool<T>.Shared;
-        Storage = Pool.Rent(initialMinimumCapacity);
+        _pool = pool ?? ArrayPool<T>.Shared;
+        Storage = _pool.Rent(initialMinimumCapacity);
     }
 
     /// <summary>Grows the list to have at least additional capacity beyond pos.</summary>
@@ -51,17 +51,17 @@ public class PoolVec<T>
         {
             Debug.Assert(Count > Storage.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
 
-            var temp = Pool.Rent((Count + additionalCapacityBeyondPos).Max(Storage.Length * 2));
+            var temp = _pool.Rent((Count + additionalCapacityBeyondPos).Max(Storage.Length * 2));
             Array.Copy(Storage, 0, temp, 0, Count);
             Storage = temp;
             if (temp is not null)
             {
-                Pool.Return(temp);
+                _pool.Return(temp);
             }
         }
         else
         {
-            Storage = Pool.Rent(additionalCapacityBeyondPos);
+            Storage = _pool.Rent(additionalCapacityBeyondPos);
         }
     }
 
@@ -70,11 +70,10 @@ public class PoolVec<T>
     public void Dispose()
     {
         Dispose(true);
-        GC.SuppressFinalize(this);
     }
 
     /// <inheritdoc cref="IDisposable.Dispose"/>
-    protected virtual void Dispose(bool disposing)
+    private void Dispose(bool disposing)
     {
         if (disposing)
         {
@@ -82,7 +81,7 @@ public class PoolVec<T>
             Storage = null;
             if (temp is not null)
             {
-                Pool.Return(temp);
+                _pool.Return(temp);
             }
         }
     }

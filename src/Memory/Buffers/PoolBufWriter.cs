@@ -32,7 +32,7 @@ namespace Rustic.Memory;
 ///     return writer.ToArray(dispose: true);
 /// </code>
 /// </remarks>
-public class PoolBufWriter<T> : BufWriter<T>
+public sealed class PoolBufWriter<T> : BufWriter<T>
 {
     private readonly ArrayPool<T> _pool;
 

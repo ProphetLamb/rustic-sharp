@@ -1,3 +1,7 @@
+# Version 0.6
+
+- Mark classes as sealed when possible
+
 # Version 0.5
 
 - Build pipeline
