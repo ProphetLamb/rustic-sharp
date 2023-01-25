@@ -5,7 +5,7 @@
 namespace System.Diagnostics.CodeAnalysis;
 #pragma warning restore IDE0130
 
-#if !(NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER || NET4_8_OR_GREATER)
+#if !(NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER || NET4_8_OR_GREATER)
 /// <summary>Specifies that null is allowed as an input even if the corresponding type disallows it.</summary>
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter | AttributeTargets.Property, Inherited = false)]
 public sealed class AllowNullAttribute : Attribute

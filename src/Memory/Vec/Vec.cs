@@ -179,7 +179,7 @@ public class Vec<T> : IVector<T>
         return Capacity;
     }
 
-#if NET5_0_OR_GREATER || NETCOREAPP3_1
+#if NET5_0_OR_GREATER || NETCOREAPP3_0
 
     /// <summary>
     ///     Get a pinnable reference to the list.
