@@ -48,7 +48,7 @@ public static class MemoryExtensions
     /// <typeparam name="T">The type of the elements of the span.</typeparam>
     public static void Sort<T>(this Span<T> span, Comparison<T> comparison)
     {
-        comparison.ValidateArgNotNull();
+        ThrowHelper.ArgumentNotNull(comparison);
         if (span.Length > 1)
         {
             SpanSortHelper<T>.Sort(span, comparison!);

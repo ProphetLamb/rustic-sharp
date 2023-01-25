@@ -100,7 +100,7 @@ public class Vec<T> : IVector<T>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
-            this.ValidateArg(Storage is not null);
+            ThrowHelper.ArgumentIs(this, Storage is not null);
             Debug.Assert(index < _count);
             return ref Storage[index];
         }
@@ -124,7 +124,7 @@ public class Vec<T> : IVector<T>
         get
         {
             var offset = index.GetOffset(_count);
-            offset.ValidateArgRange(offset >= 0 && offset < Length);
+            ThrowHelper.ArgumentInRange(offset, offset >= 0 && offset < Length);
             return ref Storage![offset];
         }
     }
@@ -154,9 +154,9 @@ public class Vec<T> : IVector<T>
 
     private void GuardRange(Range range, int start, int count)
     {
-        range.ValidateArgRange(start >= 0);
-        range.ValidateArgRange(count >= 0);
-        range.ValidateArgRange(start <= Length - count);
+        ThrowHelper.ArgumentInRange(range, start >= 0);
+        ThrowHelper.ArgumentInRange(range, count >= 0);
+        ThrowHelper.ArgumentInRange(range, start <= Length - count);
     }
 #endif
 
@@ -246,9 +246,9 @@ public class Vec<T> : IVector<T>
     public int BinarySearch<C>(int start, int count, in T item, in C comparer)
         where C : IComparer<T>
     {
-        start.ValidateArgRange(start >= 0);
-        count.ValidateArgRange(count >= 0);
-        count.ValidateArgRange(start <= Length - count);
+        ThrowHelper.ArgumentInRange(start, start >= 0);
+        ThrowHelper.ArgumentInRange(count, count >= 0);
+        ThrowHelper.ArgumentInRange(count, start <= Length - count);
         return Storage.AsSpan(start, count).BinarySearch(item, comparer);
     }
 
@@ -307,9 +307,9 @@ public class Vec<T> : IVector<T>
 
     private void GuardRange(int start, int count)
     {
-        start.ValidateArgRange(start >= 0);
-        count.ValidateArgRange(count >= 0);
-        count.ValidateArgRange(start <= Length - count);
+        ThrowHelper.ArgumentInRange(start, start >= 0);
+        ThrowHelper.ArgumentInRange(count, count >= 0);
+        ThrowHelper.ArgumentInRange(count, start <= Length - count);
     }
 
     /// <inheritdoc />
@@ -337,8 +337,8 @@ public class Vec<T> : IVector<T>
     /// <inheritdoc cref="List{T}.InsertRange"/>
     public void InsertRange(int index, ReadOnlySpan<T> values)
     {
-        index.ValidateArgRange(index >= 0);
-        index.ValidateArgRange(index <= Length);
+        ThrowHelper.ArgumentInRange(index, index >= 0);
+        ThrowHelper.ArgumentInRange(index, index <= Length);
 
         var count = values.Length;
         if (count == 0)
@@ -390,7 +390,7 @@ public class Vec<T> : IVector<T>
     /// <inheritdoc cref="List{T}.RemoveAt"/>
     public void RemoveAt(int index)
     {
-        this.ValidateArg(Storage is not null);
+        ThrowHelper.ArgumentIs(this, Storage is not null);
         var remaining = _count - index - 1;
         Array.Copy(Storage, index + 1, Storage, index, remaining);
         Storage[--_count] = default!;
@@ -618,9 +618,9 @@ public class Vec<T> : IVector<T>
     /// <inheritdoc/>
     public int BinarySearch(int start, int count, in T item)
     {
-        start.ValidateArgRange(start >= 0);
-        count.ValidateArgRange(count >= 0);
-        count.ValidateArgRange(start <= Length - count);
+        ThrowHelper.ArgumentInRange(start, start >= 0);
+        ThrowHelper.ArgumentInRange(count, count >= 0);
+        ThrowHelper.ArgumentInRange(count, start <= Length - count);
         return Storage.AsSpan(start, count).BinarySearch(item, Comparer<T>.Default);
     }
 

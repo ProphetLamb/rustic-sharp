@@ -239,7 +239,7 @@ public readonly ref struct TinySpan<T>
     /// <param name="arg3">The fourth value.</param>
     internal TinySpan(int length, [AllowNull] in T arg0, [AllowNull] in T arg1, [AllowNull] in T arg2, [AllowNull] in T arg3)
     {
-        length.ValidateArgRange(length <= 4);
+        ThrowHelper.ArgumentInRange(length, length <= 4);
 
         _values = default;
         _length = length;
@@ -273,7 +273,7 @@ public readonly ref struct TinySpan<T>
     {
         get
         {
-            index.ValidateArgRange(index >= 0 && index < Length);
+            ThrowHelper.ArgumentInRange(index, index >= 0 && index < Length);
 
             return index switch
             {

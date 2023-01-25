@@ -86,7 +86,7 @@ public ref struct RefVec<T>
         get
         {
             var offset = index.GetOffset(_pos);
-            index.ValidateArgRange(offset >= 0 && offset < Length);
+            ThrowHelper.ArgumentInRange(index, offset >= 0 && offset < Length);
             return ref _storage[offset];
         }
     }
@@ -108,16 +108,16 @@ public ref struct RefVec<T>
         {
             (var start, var count) = range.GetOffsetAndLength(_pos);
             GuardRange(range, start, count);
-            range.ValidateArgRange(count == value.Length);
+            ThrowHelper.ArgumentInRange(range, count == value.Length);
             value.CopyTo(_storage.Slice(start, count));
         }
     }
 
     private void GuardRange(in Range range, int start, int count)
     {
-        range.ValidateArgRange(start >= 0);
-        range.ValidateArgRange(count >= 0);
-        range.ValidateArgRange(start <= Length - count);
+        ThrowHelper.ArgumentInRange(range, start >= 0);
+        ThrowHelper.ArgumentInRange(range, count >= 0);
+        ThrowHelper.ArgumentInRange(range, start <= Length - count);
     }
 #endif
 
@@ -349,8 +349,8 @@ public ref struct RefVec<T>
     /// <inheritdoc cref="List{T}.InsertRange"/>
     public void InsertRange(int index, ReadOnlySpan<T> span)
     {
-        index.ValidateArgRange(index >= 0);
-        index.ValidateArgRange(index <= Length);
+        ThrowHelper.ArgumentInRange(index, index >= 0);
+        ThrowHelper.ArgumentInRange(index, index <= Length);
         var count = span.Length;
 
         if (_pos > _storage.Length - count)
@@ -454,9 +454,9 @@ public ref struct RefVec<T>
 
     private void GuardRange(int start, int count)
     {
-        start.ValidateArgRange(start >= 0);
-        count.ValidateArgRange(count >= 0);
-        count.ValidateArgRange(start <= Length - count);
+        ThrowHelper.ArgumentInRange(start, start >= 0);
+        ThrowHelper.ArgumentInRange(count, count >= 0);
+        ThrowHelper.ArgumentInRange(count, start <= Length - count);
     }
 
     /// <inheritdoc cref="List{T}.Reverse()"/>

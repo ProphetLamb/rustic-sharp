@@ -52,7 +52,7 @@ public static class ThrowHelper
     #region Validations
 
     [DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void ValidateArg<T>(this T value, [DoesNotReturnIf(false)] bool condition, [CallerArgumentExpression("value")] string name = null!, [CallerArgumentExpression("condition")] string message = null!)
+    public static void ArgumentIs<T>(T value, [DoesNotReturnIf(false)] bool condition, [CallerArgumentExpression("value")] string name = null!, [CallerArgumentExpression("condition")] string message = null!)
         where T : notnull
     {
         if (!condition)
@@ -62,7 +62,7 @@ public static class ThrowHelper
     }
 
     [DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void ValidateArgRange<T>(this T value, [DoesNotReturnIf(false)] bool condition, [CallerArgumentExpression("value")] string name = null!, [CallerArgumentExpression("condition")] string message = null!)
+    public static void ArgumentInRange<T>(T value, [DoesNotReturnIf(false)] bool condition, [CallerArgumentExpression("value")] string name = null!, [CallerArgumentExpression("condition")] string message = null!)
         where T : notnull
     {
         if (!condition)
@@ -72,7 +72,7 @@ public static class ThrowHelper
     }
 
     [DebuggerStepThrough]
-    public static void ValidateArgNotNull([ValidatedNotNull] this object? self, [CallerMemberName] string name = null!)
+    public static void ArgumentNotNull([ValidatedNotNull] object? self, [CallerMemberName] string name = null!)
     {
         if (self is null)
         {

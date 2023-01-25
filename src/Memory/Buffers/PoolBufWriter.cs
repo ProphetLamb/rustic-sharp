@@ -70,7 +70,7 @@ public class PoolBufWriter<T> : BufWriter<T>
         }
         else
         {
-            this.ValidateArg(Length != -1);
+            ThrowHelper.ArgumentIs(this, Length != -1);
             Buffer = _pool.Rent(additionalCapacityBeyondPos);
         }
     }

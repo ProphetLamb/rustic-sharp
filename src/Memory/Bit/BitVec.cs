@@ -37,8 +37,8 @@ public ref struct BitVec
         get => _pos;
         set
         {
-            value.ValidateArgRange(value >= 0);
-            value.ValidateArgRange(value <= Capacity);
+            ThrowHelper.ArgumentInRange(value, value >= 0);
+            ThrowHelper.ArgumentInRange(value, value <= Capacity);
             _pos = Count;
         }
     }
@@ -51,12 +51,12 @@ public ref struct BitVec
     {
         get
         {
-            index.ValidateArgRange(index >= 0 && index < Count);
+            ThrowHelper.ArgumentInRange(index, index >= 0 && index < Count);
             return _raw.IsMarked(index);
         }
         set
         {
-            index.ValidateArgRange(index >= 0 && index < Count);
+            ThrowHelper.ArgumentInRange(index, index >= 0 && index < Count);
             _raw.Set(index, Convert.ToInt32(value));
         }
     }

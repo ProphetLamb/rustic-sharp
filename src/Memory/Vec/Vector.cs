@@ -392,7 +392,7 @@ public static class VectorTraits
     /// <remarks>No block of elements in moved. The order of the vector is disturbed.</remarks>
     public static void SwapRemove<T>(this IVector<T> self, int index)
     {
-        index.ValidateArgRange(index >= 0 && index < self.Count);
+        ThrowHelper.ArgumentInRange(index, index >= 0 && index < self.Count);
         var last = self.Count - 1;
         self[index] = self[last];
         self.RemoveAt(last); // Should not copy when removing the last element.

@@ -55,7 +55,7 @@ public ref struct Tokenizer<T>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
-            value.ValidateArgRange(value >= 0 && value <= Length);
+            ThrowHelper.ArgumentInRange(value, value >= 0 && value <= Length);
 
             if (value > _pos)
             {
@@ -77,7 +77,7 @@ public ref struct Tokenizer<T>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
-            value.ValidateArgRange(value >= 0 && value <= Length - Width);
+            ThrowHelper.ArgumentInRange(value, value >= 0 && value <= Length - Width);
             _pos = value;
         }
     }
@@ -90,7 +90,7 @@ public ref struct Tokenizer<T>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
-            value.ValidateArgRange(value >= 0 && value <= Length - Position);
+            ThrowHelper.ArgumentInRange(value, value >= 0 && value <= Length - Position);
             _tokenLength = value;
         }
     }
@@ -113,7 +113,7 @@ public ref struct Tokenizer<T>
     {
         get
         {
-            index.ValidateArgRange(index >= 0 && index < Length);
+            ThrowHelper.ArgumentInRange(index, index >= 0 && index < Length);
             return ref _source[index];
         }
     }
@@ -135,7 +135,7 @@ public ref struct Tokenizer<T>
     /// <returns><see langword="true"/> if the elements could be consumed; otherwise, <see langword="false"/>.</returns>
     public bool Consume(int amount)
     {
-        amount.ValidateArgRange(amount <= _tokenLength);
+        ThrowHelper.ArgumentInRange(amount, amount <= _tokenLength);
 
         if (_pos < Length - _tokenLength - amount)
         {
@@ -187,8 +187,8 @@ public ref struct Tokenizer<T>
     /// <param name="position">The target position</param>
     public void Advance(int position)
     {
-        position.ValidateArgRange(position >= 0 && position < Length);
-        position.ValidateArgRange(position >= Head);
+        ThrowHelper.ArgumentInRange(position, position >= 0 && position < Length);
+        ThrowHelper.ArgumentInRange(position, position >= Head);
         _tokenLength = position - Head;
     }
 

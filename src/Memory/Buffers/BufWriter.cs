@@ -43,7 +43,7 @@ public class BufWriter<T> :
     /// <param name="initialCapacity">The minimum capacity of the writer.</param>
     public BufWriter(int initialCapacity)
     {
-        initialCapacity.ValidateArgRange(initialCapacity >= 0);
+        ThrowHelper.ArgumentInRange(initialCapacity, initialCapacity >= 0);
         if (initialCapacity != 0)
         {
             Buffer = new T[initialCapacity];
@@ -100,8 +100,8 @@ public class BufWriter<T> :
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
-            index.ValidateArgRange(index >= 0 && index < Length);
-            this.ValidateArg(Buffer is not null);
+            ThrowHelper.ArgumentInRange(index, index >= 0 && index < Length);
+            ThrowHelper.ArgumentIs(this, Buffer is not null);
             return ref Buffer[index];
         }
     }
@@ -125,8 +125,8 @@ public class BufWriter<T> :
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Advance(int count)
     {
-        count.ValidateArgRange(count >= 0);
-        count.ValidateArgRange(Length <= Capacity - count);
+        ThrowHelper.ArgumentInRange(count, count >= 0);
+        ThrowHelper.ArgumentInRange(count, Length <= Capacity - count);
         _index += count;
     }
 
@@ -187,7 +187,7 @@ public class BufWriter<T> :
     [CLSCompliant(false)]
     public void Insert(int index, in T item)
     {
-        index.ValidateArgRange(index >= 0 && index <= Count);
+        ThrowHelper.ArgumentInRange(index, index >= 0 && index <= Count);
 
         var pos = _index;
         if (pos > Capacity - 1)
@@ -215,7 +215,7 @@ public class BufWriter<T> :
     /// <inheritdoc />
     public void RemoveAt(int index)
     {
-        index.ValidateArgRange(index >= 0 && index < Count);
+        ThrowHelper.ArgumentInRange(index, index >= 0 && index < Count);
         Debug.Assert(Buffer is not null);
 
         var pos = _index - 1;
@@ -394,7 +394,7 @@ public class BufWriter<T> :
         }
         else
         {
-            this.ValidateArg(Length != -1);
+            ThrowHelper.ArgumentIs(this, Length != -1);
             Buffer = new T[Math.Max(additionalCapacityBeyondPos, 16)];
         }
     }
@@ -412,8 +412,8 @@ public class BufWriter<T> :
     /// <inheritdoc />
     public void InsertRange(int index, ReadOnlySpan<T> values)
     {
-        index.ValidateArgRange(index >= 0);
-        index.ValidateArgRange(index <= Length);
+        ThrowHelper.ArgumentInRange(index, index >= 0);
+        ThrowHelper.ArgumentInRange(index, index <= Length);
 
         var count = values.Length;
         if (count == 0)
@@ -477,9 +477,9 @@ public class BufWriter<T> :
 
     private void GuardRange(int start, int count)
     {
-        start.ValidateArgRange(start >= 0);
-        count.ValidateArgRange(count >= 0);
-        count.ValidateArgRange(start <= Length - count);
+        ThrowHelper.ArgumentInRange(start, start >= 0);
+        ThrowHelper.ArgumentInRange(count, count >= 0);
+        ThrowHelper.ArgumentInRange(count, start <= Length - count);
     }
 
     public ReadOnlySpan<T> AsSpan()
@@ -495,7 +495,7 @@ public class BufWriter<T> :
     /// <inheritdoc />
     public ReadOnlySpan<T> AsSpan(int start, int length)
     {
-        length.ValidateArgRange(length >= 0 && length < Count);
+        ThrowHelper.ArgumentInRange(length, length >= 0 && length < Count);
         return new(Buffer, start, length);
     }
 
@@ -569,7 +569,7 @@ public class BufWriter<T> :
 
         if (count != 0)
         {
-            this.ValidateArg(Buffer is not null);
+            ThrowHelper.ArgumentIs(this, Buffer is not null);
             Buffer.AsSpan(start, count).Sort();
         }
     }

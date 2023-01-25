@@ -169,7 +169,7 @@ public readonly struct TinyVec<T>
     /// <param name="arg3">The fourth value.</param>
     internal TinyVec(int length, [AllowNull] in T arg0, [AllowNull] in T arg1, [AllowNull] in T arg2, [AllowNull] in T arg3)
     {
-        length.ValidateArgRange(length <= 4);
+        ThrowHelper.ArgumentInRange(length, length <= 4);
 
         _params = default;
         _length = length;
@@ -215,7 +215,7 @@ public readonly struct TinyVec<T>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
-            index.ValidateArgRange(index >= 0 && index < Count);
+            ThrowHelper.ArgumentInRange(index, index >= 0 && index < Count);
             return index switch
             {
                 0 => _arg0!,

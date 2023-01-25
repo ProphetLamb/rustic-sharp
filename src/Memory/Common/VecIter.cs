@@ -26,10 +26,10 @@ public struct VecIter<T>
     /// <param name="count">The number of elements to iterate.</param>
     public VecIter(T[]? array, int offset, int count)
     {
-        offset.ValidateArgRange(offset >= 0);
-        count.ValidateArgRange(count >= 0);
+        ThrowHelper.ArgumentInRange(offset, offset >= 0);
+        ThrowHelper.ArgumentInRange(count, count >= 0);
         var arrayLength = (array?.Length) ?? 0;
-        count.ValidateArgRange(count <= arrayLength - offset);
+        ThrowHelper.ArgumentInRange(count, count <= arrayLength - offset);
 
         _array = array;
         _offset = offset;
@@ -73,7 +73,7 @@ public struct VecIter<T>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
-            index.ValidateArgRange(index >= 0 && index < Length);
+            ThrowHelper.ArgumentInRange(index, index >= 0 && index < Length);
 
             return ref _array![_offset + index];
         }
@@ -85,7 +85,7 @@ public struct VecIter<T>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
-            index.ValidateArgRange(index >= 0 && index < Length);
+            ThrowHelper.ArgumentInRange(index, index >= 0 && index < Length);
 
             return _array![_offset + index];
         }
