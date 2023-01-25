@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Memory" Version="4.5.4" Condition="!$(DefineConstants.Contains('NET5_0_OR_GREATER'))" />
+    <PackageReference Include="System.Memory" Version="4.5.5" Condition="!$(DefineConstants.Contains('NET5_0_OR_GREATER'))" />
     <PackageReference Include="System.Diagnostics.Contracts" Version="4.3.0" Condition="!$(DefineConstants.Contains('NETSTANDARD1_1_OR_GREATER'))" />
   </ItemGroup>
 
