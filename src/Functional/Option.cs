@@ -5,8 +5,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
-using Rustic;
-
 using static Rustic.Option;
 
 namespace Rustic;

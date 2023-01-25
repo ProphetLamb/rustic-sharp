@@ -24,10 +24,6 @@
   </Target>
 
   <ItemGroup>
-    <ProjectReference Include="..\DataEnumGen\DataEnumGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="System.Reflection.Emit" Version="4.7.0" />
     <PackageReference Include="System.Text.Json" Version="6.0.1" />
   </ItemGroup>
