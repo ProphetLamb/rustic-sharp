@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Rustic.Memory.Common;
+namespace Rustic.Memory;
 
 /// <summary>Proxy class used for displaying a <see cref="IReadOnlyCollection{T}"/> in the debugger.</summary>
 /// <typeparam name="T"></typeparam>

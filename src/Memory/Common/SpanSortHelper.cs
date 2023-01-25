@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Rustic.Memory.Common;
+namespace Rustic.Memory;
 
 #if !NET5_0_OR_GREATER
 

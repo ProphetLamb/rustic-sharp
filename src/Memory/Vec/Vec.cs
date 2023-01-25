@@ -6,7 +6,7 @@ using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-using Rustic.Memory.Common;
+using Rustic.Memory;
 
 namespace Rustic.Memory;
 

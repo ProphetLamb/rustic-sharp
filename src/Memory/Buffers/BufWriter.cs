@@ -7,7 +7,6 @@ using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 
 using Rustic.Memory;
-using Rustic.Memory.Common;
 
 namespace Rustic.Memory;
 

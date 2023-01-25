@@ -1,3 +1,7 @@
+# Version 0.6
+
+- Merge Rustic.Memory.Common namespace into Rustic.Memory
+
 # Version 0.5
 
 - Build pipeline

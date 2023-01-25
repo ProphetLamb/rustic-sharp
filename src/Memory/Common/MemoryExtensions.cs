@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 
 using Rustic;
-using Rustic.Memory.Common;
+using Rustic.Memory;
 
 #pragma warning disable IDE0130
 namespace System;
