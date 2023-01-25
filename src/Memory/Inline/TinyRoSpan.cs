@@ -283,7 +283,7 @@ public readonly ref struct TinyRoSpan<T>
                 1 => _arg1!,
                 2 => _arg2!,
                 3 => _arg3!,
-                _ => _values[index]!,
+                _ => UnreachableException.Throw<T>(),
             };
         }
     }

@@ -226,7 +226,7 @@ public readonly struct TinyRoVec<T>
                 1 => _arg1!,
                 2 => _arg2!,
                 3 => _arg3!,
-                _ => _params.Array![index],
+                _ => UnreachableException.Throw<T>(),
             };
         }
     }
