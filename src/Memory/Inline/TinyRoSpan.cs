@@ -255,11 +255,10 @@ public readonly ref struct TinyRoSpan<T>
     {
         _values = values;
         _length = values.Length;
-
-        _arg0 = values.Length > 0 ? values[0] : default!;
-        _arg1 = values.Length > 1 ? values[1] : default!;
-        _arg2 = values.Length > 2 ? values[2] : default!;
-        _arg3 = values.Length > 3 ? values[3] : default!;
+        _arg0 = default!;
+        _arg1 = default!;
+        _arg2 = default!;
+        _arg3 = default!;
     }
 
     /// <summary>The number of items in the params span.</summary>
