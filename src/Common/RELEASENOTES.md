@@ -1,3 +1,7 @@
+# Version 0.6
+
+- Add UnreachableException
+
 # Version 0.5
 
 - Build pipeline
