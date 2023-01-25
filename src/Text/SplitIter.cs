@@ -90,7 +90,7 @@ public static class SplitIterExtensions
     /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
     public static SplitIter<T> Split<T>(this ReadOnlySpan<T> span, in T separator, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
     {
-        return new(span, TinySpan.From(separator), options, comparer);
+        return new(span, TinyRoSpan.From(separator), options, comparer);
     }
 
     /// <summary>Splits the <paramref name="span"/> span at the positions defined by the separators.</summary>
@@ -103,7 +103,7 @@ public static class SplitIterExtensions
     /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
     public static SplitIter<T> Split<T>(this ReadOnlySpan<T> span, in T separator0, in T separator1, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
     {
-        return new(span, TinySpan.From(separator0, separator1), options, comparer);
+        return new(span, TinyRoSpan.From(separator0, separator1), options, comparer);
     }
 
     /// <summary>Splits the <paramref name="span"/> span at the positions defined by the separators.</summary>
@@ -117,7 +117,7 @@ public static class SplitIterExtensions
     /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
     public static SplitIter<T> Split<T>(this ReadOnlySpan<T> span, in T separator0, in T separator1, in T separator2, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
     {
-        return new(span, TinySpan.From(separator0, separator1, separator2), options, comparer);
+        return new(span, TinyRoSpan.From(separator0, separator1, separator2), options, comparer);
     }
 
     /// <summary>Splits the <paramref name="span"/> span at the positions defined by the separators.</summary>
@@ -132,7 +132,7 @@ public static class SplitIterExtensions
     /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
     public static SplitIter<T> Split<T>(this ReadOnlySpan<T> span, in T separator0, in T separator1, in T separator2, in T separator3, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
     {
-        return new(span, TinySpan.From(separator0, separator1, separator2, separator3), options, comparer);
+        return new(span, TinyRoSpan.From(separator0, separator1, separator2, separator3), options, comparer);
     }
 
     /// <summary>Splits the <paramref name="span"/> span at the positions defined by the <paramref name="separators"/>.</summary>
@@ -142,7 +142,7 @@ public static class SplitIterExtensions
     /// <param name="comparer">The comparer used to determine whether two objects are equal.</param>
     /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
     /// <returns>The iterator splitting the <paramref name="span"/> with the specified parameters.</returns>
-    public static SplitIter<T> Split<T>(this ReadOnlySpan<T> span, TinySpan<T> separators, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
+    public static SplitIter<T> Split<T>(this ReadOnlySpan<T> span, TinyRoSpan<T> separators, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
     {
         return new(span, separators, options, comparer);
     }
@@ -154,7 +154,7 @@ public static class SplitIterExtensions
     /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
     public static SplitIter<T> Split<T>(this Span<T> span, in T separator)
     {
-        return new(span, TinySpan.From(separator), SplitOptions.None, null);
+        return new(span, TinyRoSpan.From(separator), SplitOptions.None, null);
     }
 
     /// <summary>Splits the <paramref name="span"/> span at the positions defined by the <paramref name="separator"/>.</summary>
@@ -166,7 +166,7 @@ public static class SplitIterExtensions
     /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
     public static SplitIter<T> Split<T>(this Span<T> span, in T separator, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
     {
-        return new(span, TinySpan.From(separator), options, comparer);
+        return new(span, TinyRoSpan.From(separator), options, comparer);
     }
 
 
@@ -180,7 +180,7 @@ public static class SplitIterExtensions
     /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
     public static SplitIter<T> Split<T>(this Span<T> span, in T separator0, in T separator1, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
     {
-        return new(span, TinySpan.From(separator0, separator1), options, comparer);
+        return new(span, TinyRoSpan.From(separator0, separator1), options, comparer);
     }
 
     /// <summary>Splits the <paramref name="span"/> span at the positions defined by the <paramref name="separators"/>.</summary>
@@ -190,7 +190,7 @@ public static class SplitIterExtensions
     /// <param name="comparer">The comparer used to determine whether two objects are equal.</param>
     /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
     /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
-    public static SplitIter<T> Split<T>(this Span<T> span, TinySpan<T> separators, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
+    public static SplitIter<T> Split<T>(this Span<T> span, TinyRoSpan<T> separators, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
     {
         return new(span, separators, options, comparer);
     }
@@ -201,10 +201,10 @@ public static class SplitIterExtensions
 public ref struct SplitIter<T>
 {
     private Tokenizer<T> _tokenizer;
-    private TinySpan<T> _separators;
+    private TinyRoSpan<T> _separators;
     private SplitOptions _options;
 
-    internal SplitIter(ReadOnlySpan<T> input, in TinySpan<T> separators, SplitOptions options, IEqualityComparer<T>? comparer)
+    internal SplitIter(ReadOnlySpan<T> input, in TinyRoSpan<T> separators, SplitOptions options, IEqualityComparer<T>? comparer)
     {
         _tokenizer = new Tokenizer<T>(input, comparer);
         _separators = separators;

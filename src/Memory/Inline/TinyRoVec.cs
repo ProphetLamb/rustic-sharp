@@ -1,26 +1,27 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Rustic.Memory;
 
 /// <summary>Partially inlined immutable collection of function parameters.</summary>
-public static class TinySpan
+public static class TinyRoVec
 {
-    /// <summary>Returns an empty <see cref="TinySpan{T}"/>.</summary>
+    /// <summary>Returns an empty <see cref="TinyRoVec{T}"/>.</summary>
     /// <typeparam name="T">The type of the span.</typeparam>
-    /// <returns>An empty <see cref="TinySpan{T}"/>.</returns>
-    public static TinySpan<T> Empty<T>() => new(ReadOnlySpan<T>.Empty);
+    /// <returns>An empty <see cref="TinyRoVec{T}"/>.</returns>
+    public static TinyRoVec<T> Empty<T>() => default;
 
     /// <summary>Initializes a new parameter span with one value.</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="arg0">The first value.</param>
-    public static TinySpan<T> From<T>(in T arg0)
+    public static TinyRoVec<T> From<T>(in T arg0)
     {
         return new(1, arg0, default, default, default);
     }
@@ -29,7 +30,7 @@ public static class TinySpan
     /// <typeparam name="T"></typeparam>
     /// <param name="arg0">The first value.</param>
     /// <param name="arg1">The second value.</param>
-    public static TinySpan<T> From<T>(in T arg0, in T arg1)
+    public static TinyRoVec<T> From<T>(in T arg0, in T arg1)
     {
         return new(2, arg0, arg1, default, default);
     }
@@ -39,7 +40,7 @@ public static class TinySpan
     /// <param name="arg0">The first value.</param>
     /// <param name="arg1">The second value.</param>
     /// <param name="arg2">The third value.</param>
-    public static TinySpan<T> From<T>(in T arg0, in T arg1, in T arg2)
+    public static TinyRoVec<T> From<T>(in T arg0, in T arg1, in T arg2)
     {
         return new(3, arg0, arg1, arg2, default);
     }
@@ -50,109 +51,62 @@ public static class TinySpan
     /// <param name="arg1">The second value.</param>
     /// <param name="arg2">The third value.</param>
     /// <param name="arg3">The fourth value.</param>
-    public static TinySpan<T> From<T>(in T arg0, in T arg1, in T arg2, in T arg3)
+    public static TinyRoVec<T> From<T>(in T arg0, in T arg1, in T arg2, in T arg3)
     {
         return new(4, arg0, arg1, arg2, arg3);
     }
 
     /// <summary>Initializes a new parameter span with a sequence of values.</summary>
     /// <typeparam name="T"></typeparam>
-    /// <param name="values">The values collection.</param>
-    public static TinySpan<T> From<T>(in ReadOnlySpan<T> values)
+    /// <param name="values">The values array.</param>
+    public static TinyRoVec<T> From<T>(in ArraySegment<T> values)
     {
         return new(values);
     }
 
     /// <summary>Initializes a new parameter span with a sequence of values.</summary>
     /// <typeparam name="T"></typeparam>
-    /// <param name="values">The values collection.</param>
-    public static TinySpan<T> From<T>(in Span<T> values)
+    /// <param name="values">The values array.</param>
+    public static TinyRoVec<T> From<T>(T[] values)
     {
-        return new(values);
+        return new(new ArraySegment<T>(values, 0, values.Length));
     }
 
-    /// <summary>Initializes a new parameter span with a sequence of values. Does not allocate or copy.</summary>
+    /// <summary>Initializes a new parameter span with a sequence of values.</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="values">The values collection.</param>
     /// <param name="start">The zero-based index of the first value.</param>
-    public static TinySpan<T> From<T>(T[] values, int start)
+    public static TinyRoVec<T> From<T>(T[] values, int start)
     {
-        return new(new ReadOnlySpan<T>(values, start, values.Length - start));
+        return new(new ArraySegment<T>(values, start, values.Length - start));
     }
 
-    /// <summary>Initializes a new parameter span with a sequence of values. Does not allocate or copy.</summary>
+    /// <summary>Initializes a new parameter span with a sequence of values.</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="values">The values collection.</param>
     /// <param name="start">The zero-based index of the first value.</param>
     /// <param name="length">The number of values form the <paramref name="start"/>.</param>
-    public static TinySpan<T> From<T>(T[] values, int start, int length)
+    public static TinyRoVec<T> From<T>(T[] values, int start, int length)
     {
-        return new(new ReadOnlySpan<T>(values, start, length));
+        return new(new ArraySegment<T>(values, start, length));
     }
 
-    /// <summary>Initializes a new parameter span with a sequence of values. Does not allocate or copy.</summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="values">The sequence of values.</param>
-    /// <remarks>
-    ///     If <paramref name="values"/> if of the type [I] Array, [II] (ReadOnly-)Memory, or [III] ArraySegment,
-    ///     then <see cref="TinySpan{T}"/> uses the allocated memory of <paramref name="values"/>.
-    /// <br/>
-    ///     If a deep copy is desired use <see cref="Copy"/>.
-    /// </remarks>
-    public static TinySpan<T> From<T>(T[] values)
-    {
-        return new(new ReadOnlySpan<T>(values, 0, values.Length));
-    }
-
-    /// <summary>Initializes a new parameter span with a sequence of values. Does not allocate or copy.</summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="values">The sequence of values.</param>
-    /// <remarks>
-    ///     If <paramref name="values"/> if of the type [I] Array, [II] (ReadOnly-)Memory, or [III] ArraySegment,
-    ///     then <see cref="TinySpan{T}"/> uses the allocated memory of <paramref name="values"/>.
-    /// <br/>
-    ///     If a deep copy is desired use <see cref="Copy"/>.
-    /// </remarks>
-    public static TinySpan<T> From<T>(ReadOnlyMemory<T> values)
-    {
-        return From(values.Span);
-    }
-
-    /// <summary>Initializes a new parameter span with a sequence of values. Does not allocate or copy.</summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="values">The sequence of values.</param>
-    /// <remarks>
-    ///     If <paramref name="values"/> if of the type [I] Array, [II] (ReadOnly-)Memory, or [III] ArraySegment,
-    ///     then <see cref="TinySpan{T}"/> uses the allocated memory of <paramref name="values"/>.
-    /// <br/>
-    ///     If a deep copy is desired use <see cref="Copy"/>.
-    /// </remarks>
-    public static TinySpan<T> From<T>(Memory<T> values)
-    {
-        return From(values.Span);
-    }
-
-    /// <summary>Initializes a new parameter span with a sequence of values. Does not allocate or copy.</summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="values">The sequence of values.</param>
-    /// <remarks>
-    ///     If <paramref name="values"/> if of the type [I] Array, [II] (ReadOnly-)Memory, or [III] ArraySegment,
-    ///     then <see cref="TinySpan{T}"/> uses the allocated memory of <paramref name="values"/>.
-    /// <br/>
-    ///     If a deep copy is desired use <see cref="Copy"/>.
-    /// </remarks>
-    public static TinySpan<T> From<T>(ArraySegment<T> values)
-    {
-        return new(values);
-    }
-
-    /// <summary>Initializes a new parameter span with a sequence of values. Performs a shallow-copy of the sequence of values.</summary>
+    /// <summary>Initializes a new parameter span with a sequence of values. Performs a shallow copy.</summary>
     /// <typeparam name="T"></typeparam>
     /// <typeparam name="E"></typeparam>
     /// <param name="values">The sequence of values.</param>
-    public static TinySpan<T> Copy<T, E>(E values)
+    public static TinyRoVec<T> Copy<T, E>(E values)
         where E : IEnumerable<T>
     {
+        if (values is T[] array)
+        {
+            // This should never occur.
+            return From(array);
+        }
+        if (values is ArraySegment<T> segment)
+        {
+            return new(segment);
+        }
         using var en = values.GetEnumerator();
         if (!en.MoveNext())
         {
@@ -193,55 +147,32 @@ public static class TinySpan
         var count = args.Length;
         return new(args.ToSegment());
     }
-
-    /// <summary>
-    ///     Determines whether two sequences are equal by comparing the elements.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public static bool SequenceEquals<T>(this TinySpan<T> span, in TinySpan<T> other)
-        where T : IEquatable<T>
-    {
-        // If we have 4 or less elements the == operator performs a sequence equals.
-        // If we have more then 4 elements we compare the pointers of the internal span.
-        if (span == other)
-        {
-            return true;
-        }
-
-        // Internal spans may not be
-        if (span.Length != other.Length || span.Length <= 4)
-        {
-            return false;
-        }
-
-        // The internal spans are not the same, but are present, so the operation is always cheap.
-        return span.ToSpan(true).SequenceEqual(other.ToSpan(true));
-    }
 }
 
 /// <summary>A structure representing a immutable sequence of function parameters.</summary>
 /// <typeparam name="T"></typeparam>
-[StructLayout(LayoutKind.Sequential), DebuggerDisplay("{GetDebuggerDisplay(),nq}")]
-public readonly ref struct TinySpan<T>
+[DebuggerDisplay("{GetDebuggerDisplay(),nq}")]
+public readonly struct TinyRoVec<T>
+    : IReadOnlyList<T>
 {
+    private readonly int _length;
     [AllowNull] private readonly T _arg0;
     [AllowNull] private readonly T _arg1;
     [AllowNull] private readonly T _arg2;
     [AllowNull] private readonly T _arg3;
-    private readonly int _length;
-    private readonly ReadOnlySpan<T> _values;
+    private readonly ArraySegment<T> _params;
 
-    /// <summary>Initializes a new parameter span with values.</summary>
+    /// <summary>Initializes a new parameter span with one value.</summary>
     /// <param name="length">The number of non default values.</param>
     /// <param name="arg0">The first value.</param>
     /// <param name="arg1">The second value.</param>
     /// <param name="arg2">The third value.</param>
     /// <param name="arg3">The fourth value.</param>
-    internal TinySpan(int length, [AllowNull] in T arg0, [AllowNull] in T arg1, [AllowNull] in T arg2, [AllowNull] in T arg3)
+    internal TinyRoVec(int length, [AllowNull] in T arg0, [AllowNull] in T arg1, [AllowNull] in T arg2, [AllowNull] in T arg3)
     {
         ThrowHelper.ArgumentInRange(length, length <= 4);
 
-        _values = default;
+        _params = default;
         _length = length;
         _arg0 = arg0;
         _arg1 = arg1;
@@ -249,71 +180,60 @@ public readonly ref struct TinySpan<T>
         _arg3 = arg3;
     }
 
-    /// <summary>Initializes a new parameter span with a sequence of values.</summary>
-    /// <param name="values">The values collection.</param>
-    internal TinySpan(in ReadOnlySpan<T> values)
+    /// <summary>Initializes a new parameter span with a sequence of parameters.</summary>
+    /// <param name="segment">The segment of parameters.</param>
+    internal TinyRoVec(in ArraySegment<T> segment)
     {
-        _values = values;
-        _length = values.Length;
+        _params = segment;
+        _length = segment.Count;
 
-        _arg0 = values.Length > 0 ? values[0] : default!;
-        _arg1 = values.Length > 1 ? values[1] : default!;
-        _arg2 = values.Length > 2 ? values[2] : default!;
-        _arg3 = values.Length > 3 ? values[3] : default!;
+        if (segment.Array is null)
+        {
+            _arg0 = default!;
+            _arg1 = default!;
+            _arg2 = default!;
+            _arg3 = default!;
+        }
+        else
+        {
+            var i = 0;
+            _arg0 = _length > 0 ? segment.Array[i++] : default!;
+            _arg1 = _length > 1 ? segment.Array[i++] : default!;
+            _arg2 = _length > 2 ? segment.Array[i++] : default!;
+            _arg3 = _length > 3 ? segment.Array[i] : default!;
+        }
     }
 
-    /// <summary>The number of items in the params span.</summary>
-    public int Length => _length;
+    /// <inheritdoc/>
+    public int Count => _length;
 
-    /// <summary>Returns true if Length is 0.</summary>
+    /// <inheritdoc cref="IReadOnlyVector{T}.IsEmpty"/>
     public bool IsEmpty => 0 >= (uint)_length;
 
-    /// <inheritdoc cref="IReadOnlyList{T}.this" />
+    /// <inheritdoc/>
     public T this[int index]
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
-            ThrowHelper.ArgumentInRange(index, index >= 0 && index < Length);
-
+            ThrowHelper.ArgumentInRange(index, index >= 0 && index < Count);
             return index switch
             {
                 0 => _arg0!,
                 1 => _arg1!,
                 2 => _arg2!,
                 3 => _arg3!,
-                _ => _values[index]!,
+                _ => _params.Array![index],
             };
         }
     }
 
-#pragma warning disable CS0809
-
-    /// <inheritdoc cref="Object.Equals(Object)" />
-    [Obsolete("Not applicable to a ref struct.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public override bool Equals(object? obj)
-    {
-        ThrowHelper.ThrowNotSupportedException();
-        return default!; // unreachable.
-    }
-
-    /// <inheritdoc cref="Object.GetHashCode" />
-    [Obsolete("Not applicable to a ref struct.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public override int GetHashCode()
-    {
-        ThrowHelper.ThrowNotSupportedException();
-        return default!; // unreachable.
-    }
-
-#pragma warning restore CS0809
-
-    /// <inheritdoc cref="Span{T}.CopyTo"/>
+    /// <inheritdoc/>
     public void CopyTo(Span<T> destination)
     {
-        if (!_values.IsEmpty)
+        if (_params.Count > 0)
         {
-            _values.CopyTo(destination);
+            _params.AsSpan().CopyTo(destination);
         }
 
         if ((uint)_length <= (uint)destination.Length)
@@ -322,12 +242,12 @@ public readonly ref struct TinySpan<T>
         }
     }
 
-    /// <inheritdoc cref="Span{T}.TryCopyTo"/>
+    /// <inheritdoc/>
     public bool TryCopyTo(Span<T> destination)
     {
-        if (!_values.IsEmpty)
+        if (_params.Count > 0)
         {
-            return _values.TryCopyTo(destination);
+            return _params.AsSpan().TryCopyTo(destination);
         }
         else if ((uint)_length <= (uint)destination.Length)
         {
@@ -366,16 +286,34 @@ public readonly ref struct TinySpan<T>
                 destination[index] = _arg0!;
                 break;
             default:
-                // Nothing to do.
+                // noop
                 break;
         }
     }
 
+    /// <inheritdoc/>
+    public bool Equals(in TinyRoVec<T> other)
+    {
+        return this == other;
+    }
+
+    /// <inheritdoc/>
+    public override bool Equals(object? obj)
+    {
+        return obj is TinyRoVec<T> other && Equals(other);
+    }
+
+    /// <inheritdoc/>
+    public override int GetHashCode()
+    {
+        return base.GetHashCode();
+    }
+
     /// <summary>
     ///     Returns <see langword="false"/> if left and right point at the same memory and have the same length.  Note that
-    ///     this does *not* check to see if the *contents* are equal.
+    ///     this does *not* necessarily check to see if the *contents* are equal.
     /// </summary>
-    public static bool operator ==(TinySpan<T> left, TinySpan<T> right)
+    public static bool operator ==(TinyRoVec<T> left, TinyRoVec<T> right)
     {
         if (left._length != right._length)
         {
@@ -384,7 +322,7 @@ public readonly ref struct TinySpan<T>
 
         if (left._length > 4)
         {
-            return left._values == right._values;
+            return left._params.AsSpan() == right._params.AsSpan();
         }
 
         return EqualityComparer<T>.Default.Equals(left._arg0, right._arg0)
@@ -397,22 +335,24 @@ public readonly ref struct TinySpan<T>
     ///     Returns <see langword="false"/> if left and right point at the same memory and have the same length.  Note that
     ///     this does *not* check to see if the *contents* are equal.
     /// </summary>
-    public static bool operator !=(TinySpan<T> left, TinySpan<T> right) => !(left == right);
+    public static bool operator !=(TinyRoVec<T> left, TinyRoVec<T> right) => !(left == right);
 
-    /// <summary>Retrieves the backing span of the <see cref="TinySpan{T}"/> or allocates a array which is returned as a span.</summary>
+    /// <summary>Retrieves the backing span of the <see cref="TinyRoVec{T}"/> or allocates a array which is returned as a span.</summary>
     /// <returns>The span containing all items.</returns>
     /// <remarks>When using .NET Standard 2.1 or greater, or .NET Core 2.1 or greater the operation always is cheap and never allocates.</remarks>
+    [Pure]
     public ReadOnlySpan<T> ToSpan() => ToSpan(false);
 
-    /// <summary>Returns the span representation of the <see cref="TinySpan{T}"/>.</summary>
-    /// <param name="onlyIfCheap">Whether return an empty span instead of allocating an array, if no span is backing the <see cref="TinySpan{T}"/>.</param>
+    /// <summary>Returns the span representation of the <see cref="TinyRoVec{T}"/>.</summary>
+    /// <param name="onlyIfCheap">Whether return an empty span instead of allocating an array, if no span is backing the <see cref="TinyRoVec{T}"/>.</param>
     /// <returns>The span containing all items.</returns>
     /// <remarks>When using .NET Standard 2.1 or greater, or .NET Core 2.1 or greater the operation always is cheap and never allocates.</remarks>
+    [Pure]
     public ReadOnlySpan<T> ToSpan(bool onlyIfCheap)
     {
-        if (IsEmpty || !_values.IsEmpty)
+        if (IsEmpty || _params.Count > 0)
         {
-            return _values;
+            return _params.Array is null ? default : new ReadOnlySpan<T>(_params.Array, _params.Offset, _params.Count);
         }
 
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
@@ -428,71 +368,70 @@ public readonly ref struct TinySpan<T>
             3 => new[] { _arg0!, _arg1!, _arg2! },
             2 => new[] { _arg0!, _arg1! },
             1 => new[] { _arg0! },
-            _ => default // unreachable
+            _ => Array.Empty<T>()
         };
 
-        return new ReadOnlySpan<T>(array!, 0, _length);
+        return new ReadOnlySpan<T>(array, 0, _length);
     }
 
     /// <summary>Initializes a new span from the value.</summary>
     /// <param name="self">The value.</param>
-    public static implicit operator TinySpan<T>(in T self) => TinySpan.From(self);
+    public static implicit operator TinyRoVec<T>(in T self) => TinyRoVec.From(self);
 
     /// <summary>Initializes a new span from the sequence.</summary>
     /// <param name="self">The sequence of values.</param>
-    public static implicit operator TinySpan<T>(in ReadOnlySpan<T> self) => TinySpan.From(self);
+    public static implicit operator TinyRoVec<T>(in T[] self) => TinyRoVec.From(self);
 
     /// <summary>Initializes a new span from the sequence.</summary>
     /// <param name="self">The sequence of values.</param>
-    public static implicit operator TinySpan<T>(in Span<T> self) => TinySpan.From(self);
-
-    /// <summary>Initializes a new span from the sequence.</summary>
-    /// <param name="self">The sequence of values.</param>
-    public static implicit operator TinySpan<T>(in T[] self) => TinySpan.From(self);
+    public static implicit operator TinyRoVec<T>(in ArraySegment<T> self) => TinyRoVec.From(self);
 
     private string GetDebuggerDisplay()
     {
-        StrBuilder sb = new();
-        sb.Append("Length = ");
-        sb.Append(Length.ToString(System.Globalization.CultureInfo.CurrentCulture.NumberFormat));
-        sb.Append(", Params = {");
+        StrBuilder vsb = new(stackalloc char[256]);
+        vsb.Append("Length = ");
+        vsb.Append(Count.ToString(CultureInfo.InvariantCulture));
+        vsb.Append(", Params = {");
 
         var last = _length - 1;
         for (var i = 0; i < last; i++)
         {
-            sb.Append(this[i]?.ToString());
-            sb.Append(", ");
+            vsb.Append(this[i]!.ToString());
+            vsb.Append(", ");
         }
 
         if (!IsEmpty)
         {
-            sb.Append(this[last]?.ToString());
+            vsb.Append(this[last]!.ToString());
         }
 
-        sb.Append('}');
-        return sb.ToString();
+        vsb.Append('}');
+        return vsb.ToString();
     }
 
-    /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
+    /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
     [Pure]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Enumerator GetEnumerator() => new(this);
 
-    /// <summary>Enumerates the elements of a <see cref="TinySpan{T}"/>.</summary>
-    public ref struct Enumerator
-    {
-        /// <summary>The span being enumerated.</summary>
-        private TinySpan<T> _span;
+    /// <inheritdoc/>
+    IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
-        /// <summary>The next index to yield.</summary>
+    /// <inheritdoc/>
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    /// <summary>Enumerates the elements of a <see cref="TinyRoVec{T}"/>.</summary>
+    public struct Enumerator : IEnumerator<T>
+    {
+        private TinyRoVec<T> _array;
         private int _index;
 
         /// <summary>Initialize the enumerator.</summary>
-        /// <param name="TinySpan">The span to enumerate.</param>
+        /// <param name="TinyRoVec">The span to enumerate.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal Enumerator(in TinySpan<T> TinySpan)
+        internal Enumerator(in TinyRoVec<T> TinyRoVec)
         {
-            _span = TinySpan;
+            _array = TinyRoVec;
             _index = -1;
         }
 
@@ -502,7 +441,7 @@ public readonly ref struct TinySpan<T>
         {
             var index = _index + 1;
 
-            if ((uint)index < (uint)_span.Length)
+            if ((uint)index < (uint)_array.Count)
             {
                 _index = index;
                 return true;
@@ -515,8 +454,10 @@ public readonly ref struct TinySpan<T>
         public T Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _span[_index]!;
+            get => _array[_index]!;
         }
+
+        object? IEnumerator.Current => Current;
 
         /// <summary>Resets the enumerator to the initial state.</summary>
         public void Reset()

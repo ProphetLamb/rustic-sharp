@@ -459,7 +459,7 @@ public ref struct Tokenizer<T>
     /// <param name="expectedSequence">The expected sequence.</param>
     /// <returns><see langword="true"/> if the remaining elements contain the sequence of elements; otherwise, <see langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Read(in TinySpan<T> expectedSequence)
+    public bool Read(in TinyRoSpan<T> expectedSequence)
     {
         var success = Peek(expectedSequence, out var head);
         Head = head;
@@ -472,7 +472,7 @@ public ref struct Tokenizer<T>
     /// <param name="expectedSequence">The sequence of elements.</param>
     /// <returns><see langword="true"/> if the remaining elements contain the sequence of elements; otherwise, <see langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryRead(in TinySpan<T> expectedSequence)
+    public bool TryRead(in TinyRoSpan<T> expectedSequence)
     {
         if (Peek(expectedSequence, out var head))
         {
@@ -490,7 +490,7 @@ public ref struct Tokenizer<T>
     /// <param name="head">The position of the element after the sequence.</param>
     /// <returns><see langword="true"/> if the remaining elements contain the sequence of elements; otherwise, <see langword="false"/>.</returns>
     [Pure]
-    public bool Peek(in TinySpan<T> expectedSequence, out int head)
+    public bool Peek(in TinyRoSpan<T> expectedSequence, out int head)
     {
         head = Head;
         if (head == _source.Length)
@@ -547,7 +547,7 @@ public ref struct Tokenizer<T>
     /// <param name="expectedSequence">The sequence of elements.</param>
     /// <returns><see langword="true"/> if the following elements are equal to the sequence of elements; otherwise, <see langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool ReadNext(in TinySpan<T> expectedSequence)
+    public bool ReadNext(in TinyRoSpan<T> expectedSequence)
     {
         var success = PeekNext(expectedSequence, out var head);
         Head = head;
@@ -560,7 +560,7 @@ public ref struct Tokenizer<T>
     /// <param name="expectedSequence">The sequence of elements.</param>
     /// <returns><see langword="true"/> if the following elements are equal to the sequence of elements; otherwise, <see langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryReadNext(in TinySpan<T> expectedSequence)
+    public bool TryReadNext(in TinyRoSpan<T> expectedSequence)
     {
         if (PeekNext(expectedSequence, out var head))
         {
@@ -578,7 +578,7 @@ public ref struct Tokenizer<T>
     /// <param name="head">The position of the element after the sequence.</param>
     /// <returns><see langword="true"/> if the following elements are equal to the sequence of elements; otherwise, <see langword="false"/>.</returns>
     [Pure]
-    public bool PeekNext(in TinySpan<T> expectedSequence, out int head)
+    public bool PeekNext(in TinyRoSpan<T> expectedSequence, out int head)
     {
         head = Head;
         if (head == _source.Length)
@@ -639,7 +639,7 @@ public ref struct Tokenizer<T>
     /// <param name="expected">The expected elements.</param>
     /// <returns><see langword="true"/> if the element is as expected; otherwise, <see langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool ReadAny(in TinySpan<T> expected)
+    public bool ReadAny(in TinyRoSpan<T> expected)
     {
         var success = PeekAny(expected);
         Head += 1;
@@ -652,7 +652,7 @@ public ref struct Tokenizer<T>
     /// <param name="expected">The expected elements.</param>
     /// <returns><see langword="true"/> if the element is as expected; otherwise, <see langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryReadAny(in TinySpan<T> expected)
+    public bool TryReadAny(in TinyRoSpan<T> expected)
     {
         if (PeekAny(expected))
         {
@@ -669,7 +669,7 @@ public ref struct Tokenizer<T>
     /// <param name="expected">The expected elements.</param>
     /// <returns><see langword="true"/> if the element is as expected; otherwise, <see langword="false"/>.</returns>
     [Pure]
-    public bool PeekAny(in TinySpan<T> expected)
+    public bool PeekAny(in TinyRoSpan<T> expected)
     {
         var head = Head;
         if (head == _source.Length)
@@ -715,7 +715,7 @@ public ref struct Tokenizer<T>
     /// <param name="expected">The expected elements.</param>
     /// <returns><see langword="true"/> if one or more of the expected elements occur in the remaining elements; otherwise, <see langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool ReadUntilAny(in TinySpan<T> expected)
+    public bool ReadUntilAny(in TinyRoSpan<T> expected)
     {
         var success = PeekUntilAny(expected, out var head);
         Head = head;
@@ -728,7 +728,7 @@ public ref struct Tokenizer<T>
     /// <param name="expected">The expected elements.</param>
     /// <returns><see langword="true"/> if one or more of the expected elements occur in the remaining elements; otherwise, <see langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryReadUntilAny(in TinySpan<T> expected)
+    public bool TryReadUntilAny(in TinyRoSpan<T> expected)
     {
         if (PeekUntilAny(expected, out var head))
         {
@@ -746,7 +746,7 @@ public ref struct Tokenizer<T>
     /// <param name="head">The position at which the expected element occured.</param>
     /// <returns><see langword="true"/> if one or more of the expected elements occur in the remaining elements; otherwise, <see langword="false"/>.</returns>
     [Pure]
-    public bool PeekUntilAny(in TinySpan<T> expected, out int head)
+    public bool PeekUntilAny(in TinyRoSpan<T> expected, out int head)
     {
         head = Head;
         if (head == _source.Length)

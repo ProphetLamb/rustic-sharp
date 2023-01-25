@@ -23,12 +23,12 @@ public class Fmt
         return fb.ToString();
     }
 
-    public string Index(ReadOnlySpan<char> format, TinyVec<object?> arguments, IEqualityComparer<char>? comparer = null, IFormatProvider? provider = null)
+    public string Index(ReadOnlySpan<char> format, TinyRoVec<object?> arguments, IEqualityComparer<char>? comparer = null, IFormatProvider? provider = null)
     {
         return Format(format, new IdxDef<object?>(arguments, provider), comparer);
     }
 
-    public string Index<T>(ReadOnlySpan<char> format, TinyVec<T> arguments, IEqualityComparer<char>? comparer = null, IFormatProvider? provider = null)
+    public string Index<T>(ReadOnlySpan<char> format, TinyRoVec<T> arguments, IEqualityComparer<char>? comparer = null, IFormatProvider? provider = null)
     {
         return Format(format, new IdxDef<T>(arguments, provider), comparer);
     }
@@ -125,12 +125,12 @@ public interface IFmtDef
 
 public readonly struct IdxDef<T> : IFmtDef
 {
-    public IdxDef(TinyVec<T> arguments, IFormatProvider? format = null)
+    public IdxDef(TinyRoVec<T> arguments, IFormatProvider? format = null)
         : this(String.Empty, arguments, format)
     {
     }
 
-    public IdxDef(string prefix, TinyVec<T> arguments, IFormatProvider? format = null)
+    public IdxDef(string prefix, TinyRoVec<T> arguments, IFormatProvider? format = null)
     {
         Prefix = prefix;
         Arguments = arguments;
@@ -139,7 +139,7 @@ public readonly struct IdxDef<T> : IFmtDef
 
     public string Prefix { get; }
 
-    public TinyVec<object?> Arguments { get; }
+    public TinyRoVec<object?> Arguments { get; }
 
     public int Count => Arguments.Count;
 

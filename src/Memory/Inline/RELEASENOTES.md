@@ -1,6 +1,7 @@
 # Version 0.6
 
 - Optimize ToSpan performance for newer framework versions
+- Rename TinyRoSpan and TinyRoVec
 
 # Version 0.5
 

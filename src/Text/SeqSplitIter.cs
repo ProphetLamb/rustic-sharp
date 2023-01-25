@@ -80,7 +80,7 @@ public static class SeqSplitIterExtensions
     public static SeqSplitIter<T, S> Split<T, S>(this ReadOnlySpan<T> span, in S separator, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
         where S : IEnumerable<T>
     {
-        return new(span, TinySpan.From(separator), options, comparer);
+        return new(span, TinyRoSpan.From(separator), options, comparer);
     }
 
     /// <summary>Splits the <paramref name="span"/> span at the positions defined by the separators.</summary>
@@ -95,7 +95,7 @@ public static class SeqSplitIterExtensions
     public static SeqSplitIter<T, S> Split<T, S>(this ReadOnlySpan<T> span, in S separator0, in S separator1, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
         where S : IEnumerable<T>
     {
-        return new(span, TinySpan.From(separator0, separator1), options, comparer);
+        return new(span, TinyRoSpan.From(separator0, separator1), options, comparer);
     }
 
     /// <summary>Splits the <paramref name="span"/> span at the positions defined by the separators.</summary>
@@ -111,7 +111,7 @@ public static class SeqSplitIterExtensions
     public static SeqSplitIter<T, S> Split<T, S>(this ReadOnlySpan<T> span, in S separator0, in S separator1, in S separator2, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
         where S : IEnumerable<T>
     {
-        return new(span, TinySpan.From(separator0, separator1, separator2), options, comparer);
+        return new(span, TinyRoSpan.From(separator0, separator1, separator2), options, comparer);
     }
 
     /// <summary>Splits the <paramref name="span"/> span at the positions defined by the separators.</summary>
@@ -128,7 +128,7 @@ public static class SeqSplitIterExtensions
     public static SeqSplitIter<T, S> Split<T, S>(this ReadOnlySpan<T> span, in S separator0, in S separator1, in S separator2, in S separator3, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
         where S : IEnumerable<T>
     {
-        return new(span, TinySpan.From(separator0, separator1, separator2, separator3), options, comparer);
+        return new(span, TinyRoSpan.From(separator0, separator1, separator2, separator3), options, comparer);
     }
 
     /// <summary>Splits the <paramref name="span"/> span at the positions defined by the <paramref name="separators"/>.</summary>
@@ -139,7 +139,7 @@ public static class SeqSplitIterExtensions
     /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
     /// <typeparam name="S">The type of a sequence of elements.</typeparam>
     /// <returns>The iterator splitting the <paramref name="span"/> with the specified parameters.</returns>
-    public static SeqSplitIter<T, S> Split<T, S>(this ReadOnlySpan<T> span, TinySpan<S> separators, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
+    public static SeqSplitIter<T, S> Split<T, S>(this ReadOnlySpan<T> span, TinyRoSpan<S> separators, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
         where S : IEnumerable<T>
     {
         return new(span, separators, options, comparer);
@@ -154,7 +154,7 @@ public static class SeqSplitIterExtensions
     public static SeqSplitIter<T, S> Split<T, S>(this Span<T> span, in S separator)
         where S : IEnumerable<T>
     {
-        return new(span, TinySpan.From(separator), SplitOptions.None, null);
+        return new(span, TinyRoSpan.From(separator), SplitOptions.None, null);
     }
 
     /// <summary>Splits the <paramref name="span"/> span at the positions defined by the <paramref name="separator"/>.</summary>
@@ -168,7 +168,7 @@ public static class SeqSplitIterExtensions
     public static SeqSplitIter<T, S> Split<T, S>(this Span<T> span, in S separator, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
         where S : IEnumerable<T>
     {
-        return new(span, TinySpan.From(separator), options, comparer);
+        return new(span, TinyRoSpan.From(separator), options, comparer);
     }
 
 
@@ -184,7 +184,7 @@ public static class SeqSplitIterExtensions
     public static SeqSplitIter<T, S> Split<T, S>(this Span<T> span, in S separator0, in S separator1, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
         where S : IEnumerable<T>
     {
-        return new(span, TinySpan.From(separator0, separator1), options, comparer);
+        return new(span, TinyRoSpan.From(separator0, separator1), options, comparer);
     }
 
     /// <summary>Splits the <paramref name="span"/> span at the positions defined by the <paramref name="separators"/>.</summary>
@@ -195,7 +195,7 @@ public static class SeqSplitIterExtensions
     /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
     /// <typeparam name="S">The type of a sequence of elements.</typeparam>
     /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
-    public static SeqSplitIter<T, S> Split<T, S>(this Span<T> span, TinySpan<S> separators, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
+    public static SeqSplitIter<T, S> Split<T, S>(this Span<T> span, TinyRoSpan<S> separators, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
         where S : IEnumerable<T>
     {
         return new(span, separators, options, comparer);
@@ -208,12 +208,12 @@ public static class SeqSplitIterExtensions
 public ref struct SeqSplitIter<T, S>
     where S : IEnumerable<T>
 {
-    private TinySpan<S> _separators;
+    private TinyRoSpan<S> _separators;
     private Tokenizer<T> _tokenizer;
     private SplitOptions _options;
     private int _sepLen;
 
-    internal SeqSplitIter(ReadOnlySpan<T> input, in TinySpan<S> separators, SplitOptions options, IEqualityComparer<T>? comparer)
+    internal SeqSplitIter(ReadOnlySpan<T> input, in TinyRoSpan<S> separators, SplitOptions options, IEqualityComparer<T>? comparer)
     {
         _separators = separators;
         _tokenizer = new Tokenizer<T>(input, comparer);
