@@ -10,7 +10,7 @@ namespace Rustic.Memory;
 
 /// <summary>Partially inlined mutable collection of items.</summary>
 /// <remarks>Use with care, because <see cref="TinyVec{T}"/> is a struct, and thus requires a reference to mutate.</remarks>
-/// <example>A usage example is usage as <see cref="Dictionary{TKey,TValue}"/> values when interacting via the <see cref="CollectionsMarshal"/> methods.</example>
+/// <example>A usage example is usage as <see cref="Dictionary{TKey,TValue}"/> values when interacting via the CollectionsMarshal methods.</example>
 public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
     [AllowNull] private T _singleValue;
     private Vec<T>? _values;
@@ -38,6 +38,7 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
         _values = capacity >= 2 ? new(capacity) : default;
     }
 
+    /// <inheritdoc cref="IReadOnlyVector{T}.IsEmpty"/>
     public bool IsEmpty => Count == 0;
 
     bool ICollection<T>.IsReadOnly => false;
@@ -109,7 +110,7 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
         _singleValue = value;
     }
 
-    /// <inheritdoc cref="VectorTraits.AddRange(IVector{T}, ReadOnlySpan{T})"/>
+    /// <inheritdoc cref="List{T}.AddRange"/>
     public void AddRange(ReadOnlySpan<T> values) => InsertRange(Count, values);
 
     /// <inheritdoc />
