@@ -278,7 +278,7 @@ public static class ILReflect
     /// if 'targetType' and 'ctorParamTypes' are not null, it generates a constructor for the target type that takes the specified arguments
     /// </summary>
     /// <typeparam name="T">The target type.</typeparam>
-    public static (T, Type) GenDebugAssembly<T>(string name, FieldInfo? field, PropertyInfo? property, MethodInfo? method, Type? targetType, Type[] ctorParamTypes)
+    public static (T Target, Type? Type) GenDebugAssembly<T>(string name, FieldInfo? field, PropertyInfo? property, MethodInfo? method, Type? targetType, Type[] ctorParamTypes)
     {
         var asmName = new AssemblyName("Asm");
         var asmBuilder = AssemblyBuilder.DefineDynamicAssembly(asmName, AssemblyBuilderAccess.RunAndCollect);
