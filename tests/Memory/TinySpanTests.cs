@@ -30,7 +30,7 @@ public class TinySpanTests
 
 internal static class TinySpanExtensions
 {
-    public static int Count<T>(in this TinySpan<T> self)
+    public static int Count<T>(in this TinyRoSpan<T> self)
     {
         var count = 0;
         var en = self.GetEnumerator();
