@@ -236,12 +236,12 @@ public ref struct SeqSplitIter<T, S>
     public int Width => _tokenizer.Width - SepOff();
 
     /// <summary>Indicates whether the <see cref="Current"/> item is terminated by the separator.</summary>
-    public bool IncludesSeparator => (_options & SplitOptions.IncludeSeparator) != 0 && _tokenizer.Head < _tokenizer.Length;
+    public bool IncludesSeparator => (_options & SplitOptions.IncludeSeparator) != 0 && _tokenizer.CursorHead < _tokenizer.Length;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private int SepOff()
     {
-        return (_options & SplitOptions.IncludeSeparator) != 0 || _tokenizer.Head == _tokenizer.Length ? 0 : _sepLen;
+        return (_options & SplitOptions.IncludeSeparator) != 0 || _tokenizer.CursorHead == _tokenizer.Length ? 0 : _sepLen;
     }
 
     /// <summary>Returns a new <see cref="SplitIter{T}"/> enumerator with the same input in the initial state. </summary>
@@ -256,7 +256,7 @@ public ref struct SeqSplitIter<T, S>
     /// <returns><see langword="true"/> if the enumerator successfully moved to the next segment; otherwise, <see langword="false"/>.</returns>
     public bool MoveNext()
     {
-        if (_tokenizer.Head == _tokenizer.Length)
+        if (_tokenizer.CursorHead == _tokenizer.Length)
         {
             return false;
         }

@@ -48,7 +48,7 @@ public ref struct Tokenizer<T>
     public IEqualityComparer<T>? Comparer => _comparer;
 
     /// <summary>Defines the current cursor position of the iterator.</summary>
-    public int Head
+    public int CursorHead
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _pos + _tokenLength;
@@ -96,9 +96,9 @@ public ref struct Tokenizer<T>
     }
 
     /// <summary>Indicates whether the end of the source sequence is reached.</summary>
-    public bool IsCursorEnd => Head >= Length;
+    public bool IsCursorEnd => CursorHead >= Length;
     /// <summary>Indicates whether the cursor is at the beginning of the source sequence.</summary>
-    public bool IsCursorStart => Head == 0;
+    public bool IsCursorStart => CursorHead == 0;
 
     /// <inheritdoc cref="Span{T}.Length"/>
     public int Length => _source.Length;
@@ -109,10 +109,10 @@ public ref struct Tokenizer<T>
     /// <summary>The reference to the current element.</summary>
     public ref readonly T Current => ref _source[_pos];
 
-    /// <summary>Represents the token at an offset relative to the <see cref="Head"/>.</summary>
+    /// <summary>Represents the token at an offset relative to the <see cref="CursorHead"/>.</summary>
     public ref readonly T Offset(int offset)
     {
-        return ref this[Head + offset];
+        return ref this[CursorHead + offset];
     }
 
     /// <summary>Allows access to an arbitrary element inside the source buffer.</summary>
@@ -186,27 +186,27 @@ public ref struct Tokenizer<T>
     /// </summary>
     public void Reset()
     {
-        Head = 0;
+        CursorHead = 0;
     }
 
     /// <summary>
-    ///     Advances the <see cref="Head"/> to a specific <paramref name="position"/>, always consumes elements.
+    ///     Advances the <see cref="CursorHead"/> to a specific <paramref name="position"/>, always consumes elements.
     /// </summary>
     /// <param name="position">The target position</param>
     public void Advance(int position)
     {
         ThrowHelper.ArgumentInRange(position, position >= 0 && position < Length);
-        ThrowHelper.ArgumentInRange(position, position >= Head);
-        _tokenLength = position - Head;
+        ThrowHelper.ArgumentInRange(position, position >= CursorHead);
+        _tokenLength = position - CursorHead;
     }
 
     /// <summary>
-    ///     Advances the <see cref="Head"/> to a specific <paramref name="position"/>, consumes elements only if successful.
+    ///     Advances the <see cref="CursorHead"/> to a specific <paramref name="position"/>, consumes elements only if successful.
     /// </summary>
     /// <param name="position">The target position</param>
     /// <returns><see langword="true"/> if the elements could be consumed; otherwise, <see langword="false"/>.</returns>
     /// <remarks>
-    ///     If the target <paramref name="position"/> is behind the <see cref="Head"/> the state won't change.
+    ///     If the target <paramref name="position"/> is behind the <see cref="CursorHead"/> the state won't change.
     /// </remarks>
     public bool TryAdvance(int position)
     {
@@ -215,7 +215,7 @@ public ref struct Tokenizer<T>
             return false;
         }
 
-        var head = Head;
+        var head = CursorHead;
         if (head < position)
         {
             _tokenLength = position - head;
@@ -239,7 +239,7 @@ public ref struct Tokenizer<T>
         where S : IEnumerable<T>
     {
         var success = Peek(expectedSequence, out var head, out len);
-        Head = head;
+        CursorHead = head;
         return success;
     }
 
@@ -256,7 +256,7 @@ public ref struct Tokenizer<T>
     {
         if (Peek(expectedSequence, out var head, out len))
         {
-            Head = head;
+            CursorHead = head;
             return true;
         }
 
@@ -275,7 +275,7 @@ public ref struct Tokenizer<T>
     public bool Peek<S>(in S expectedSequence, out int head, out int len)
         where S : IEnumerable<T>
     {
-        head = Head;
+        head = CursorHead;
         if (head == _source.Length)
         {
             len = 0;
@@ -364,7 +364,7 @@ public ref struct Tokenizer<T>
         where S : IEnumerable<T>
     {
         var success = PeekNext(expectedSequence, out var head);
-        Head = head;
+        CursorHead = head;
         return success;
     }
 
@@ -380,7 +380,7 @@ public ref struct Tokenizer<T>
     {
         if (PeekNext(expectedSequence, out var head))
         {
-            Head = head;
+            CursorHead = head;
             return true;
         }
 
@@ -398,7 +398,7 @@ public ref struct Tokenizer<T>
     public bool PeekNext<S>(in S expectedSequence, out int head)
         where S : IEnumerable<T>
     {
-        head = Head;
+        head = CursorHead;
         if (head == _source.Length)
         {
             return false;
@@ -470,7 +470,7 @@ public ref struct Tokenizer<T>
     public bool Read(in TinyRoSpan<T> expectedSequence)
     {
         var success = Peek(expectedSequence, out var head);
-        Head = head;
+        CursorHead = head;
         return success;
     }
 
@@ -484,7 +484,7 @@ public ref struct Tokenizer<T>
     {
         if (Peek(expectedSequence, out var head))
         {
-            Head = head;
+            CursorHead = head;
             return true;
         }
 
@@ -500,7 +500,7 @@ public ref struct Tokenizer<T>
     [Pure]
     public bool Peek(in TinyRoSpan<T> expectedSequence, out int head)
     {
-        head = Head;
+        head = CursorHead;
         if (head == _source.Length)
         {
             return false;
@@ -558,7 +558,7 @@ public ref struct Tokenizer<T>
     public bool ReadNext(in TinyRoSpan<T> expectedSequence)
     {
         var success = PeekNext(expectedSequence, out var head);
-        Head = head;
+        CursorHead = head;
         return success;
     }
 
@@ -572,7 +572,7 @@ public ref struct Tokenizer<T>
     {
         if (PeekNext(expectedSequence, out var head))
         {
-            Head = head;
+            CursorHead = head;
             return true;
         }
 
@@ -588,7 +588,7 @@ public ref struct Tokenizer<T>
     [Pure]
     public bool PeekNext(in TinyRoSpan<T> expectedSequence, out int head)
     {
-        head = Head;
+        head = CursorHead;
         if (head == _source.Length)
         {
             return false;
@@ -650,7 +650,7 @@ public ref struct Tokenizer<T>
     public bool ReadAny(in TinyRoSpan<T> expected)
     {
         var success = PeekAny(expected);
-        Head += 1;
+        CursorHead += 1;
         return success;
     }
 
@@ -664,7 +664,7 @@ public ref struct Tokenizer<T>
     {
         if (PeekAny(expected))
         {
-            Head += 1;
+            CursorHead += 1;
             return true;
         }
 
@@ -679,7 +679,7 @@ public ref struct Tokenizer<T>
     [Pure]
     public bool PeekAny(in TinyRoSpan<T> expected)
     {
-        var head = Head;
+        var head = CursorHead;
         if (head == _source.Length)
         {
             return false;
@@ -726,7 +726,7 @@ public ref struct Tokenizer<T>
     public bool ReadUntilAny(in TinyRoSpan<T> expected)
     {
         var success = PeekUntilAny(expected, out var head);
-        Head = head;
+        CursorHead = head;
         return success;
     }
 
@@ -740,7 +740,7 @@ public ref struct Tokenizer<T>
     {
         if (PeekUntilAny(expected, out var head))
         {
-            Head = head;
+            CursorHead = head;
             return true;
         }
 
@@ -756,7 +756,7 @@ public ref struct Tokenizer<T>
     [Pure]
     public bool PeekUntilAny(in TinyRoSpan<T> expected, out int head)
     {
-        head = Head;
+        head = CursorHead;
         if (head == _source.Length)
         {
             return false;

@@ -226,11 +226,11 @@ public ref struct SplitIter<T>
     public int Width => _tokenizer.Width - SepOff();
 
     /// <summary>Indicates whether the <see cref="Current"/> item is terminated by the separator.</summary>
-    public bool IncludesSeparator => (_options & SplitOptions.IncludeSeparator) != 0 && _tokenizer.Head < _tokenizer.Length;
+    public bool IncludesSeparator => (_options & SplitOptions.IncludeSeparator) != 0 && _tokenizer.CursorHead < _tokenizer.Length;
 
     private int SepOff()
     {
-        return (_options & SplitOptions.IncludeSeparator) != 0 || _tokenizer.Head == _tokenizer.Length ? 0 : 1;
+        return (_options & SplitOptions.IncludeSeparator) != 0 || _tokenizer.CursorHead == _tokenizer.Length ? 0 : 1;
     }
 
     /// <summary>Returns a new <see cref="SplitIter{T}"/> enumerator with the same input in the initial state. </summary>
@@ -245,7 +245,7 @@ public ref struct SplitIter<T>
     /// <returns><see langword="true"/> if the enumerator successfully moved to the next segment; otherwise, <see langword="false"/>.</returns>
     public bool MoveNext()
     {
-        if (_tokenizer.Head == _tokenizer.Length)
+        if (_tokenizer.CursorHead == _tokenizer.Length)
         {
             return false;
         }
