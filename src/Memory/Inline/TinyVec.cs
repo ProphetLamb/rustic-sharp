@@ -10,6 +10,7 @@ namespace Rustic.Memory;
 
 /// <summary>Partially inlined mutable collection of items.</summary>
 /// <remarks>Use with care, because <see cref="TinyVec{T}"/> is a struct, and thus requires a reference to mutate.</remarks>
+/// <example>A usage example is usage as <see cref="Dictionary{TKey,TValue}"/> values when interacting via the <see cref="CollectionsMarshal"/> methods.</example>
 public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
     [AllowNull] private T _singleValue;
     private Vec<T>? _values;
