@@ -139,11 +139,12 @@ public ref struct Tokenizer<T>
         return false;
     }
 
-    /// <summary>Consumes a specified amount of elements.</summary>
+    /// <summary>Consumes a specified amount of elements. Moves the cursor by amount</summary>
     /// <returns><see langword="true"/> if the elements could be consumed; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">If `amount &lt; -Token.Length`: Cannot move the cursor to before the start of the current token. The token length cannot be negative.</exception>
     public bool Consume(int amount)
     {
-        ThrowHelper.ArgumentInRange(amount, amount <= _tokenLength);
+        ThrowHelper.ArgumentInRange(amount, amount >= -_tokenLength, "Cannot move the cursor to before the start of the current token. The token length cannot be negative.");
 
         if (_pos < Length - _tokenLength - amount)
         {
