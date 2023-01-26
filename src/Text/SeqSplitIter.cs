@@ -213,7 +213,7 @@ public ref struct SeqSplitIter<T, S>
     private SplitOptions _options;
     private int _sepLen;
 
-    internal SeqSplitIter(ReadOnlySpan<T> input, in TinyRoSpan<S> separators, SplitOptions options, IEqualityComparer<T>? comparer)
+    internal SeqSplitIter(ReadOnlySpan<T> input, TinyRoSpan<S> separators, SplitOptions options, IEqualityComparer<T>? comparer)
     {
         _separators = separators;
         _tokenizer = new Tokenizer<T>(input, comparer);

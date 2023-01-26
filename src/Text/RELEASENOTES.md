@@ -1,3 +1,7 @@
+# Version 0.6
+
+- Fix ref an in keyword related compiler errors introduced in C#11
+
 # Version 0.5
 
 - Build pipeline

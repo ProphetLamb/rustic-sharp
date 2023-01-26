@@ -20,18 +20,17 @@ public static class TinyRoSpan
     /// <summary>Initializes a new parameter span with one value.</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="arg0">The first value.</param>
-    public static TinyRoSpan<T> From<T>(in T arg0)
-    {
-        return new(1, arg0, default, default, default);
+    public static TinyRoSpan<T> From<T>(T arg0) {
+        return new(1, arg0, arg0, arg0, arg0);
     }
 
     /// <summary>Initializes a new parameter span with one value.</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="arg0">The first value.</param>
     /// <param name="arg1">The second value.</param>
-    public static TinyRoSpan<T> From<T>(in T arg0, in T arg1)
+    public static TinyRoSpan<T> From<T>(T arg0, T arg1)
     {
-        return new(2, arg0, arg1, default, default);
+        return new(2, arg0, arg1, arg1, arg1);
     }
 
     /// <summary>Initializes a new parameter span with one value.</summary>
@@ -39,9 +38,9 @@ public static class TinyRoSpan
     /// <param name="arg0">The first value.</param>
     /// <param name="arg1">The second value.</param>
     /// <param name="arg2">The third value.</param>
-    public static TinyRoSpan<T> From<T>(in T arg0, in T arg1, in T arg2)
+    public static TinyRoSpan<T> From<T>(T arg0, T arg1, T arg2)
     {
-        return new(3, arg0, arg1, arg2, default);
+        return new(3, arg0, arg1, arg2, arg2);
     }
 
     /// <summary>Initializes a new parameter span with one value.</summary>
@@ -50,7 +49,7 @@ public static class TinyRoSpan
     /// <param name="arg1">The second value.</param>
     /// <param name="arg2">The third value.</param>
     /// <param name="arg3">The fourth value.</param>
-    public static TinyRoSpan<T> From<T>(in T arg0, in T arg1, in T arg2, in T arg3)
+    public static TinyRoSpan<T> From<T>(T arg0, T arg1, T arg2, T arg3)
     {
         return new(4, arg0, arg1, arg2, arg3);
     }
@@ -58,7 +57,7 @@ public static class TinyRoSpan
     /// <summary>Initializes a new parameter span with a sequence of values.</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="values">The values collection.</param>
-    public static TinyRoSpan<T> From<T>(in ReadOnlySpan<T> values)
+    public static TinyRoSpan<T> From<T>(ReadOnlySpan<T> values)
     {
         return new(values);
     }
@@ -66,7 +65,7 @@ public static class TinyRoSpan
     /// <summary>Initializes a new parameter span with a sequence of values.</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="values">The values collection.</param>
-    public static TinyRoSpan<T> From<T>(in Span<T> values)
+    public static TinyRoSpan<T> From<T>(Span<T> values)
     {
         return new(values);
     }
@@ -237,7 +236,7 @@ public readonly ref struct TinyRoSpan<T>
     /// <param name="arg1">The second value.</param>
     /// <param name="arg2">The third value.</param>
     /// <param name="arg3">The fourth value.</param>
-    internal TinyRoSpan(int length, [AllowNull] in T arg0, [AllowNull] in T arg1, [AllowNull] in T arg2, [AllowNull] in T arg3)
+    internal TinyRoSpan(int length, [AllowNull] T arg0, [AllowNull] T arg1, [AllowNull] T arg2, [AllowNull] T arg3)
     {
         ThrowHelper.ArgumentInRange(length, length <= 4);
 
@@ -251,7 +250,7 @@ public readonly ref struct TinyRoSpan<T>
 
     /// <summary>Initializes a new parameter span with a sequence of values.</summary>
     /// <param name="values">The values collection.</param>
-    internal TinyRoSpan(in ReadOnlySpan<T> values)
+    internal TinyRoSpan(ReadOnlySpan<T> values)
     {
         _values = values;
         _length = values.Length;

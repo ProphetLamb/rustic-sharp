@@ -80,9 +80,8 @@ public ref struct FmtBuilder<D>
             return false;
         }
 
-        if (_definition.TryGetValue(_tokenizer.FinalizeToken(), out var value))
-        {
-            _builder.Append(value);
+        if (_definition.TryGetValue(_tokenizer.FinalizeToken(), out var value)) {
+            value.CopyTo(_builder.AppendSpan(value.Length));
         }
 
         return _definition.NextTextStart(ref _tokenizer);

@@ -204,7 +204,7 @@ public ref struct SplitIter<T>
     private TinyRoSpan<T> _separators;
     private SplitOptions _options;
 
-    internal SplitIter(ReadOnlySpan<T> input, in TinyRoSpan<T> separators, SplitOptions options, IEqualityComparer<T>? comparer)
+    internal SplitIter(ReadOnlySpan<T> input, TinyRoSpan<T> separators, SplitOptions options, IEqualityComparer<T>? comparer)
     {
         _tokenizer = new Tokenizer<T>(input, comparer);
         _separators = separators;
