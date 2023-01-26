@@ -1,5 +1,6 @@
 # Version 0.6
 
+- Add TinyVec list implementation
 - Optimize ToSpan performance for newer framework versions
 - Rename TinyRoSpan and TinyRoVec
 -	Fix bug preferring inline data when array is backing
