@@ -43,7 +43,6 @@ https://raw.githubusercontent.com/Cyan4973/xxHash/5c174cfa4e45a42f94082dc0d4539b
   - xxHash source repository : https://github.com/Cyan4973/xxHash
 
 */
-
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -57,411 +56,399 @@ namespace System;
 
 // xxHash32 is used for the hash code.
 // https://github.com/Cyan4973/xxHash
-
-public struct HashCode
-{
-    private static readonly uint s_seed = GenerateGlobalSeed();
-
-    private const uint Prime1 = 2654435761U;
-    private const uint Prime2 = 2246822519U;
-    private const uint Prime3 = 3266489917U;
-    private const uint Prime4 = 668265263U;
-    private const uint Prime5 = 374761393U;
-
-    private uint _v1, _v2, _v3, _v4;
-    private uint _queue1, _queue2, _queue3;
+/// <summary>Combines the hash code for multiple values into a single hash code.</summary>
+public struct HashCode {
+    private static readonly uint s_seed = (uint)LocalRandom.Shared.Next();
+    private uint _v1;
+    private uint _v2;
+    private uint _v3;
+    private uint _v4;
+    private uint _queue1;
+    private uint _queue2;
+    private uint _queue3;
     private uint _length;
 
-    private static unsafe uint GenerateGlobalSeed()
-    {
-        using var crypt = RandomNumberGenerator.Create();
-        byte[] rno = new byte[sizeof(uint)];
-        crypt.GetBytes(rno);
-        return BitConverter.ToUInt32(rno, 0);
+    /// <summary>Diffuses the hash code returned by the specified value.</summary>
+    /// <param name="value1">The value to add to the hash code.</param>
+    /// <typeparam name="T1">The type of the value to add the hash code.</typeparam>
+    /// <returns>The hash code that represents the single value.</returns>
+    public static int Combine<T1>(T1 value1) {
+        uint queuedValue = (object)value1 != null ? (uint)value1.GetHashCode() : 0U;
+        return (int)MixFinal(QueueRound(MixEmptyState() + 4U, queuedValue));
     }
 
-    public static int Combine<T1>(T1 value1)
-    {
-        // Provide a way of diffusing bits from something with a limited
-        // input hash space. For example, many enums only have a few
-        // possible hashes, only using the bottom few bits of the code. Some
-        // collections are built on the assumption that hashes are spread
-        // over a larger space, so diffusing the bits may help the
-        // collection work more efficiently.
-
-        uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
-
-        uint hash = MixEmptyState();
-        hash += 4;
-
-        hash = QueueRound(hash, hc1);
-
-        hash = MixFinal(hash);
-        return (int)hash;
+    /// <summary>Combines two values into a hash code.</summary>
+    /// <param name="value1">The first value to combine into the hash code.</param>
+    /// <param name="value2">The second value to combine into the hash code.</param>
+    /// <typeparam name="T1">The type of the first value to combine into the hash code.</typeparam>
+    /// <typeparam name="T2">The type of the second value to combine into the hash code.</typeparam>
+    /// <returns>The hash code that represents the two values.</returns>
+    public static int Combine<T1, T2>(T1 value1, T2 value2) {
+        uint queuedValue1 = (object)value1 != null ? (uint)value1.GetHashCode() : 0U;
+        uint queuedValue2 = (object)value2 != null ? (uint)value2.GetHashCode() : 0U;
+        return (int)MixFinal(
+            QueueRound(QueueRound(MixEmptyState() + 8U, queuedValue1), queuedValue2)
+        );
     }
 
-    public static int Combine<T1, T2>(T1 value1, T2 value2)
-    {
-        uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
-        uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
-
-        uint hash = MixEmptyState();
-        hash += 8;
-
-        hash = QueueRound(hash, hc1);
-        hash = QueueRound(hash, hc2);
-
-        hash = MixFinal(hash);
-        return (int)hash;
+    /// <summary>Combines three values into a hash code.</summary>
+    /// <param name="value1">The first value to combine into the hash code.</param>
+    /// <param name="value2">The second value to combine into the hash code.</param>
+    /// <param name="value3">The third value to combine into the hash code.</param>
+    /// <typeparam name="T1">The type of the first value to combine into the hash code.</typeparam>
+    /// <typeparam name="T2">The type of the second value to combine into the hash code.</typeparam>
+    /// <typeparam name="T3">The type of the third value to combine into the hash code.</typeparam>
+    /// <returns>The hash code that represents the three values.</returns>
+    public static int Combine<T1, T2, T3>(T1 value1, T2 value2, T3 value3) {
+        uint queuedValue1 = (object)value1 != null ? (uint)value1.GetHashCode() : 0U;
+        uint queuedValue2 = (object)value2 != null ? (uint)value2.GetHashCode() : 0U;
+        uint queuedValue3 = (object)value3 != null ? (uint)value3.GetHashCode() : 0U;
+        return (int)MixFinal(
+            QueueRound(
+                QueueRound(QueueRound(MixEmptyState() + 12U, queuedValue1), queuedValue2),
+                queuedValue3
+            )
+        );
     }
 
-    public static int Combine<T1, T2, T3>(T1 value1, T2 value2, T3 value3)
-    {
-        uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
-        uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
-        uint hc3 = (uint)(value3?.GetHashCode() ?? 0);
-
-        uint hash = MixEmptyState();
-        hash += 12;
-
-        hash = QueueRound(hash, hc1);
-        hash = QueueRound(hash, hc2);
-        hash = QueueRound(hash, hc3);
-
-        hash = MixFinal(hash);
-        return (int)hash;
+    /// <summary>Combines four values into a hash code.</summary>
+    /// <param name="value1">The first value to combine into the hash code.</param>
+    /// <param name="value2">The second value to combine into the hash code.</param>
+    /// <param name="value3">The third value to combine into the hash code.</param>
+    /// <param name="value4">The fourth value to combine into the hash code.</param>
+    /// <typeparam name="T1">The type of the first value to combine into the hash code.</typeparam>
+    /// <typeparam name="T2">The type of the second value to combine into the hash code.</typeparam>
+    /// <typeparam name="T3">The type of the third value to combine into the hash code.</typeparam>
+    /// <typeparam name="T4">The type of the fourth value to combine into the hash code.</typeparam>
+    /// <returns>The hash code that represents the four values.</returns>
+    public static int Combine<T1, T2, T3, T4>(T1 value1, T2 value2, T3 value3, T4 value4) {
+        uint input1 = (object)value1 != null ? (uint)value1.GetHashCode() : 0U;
+        uint input2 = (object)value2 != null ? (uint)value2.GetHashCode() : 0U;
+        uint input3 = (object)value3 != null ? (uint)value3.GetHashCode() : 0U;
+        uint input4 = (object)value4 != null ? (uint)value4.GetHashCode() : 0U;
+        uint v1_1;
+        uint v2;
+        uint v3;
+        uint v4;
+        Initialize(out v1_1, out v2, out v3, out v4);
+        uint v1_2 = Round(v1_1, input1);
+        v2 = Round(v2, input2);
+        v3 = Round(v3, input3);
+        v4 = Round(v4, input4);
+        return (int)MixFinal(MixState(v1_2, v2, v3, v4) + 16U);
     }
 
-    public static int Combine<T1, T2, T3, T4>(T1 value1, T2 value2, T3 value3, T4 value4)
-    {
-        uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
-        uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
-        uint hc3 = (uint)(value3?.GetHashCode() ?? 0);
-        uint hc4 = (uint)(value4?.GetHashCode() ?? 0);
-
-        Initialize(out uint v1, out uint v2, out uint v3, out uint v4);
-
-        v1 = Round(v1, hc1);
-        v2 = Round(v2, hc2);
-        v3 = Round(v3, hc3);
-        v4 = Round(v4, hc4);
-
-        uint hash = MixState(v1, v2, v3, v4);
-        hash += 16;
-
-        hash = MixFinal(hash);
-        return (int)hash;
+    /// <summary>Combines five values into a hash code.</summary>
+    /// <param name="value1">The first value to combine into the hash code.</param>
+    /// <param name="value2">The second value to combine into the hash code.</param>
+    /// <param name="value3">The third value to combine into the hash code.</param>
+    /// <param name="value4">The fourth value to combine into the hash code.</param>
+    /// <param name="value5">The fifth value to combine into the hash code.</param>
+    /// <typeparam name="T1">The type of the first value to combine into the hash code.</typeparam>
+    /// <typeparam name="T2">The type of the second value to combine into the hash code.</typeparam>
+    /// <typeparam name="T3">The type of the third value to combine into the hash code.</typeparam>
+    /// <typeparam name="T4">The type of the fourth value to combine into the hash code.</typeparam>
+    /// <typeparam name="T5">The type of the fifth value to combine into the hash code.</typeparam>
+    /// <returns>The hash code that represents the five values.</returns>
+    public static int Combine<T1, T2, T3, T4, T5>(
+        T1 value1,
+        T2 value2,
+        T3 value3,
+        T4 value4,
+        T5 value5) {
+        uint input1 = (object)value1 != null ? (uint)value1.GetHashCode() : 0U;
+        uint input2 = (object)value2 != null ? (uint)value2.GetHashCode() : 0U;
+        uint input3 = (object)value3 != null ? (uint)value3.GetHashCode() : 0U;
+        uint input4 = (object)value4 != null ? (uint)value4.GetHashCode() : 0U;
+        uint queuedValue = (object)value5 != null ? (uint)value5.GetHashCode() : 0U;
+        uint v1_1;
+        uint v2;
+        uint v3;
+        uint v4;
+        Initialize(out v1_1, out v2, out v3, out v4);
+        uint v1_2 = Round(v1_1, input1);
+        v2 = Round(v2, input2);
+        v3 = Round(v3, input3);
+        v4 = Round(v4, input4);
+        return (int)MixFinal(QueueRound(MixState(v1_2, v2, v3, v4) + 20U, queuedValue));
     }
 
-    public static int Combine<T1, T2, T3, T4, T5>(T1 value1, T2 value2, T3 value3, T4 value4, T5 value5)
-    {
-        uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
-        uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
-        uint hc3 = (uint)(value3?.GetHashCode() ?? 0);
-        uint hc4 = (uint)(value4?.GetHashCode() ?? 0);
-        uint hc5 = (uint)(value5?.GetHashCode() ?? 0);
-
-        Initialize(out uint v1, out uint v2, out uint v3, out uint v4);
-
-        v1 = Round(v1, hc1);
-        v2 = Round(v2, hc2);
-        v3 = Round(v3, hc3);
-        v4 = Round(v4, hc4);
-
-        uint hash = MixState(v1, v2, v3, v4);
-        hash += 20;
-
-        hash = QueueRound(hash, hc5);
-
-        hash = MixFinal(hash);
-        return (int)hash;
+    /// <summary>Combines six values into a hash code.</summary>
+    /// <param name="value1">The first value to combine into the hash code.</param>
+    /// <param name="value2">The second value to combine into the hash code.</param>
+    /// <param name="value3">The third value to combine into the hash code.</param>
+    /// <param name="value4">The fourth value to combine into the hash code.</param>
+    /// <param name="value5">The fifth value to combine into the hash code.</param>
+    /// <param name="value6">The sixth value to combine into the hash code.</param>
+    /// <typeparam name="T1">The type of the first value to combine into the hash code.</typeparam>
+    /// <typeparam name="T2">The type of the second value to combine into the hash code.</typeparam>
+    /// <typeparam name="T3">The type of the third value to combine into the hash code.</typeparam>
+    /// <typeparam name="T4">The type of the fourth value to combine into the hash code.</typeparam>
+    /// <typeparam name="T5">The type of the fifth value to combine into the hash code.</typeparam>
+    /// <typeparam name="T6">The type of the sixth value to combine into the hash code.</typeparam>
+    /// <returns>The hash code that represents the six values.</returns>
+    public static int Combine<T1, T2, T3, T4, T5, T6>(
+        T1 value1,
+        T2 value2,
+        T3 value3,
+        T4 value4,
+        T5 value5,
+        T6 value6) {
+        uint input1 = (object)value1 != null ? (uint)value1.GetHashCode() : 0U;
+        uint input2 = (object)value2 != null ? (uint)value2.GetHashCode() : 0U;
+        uint input3 = (object)value3 != null ? (uint)value3.GetHashCode() : 0U;
+        uint input4 = (object)value4 != null ? (uint)value4.GetHashCode() : 0U;
+        uint queuedValue1 = (object)value5 != null ? (uint)value5.GetHashCode() : 0U;
+        uint queuedValue2 = (object)value6 != null ? (uint)value6.GetHashCode() : 0U;
+        uint v1_1;
+        uint v2;
+        uint v3;
+        uint v4;
+        Initialize(out v1_1, out v2, out v3, out v4);
+        uint v1_2 = Round(v1_1, input1);
+        v2 = Round(v2, input2);
+        v3 = Round(v3, input3);
+        v4 = Round(v4, input4);
+        return (int)MixFinal(
+            QueueRound(
+                QueueRound(MixState(v1_2, v2, v3, v4) + 24U, queuedValue1),
+                queuedValue2
+            )
+        );
     }
 
-    public static int Combine<T1, T2, T3, T4, T5, T6>(T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6)
-    {
-        uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
-        uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
-        uint hc3 = (uint)(value3?.GetHashCode() ?? 0);
-        uint hc4 = (uint)(value4?.GetHashCode() ?? 0);
-        uint hc5 = (uint)(value5?.GetHashCode() ?? 0);
-        uint hc6 = (uint)(value6?.GetHashCode() ?? 0);
-
-        Initialize(out uint v1, out uint v2, out uint v3, out uint v4);
-
-        v1 = Round(v1, hc1);
-        v2 = Round(v2, hc2);
-        v3 = Round(v3, hc3);
-        v4 = Round(v4, hc4);
-
-        uint hash = MixState(v1, v2, v3, v4);
-        hash += 24;
-
-        hash = QueueRound(hash, hc5);
-        hash = QueueRound(hash, hc6);
-
-        hash = MixFinal(hash);
-        return (int)hash;
+    /// <summary>Combines seven values into a hash code.</summary>
+    /// <param name="value1">The first value to combine into the hash code.</param>
+    /// <param name="value2">The second value to combine into the hash code.</param>
+    /// <param name="value3">The third value to combine into the hash code.</param>
+    /// <param name="value4">The fourth value to combine into the hash code.</param>
+    /// <param name="value5">The fifth value to combine into the hash code.</param>
+    /// <param name="value6">The sixth value to combine into the hash code.</param>
+    /// <param name="value7">The seventh value to combine into the hash code.</param>
+    /// <typeparam name="T1">The type of the first value to combine into the hash code.</typeparam>
+    /// <typeparam name="T2">The type of the second value to combine into the hash code.</typeparam>
+    /// <typeparam name="T3">The type of the third value to combine into the hash code.</typeparam>
+    /// <typeparam name="T4">The type of the fourth value to combine into the hash code.</typeparam>
+    /// <typeparam name="T5">The type of the fifth value to combine into the hash code.</typeparam>
+    /// <typeparam name="T6">The type of the sixth value to combine into the hash code.</typeparam>
+    /// <typeparam name="T7">The type of the seventh value to combine into the hash code.</typeparam>
+    /// <returns>The hash code that represents the seven values.</returns>
+    public static int Combine<T1, T2, T3, T4, T5, T6, T7>(
+        T1 value1,
+        T2 value2,
+        T3 value3,
+        T4 value4,
+        T5 value5,
+        T6 value6,
+        T7 value7) {
+        uint input1 = (object)value1 != null ? (uint)value1.GetHashCode() : 0U;
+        uint input2 = (object)value2 != null ? (uint)value2.GetHashCode() : 0U;
+        uint input3 = (object)value3 != null ? (uint)value3.GetHashCode() : 0U;
+        uint input4 = (object)value4 != null ? (uint)value4.GetHashCode() : 0U;
+        uint queuedValue1 = (object)value5 != null ? (uint)value5.GetHashCode() : 0U;
+        uint queuedValue2 = (object)value6 != null ? (uint)value6.GetHashCode() : 0U;
+        uint queuedValue3 = (object)value7 != null ? (uint)value7.GetHashCode() : 0U;
+        uint v1_1;
+        uint v2;
+        uint v3;
+        uint v4;
+        Initialize(out v1_1, out v2, out v3, out v4);
+        uint v1_2 = Round(v1_1, input1);
+        v2 = Round(v2, input2);
+        v3 = Round(v3, input3);
+        v4 = Round(v4, input4);
+        return (int)MixFinal(
+            QueueRound(
+                QueueRound(
+                    QueueRound(MixState(v1_2, v2, v3, v4) + 28U, queuedValue1),
+                    queuedValue2
+                ),
+                queuedValue3
+            )
+        );
     }
 
-    public static int Combine<T1, T2, T3, T4, T5, T6, T7>(T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6, T7 value7)
-    {
-        uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
-        uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
-        uint hc3 = (uint)(value3?.GetHashCode() ?? 0);
-        uint hc4 = (uint)(value4?.GetHashCode() ?? 0);
-        uint hc5 = (uint)(value5?.GetHashCode() ?? 0);
-        uint hc6 = (uint)(value6?.GetHashCode() ?? 0);
-        uint hc7 = (uint)(value7?.GetHashCode() ?? 0);
-
-        Initialize(out uint v1, out uint v2, out uint v3, out uint v4);
-
-        v1 = Round(v1, hc1);
-        v2 = Round(v2, hc2);
-        v3 = Round(v3, hc3);
-        v4 = Round(v4, hc4);
-
-        uint hash = MixState(v1, v2, v3, v4);
-        hash += 28;
-
-        hash = QueueRound(hash, hc5);
-        hash = QueueRound(hash, hc6);
-        hash = QueueRound(hash, hc7);
-
-        hash = MixFinal(hash);
-        return (int)hash;
+    /// <summary>Combines eight values into a hash code.</summary>
+    /// <param name="value1">The first value to combine into the hash code.</param>
+    /// <param name="value2">The second value to combine into the hash code.</param>
+    /// <param name="value3">The third value to combine into the hash code.</param>
+    /// <param name="value4">The fourth value to combine into the hash code.</param>
+    /// <param name="value5">The fifth value to combine into the hash code.</param>
+    /// <param name="value6">The sixth value to combine into the hash code.</param>
+    /// <param name="value7">The seventh value to combine into the hash code.</param>
+    /// <param name="value8">The eighth value to combine into the hash code.</param>
+    /// <typeparam name="T1">The type of the first value to combine into the hash code.</typeparam>
+    /// <typeparam name="T2">The type of the second value to combine into the hash code.</typeparam>
+    /// <typeparam name="T3">The type of the third value to combine into the hash code.</typeparam>
+    /// <typeparam name="T4">The type of the fourth value to combine into the hash code.</typeparam>
+    /// <typeparam name="T5">The type of the fifth value to combine into the hash code.</typeparam>
+    /// <typeparam name="T6">The type of the sixth value to combine into the hash code.</typeparam>
+    /// <typeparam name="T7">The type of the seventh value to combine into the hash code.</typeparam>
+    /// <typeparam name="T8">The type of the eighth value to combine into the hash code.</typeparam>
+    /// <returns>The hash code that represents the eight values.</returns>
+    public static int Combine<T1, T2, T3, T4, T5, T6, T7, T8>(
+        T1 value1,
+        T2 value2,
+        T3 value3,
+        T4 value4,
+        T5 value5,
+        T6 value6,
+        T7 value7,
+        T8 value8) {
+        uint input1 = (object)value1 != null ? (uint)value1.GetHashCode() : 0U;
+        uint input2 = (object)value2 != null ? (uint)value2.GetHashCode() : 0U;
+        uint input3 = (object)value3 != null ? (uint)value3.GetHashCode() : 0U;
+        uint input4 = (object)value4 != null ? (uint)value4.GetHashCode() : 0U;
+        uint input5 = (object)value5 != null ? (uint)value5.GetHashCode() : 0U;
+        uint input6 = (object)value6 != null ? (uint)value6.GetHashCode() : 0U;
+        uint input7 = (object)value7 != null ? (uint)value7.GetHashCode() : 0U;
+        uint input8 = (object)value8 != null ? (uint)value8.GetHashCode() : 0U;
+        uint v1_1;
+        uint v2;
+        uint v3;
+        uint v4;
+        Initialize(out v1_1, out v2, out v3, out v4);
+        uint hash = Round(v1_1, input1);
+        v2 = Round(v2, input2);
+        v3 = Round(v3, input3);
+        v4 = Round(v4, input4);
+        uint v1_2 = Round(hash, input5);
+        v2 = Round(v2, input6);
+        v3 = Round(v3, input7);
+        v4 = Round(v4, input8);
+        return (int)MixFinal(MixState(v1_2, v2, v3, v4) + 32U);
     }
 
-    public static int Combine<T1, T2, T3, T4, T5, T6, T7, T8>(T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6, T7 value7, T8 value8)
-    {
-        uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
-        uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
-        uint hc3 = (uint)(value3?.GetHashCode() ?? 0);
-        uint hc4 = (uint)(value4?.GetHashCode() ?? 0);
-        uint hc5 = (uint)(value5?.GetHashCode() ?? 0);
-        uint hc6 = (uint)(value6?.GetHashCode() ?? 0);
-        uint hc7 = (uint)(value7?.GetHashCode() ?? 0);
-        uint hc8 = (uint)(value8?.GetHashCode() ?? 0);
 
-        Initialize(out uint v1, out uint v2, out uint v3, out uint v4);
-
-        v1 = Round(v1, hc1);
-        v2 = Round(v2, hc2);
-        v3 = Round(v3, hc3);
-        v4 = Round(v4, hc4);
-
-        v1 = Round(v1, hc5);
-        v2 = Round(v2, hc6);
-        v3 = Round(v3, hc7);
-        v4 = Round(v4, hc8);
-
-        uint hash = MixState(v1, v2, v3, v4);
-        hash += 32;
-
-        hash = MixFinal(hash);
-        return (int)hash;
-    }
-
+#nullable disable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void Initialize(out uint v1, out uint v2, out uint v3, out uint v4)
-    {
-        v1 = s_seed + Prime1 + Prime2;
-        v2 = s_seed + Prime2;
+    private static void Initialize(out uint v1, out uint v2, out uint v3, out uint v4) {
+        v1 = (uint)((int)s_seed - 1640531535 - 2048144777);
+        v2 = s_seed + 2246822519U;
         v3 = s_seed;
-        v4 = s_seed - Prime1;
+        v4 = s_seed - 2654435761U;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static uint Round(uint hash, uint input)
-    {
-        return (hash + (input * Prime2)).RotateLeft(13) * Prime1;
-    }
+    private static uint Round(uint hash, uint input) =>
+        (hash + input * 2246822519U).RotateLeft(13) * 2654435761U;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static uint QueueRound(uint hash, uint queuedValue)
-    {
-        return (hash + (queuedValue * Prime3)).RotateLeft(17) * Prime4;
-    }
+    private static uint QueueRound(uint hash, uint queuedValue) =>
+        (hash + queuedValue * 3266489917U).RotateLeft(17) * 668265263U;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static uint MixState(uint v1, uint v2, uint v3, uint v4)
-    {
-        return v1.RotateLeft(1) + v2.RotateLeft(7) + v3.RotateLeft(12) + v4.RotateLeft(18);
-    }
+    private static uint MixState(uint v1, uint v2, uint v3, uint v4) => v1.RotateLeft(1)
+      + v2.RotateLeft(7) + v3.RotateLeft(12) + v4.RotateLeft(18);
 
-    private static uint MixEmptyState()
-    {
-        return s_seed + Prime5;
-    }
+    private static uint MixEmptyState() => s_seed + 374761393U;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static uint MixFinal(uint hash)
-    {
+    private static uint MixFinal(uint hash) {
         hash ^= hash >> 15;
-        hash *= Prime2;
+        hash *= 2246822519U;
         hash ^= hash >> 13;
-        hash *= Prime3;
+        hash *= 3266489917U;
         hash ^= hash >> 16;
         return hash;
     }
 
-    public void Add<T>(T value)
-    {
-        Add(value?.GetHashCode() ?? 0);
-    }
 
-    public void Add<T>(T value, IEqualityComparer<T>? comparer)
-    {
-        Add(value is null ? 0 : (comparer?.GetHashCode(value) ?? value.GetHashCode()));
-    }
+#nullable enable
+    /// <summary>Adds a single value to the hash code.</summary>
+    /// <param name="value">The value to add to the hash code.</param>
+    /// <typeparam name="T">The type of the value to add to the hash code.</typeparam>
+    public void Add<T>(T value) => Add((object)value != null ? value.GetHashCode() : 0);
+
+    /// <summary>Adds a single value to the hash code, specifying the type that provides the hash code function.</summary>
+    /// <param name="value">The value to add to the hash code.</param>
+    /// <param name="comparer">The <see cref="T:System.Collections.Generic.IEqualityComparer`1" /> to use to calculate the hash code.
+    /// This value can be a null reference (Nothing in Visual Basic), which will use the default equality comparer for <typeparamref name="T" />.</param>
+    /// <typeparam name="T">The type of the value to add to the hash code.</typeparam>
+    public void Add<T>(T value, IEqualityComparer<T>? comparer) => Add(
+        (object)value == null ? 0 : (comparer != null ? comparer.GetHashCode(value) : value.GetHashCode())
+    );
 
     /// <summary>Adds a span of bytes to the hash code.</summary>
-    /// <param name="value">The span.</param>
-    /// <remarks>
-    /// This method does not guarantee that the result of adding a span of bytes will match
-    /// the result of adding the same bytes individually.
-    /// </remarks>
-    public void AddBytes(ReadOnlySpan<byte> value)
-    {
-        ref byte pos = ref MemoryMarshal.GetReference(value);
-        ref byte end = ref Unsafe.Add(ref pos, value.Length);
-
-        // Add four bytes at a time until the input has fewer than four bytes remaining.
-        while ((nint)Unsafe.ByteOffset(ref pos, ref end) >= sizeof(int))
-        {
-            Add(Unsafe.ReadUnaligned<int>(ref pos));
-            pos = ref Unsafe.Add(ref pos, sizeof(int));
+    /// <param name="value">The span to add.</param>
+    public void AddBytes(ReadOnlySpan<byte> value) {
+        ref byte local1 = ref MemoryMarshal.GetReference<byte>(value);
+        // ISSUE: variable of a reference type
+        ref byte local2 = ref Unsafe.AsRef<byte>(0);
+        for (local2 = ref Unsafe.Add(ref local1, value.Length);
+            Unsafe.ByteOffset(ref local1, ref local2) >= (nint)new IntPtr(4);
+            local1 = ref Unsafe.Add(ref local1, 4)) {
+            Add(Unsafe.ReadUnaligned<int>(ref local1));
         }
 
-        // Add the remaining bytes a single byte at a time.
-        while (Unsafe.IsAddressLessThan(ref pos, ref end))
-        {
-            Add((int)pos);
-            pos = ref Unsafe.Add(ref pos, 1);
+        for (; Unsafe.IsAddressLessThan(ref local1, ref local2); local1 = ref Unsafe.Add<byte>(ref local1, 1)) {
+            Add((int)local1);
         }
     }
 
-    private void Add(int value)
-    {
-        // The original xxHash works as follows:
-        // 0. Initialize immediately. We can't do this in a struct (no
-        //    default ctor).
-        // 1. Accumulate blocks of length 16 (4 uints) into 4 accumulators.
-        // 2. Accumulate remaining blocks of length 4 (1 uint) into the
-        //    hash.
-        // 3. Accumulate remaining blocks of length 1 into the hash.
-
-        // There is no need for #3 as this type only accepts ints. _queue1,
-        // _queue2 and _queue3 are basically a buffer so that when
-        // ToHashCode is called we can execute #2 correctly.
-
-        // We need to initialize the xxHash32 state (_v1 to _v4) lazily (see
-        // #0) nd the last place that can be done if you look at the
-        // original code is just before the first block of 16 bytes is mixed
-        // in. The xxHash32 state is never used for streams containing fewer
-        // than 16 bytes.
-
-        // To see what's really going on here, have a look at the Combine
-        // methods.
-
-        uint val = (uint)value;
-
-        // Storing the value of _length locally shaves of quite a few bytes
-        // in the resulting machine code.
-        uint previousLength = _length++;
-        uint position = previousLength % 4;
-
-        // Switch can't be inlined.
-
-        if (position == 0)
-        {
-            _queue1 = val;
-        }
-        else if (position == 1)
-        {
-            _queue2 = val;
-        }
-        else if (position == 2)
-        {
-            _queue3 = val;
-        }
-        else // position == 3
-        {
-            if (previousLength == 3)
-            {
+    private void Add(int value) {
+        uint input = (uint)value;
+        uint num = _length++;
+        switch (num % 4U) {
+        case 0:
+            _queue1 = input;
+            break;
+        case 1:
+            _queue2 = input;
+            break;
+        case 2:
+            _queue3 = input;
+            break;
+        default:
+            if (num == 3U) {
                 Initialize(out _v1, out _v2, out _v3, out _v4);
             }
 
             _v1 = Round(_v1, _queue1);
             _v2 = Round(_v2, _queue2);
             _v3 = Round(_v3, _queue3);
-            _v4 = Round(_v4, val);
+            _v4 = Round(_v4, input);
+            break;
         }
     }
 
-    public int ToHashCode()
-    {
-        // Storing the value of _length locally shaves of quite a few bytes
-        // in the resulting machine code.
+    /// <summary>Calculates the final hash code after consecutive <see cref="Overload:System.HashCode.Add" /> invocations.</summary>
+    /// <returns>The calculated hash code.</returns>
+    public int ToHashCode() {
         uint length = _length;
+        uint num = length % 4U;
+        uint hash = (length < 4U ? MixEmptyState() : MixState(_v1, _v2, _v3, _v4))
+          + length * 4U;
 
-        // position refers to the *next* queue position in this method, so
-        // position == 1 means that _queue1 is populated; _queue2 would have
-        // been populated on the next call to Add.
-        uint position = length % 4;
-
-        // If the length is less than 4, _v1 to _v4 don't contain anything
-        // yet. xxHash32 treats this differently.
-
-        uint hash = length < 4 ? MixEmptyState() : MixState(_v1, _v2, _v3, _v4);
-
-        // _length is incremented once per Add(Int32) and is therefore 4
-        // times too small (xxHash length is in bytes, not ints).
-
-        hash += length * 4;
-
-        // Mix what remains in the queue
-
-        // Switch can't be inlined right now, so use as few branches as
-        // possible by manually excluding impossible scenarios (position > 1
-        // is always false if position is not > 0).
-        if (position > 0)
-        {
+        if (num > 0U) {
             hash = QueueRound(hash, _queue1);
-            if (position > 1)
-            {
+            if (num > 1U) {
                 hash = QueueRound(hash, _queue2);
-                if (position > 2)
-                {
+                if (num > 2U) {
                     hash = QueueRound(hash, _queue3);
                 }
             }
         }
 
-        hash = MixFinal(hash);
-        return (int)hash;
+        return (int)MixFinal(hash);
     }
 
-#pragma warning disable 0809
-    // Obsolete member 'memberA' overrides non-obsolete member 'memberB'.
-    // Disallowing GetHashCode and Equals is by design
-
-    // * We decided to not override GetHashCode() to produce the hash code
-    //   as this would be weird, both naming-wise as well as from a
-    //   behavioral standpoint (GetHashCode() should return the object's
-    //   hash code, not the one being computed).
-
-    // * Even though ToHashCode() can be called safely multiple times on
-    //   this implementation, it is not part of the contract. If the
-    //   implementation has to change in the future we don't want to worry
-    //   about people who might have incorrectly used this type.
-
-    [Obsolete("HashCode is a mutable struct and should not be compared with other HashCodes. Use ToHashCode to retrieve the computed hash code.", error: true)]
+    /// <summary>This method is not supported and should not be called.</summary>
+    /// <exception cref="T:System.NotSupportedException">Always thrown when this method is called.</exception>
+    /// <returns>This method will always throw a <see cref="T:System.NotSupportedException" />.</returns>
+    [Obsolete(
+        "HashCode is a mutable struct and should not be compared with other HashCodes. Use ToHashCode to retrieve the computed hash code.",
+        true
+    )]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public override int GetHashCode() => throw new NotSupportedException("HashCode_HashCodeNotSupported");
+    public override int GetHashCode() => throw new NotSupportedException("HashCode is a mutable struct and should not be compared with other HashCodes. Use ToHashCode to retrieve the computed hash code.");
 
-    [Obsolete("HashCode is a mutable struct and should not be compared with other HashCodes.", error: true)]
+    /// <summary>This method is not supported and should not be called.</summary>
+    /// <param name="obj">Ignored.</param>
+    /// <exception cref="T:System.NotSupportedException">Always thrown when this method is called.</exception>
+    /// <returns>This method will always throw a <see cref="T:System.NotSupportedException" />.</returns>
+    [Obsolete("HashCode is a mutable struct and should not be compared with other HashCodes.", true)]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public override bool Equals(object? obj) => throw new NotSupportedException("HashCode_EqualityNotSupported");
-#pragma warning restore 0809
+    public override bool Equals(object? obj) => throw new NotSupportedException("HashCode is a mutable struct and should not be compared with other HashCodes.");
 }
 #endif
