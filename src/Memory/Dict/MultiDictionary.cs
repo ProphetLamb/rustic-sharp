@@ -307,7 +307,7 @@ public sealed class MultiDictionary<K, V> : IEnumerable<KeyValuePair<K, IReadOnl
             private readonly MultiDictionary<K, V> _dict;
             private KeyCollection.Enumerator _keys;
 
-            public Enumerator(MultiDictionary<K, V> dict) {
+            internal Enumerator(MultiDictionary<K, V> dict) {
                 _dict = dict;
                 _keys = dict.Keys.GetEnumerator();
             }
@@ -341,7 +341,7 @@ public sealed class MultiDictionary<K, V> : IEnumerable<KeyValuePair<K, IReadOnl
             _keys = dict.Keys.GetEnumerator();
         }
 
-        /// <inheritdoc cref="IEnumerator{T}.MoveNext"/>
+        /// <summary>Advances the enumerator the the next element</summary>
         public bool MoveNext() {
             if (_keys.MoveNext() && !_dict[_keys.Current!].IsEmpty) {
                 _current = new(_keys.Current!, _dict[_keys.Current!]);
@@ -355,7 +355,7 @@ public sealed class MultiDictionary<K, V> : IEnumerable<KeyValuePair<K, IReadOnl
         /// <inheritdoc cref="IEnumerator{T}.Current"/>
         public readonly KeyValuesPair Current => _current;
 
-        /// <inheritdoc cref="IEnumerator{T}.Reset"/>
+        /// <summary>Resets the enumerator to the initial state</summary>
         public void Reset() {
             _keys = _dict.Keys.GetEnumerator();
             _current = default;

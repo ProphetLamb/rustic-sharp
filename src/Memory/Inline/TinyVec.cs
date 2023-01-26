@@ -214,7 +214,8 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
         ThrowHelper.ThrowArgumentOutOfRangeException(nameof(index), index);
     }
 
-    /// <see cref="VectorTraits.SwapRemove(IVector{T}, int)"/>
+    /// <summary>Removes the element at the specified <paramref name="index"/> from the vector by over-writing it with the last element.</summary>
+    /// <remarks>No block of elements in moved. The order of the vector is disturbed.</remarks>
     public void SwapRemove(int index) {
         if (ReferenceEquals(_values, SingleValueGuard)) {
             ThrowHelper.ArgumentInRange(index, index == 0);
