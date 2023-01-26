@@ -481,11 +481,13 @@ public class BufWriter<T> :
         ThrowHelper.ArgumentInRange(count, start <= Length - count);
     }
 
+    /// <inheritdoc cref="AsSpan(int, int)" />
     public ReadOnlySpan<T> AsSpan()
     {
         return new(Buffer);
     }
 
+    /// <inheritdoc cref="AsSpan(int, int)" />
     public ReadOnlySpan<T> AsSpan(int start)
     {
         return new(Buffer, start, _index - start);
