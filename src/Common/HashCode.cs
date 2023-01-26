@@ -367,7 +367,7 @@ public struct HashCode {
     /// This value can be a null reference (Nothing in Visual Basic), which will use the default equality comparer for <typeparamref name="T" />.</param>
     /// <typeparam name="T">The type of the value to add to the hash code.</typeparam>
     public void Add<T>(T value, IEqualityComparer<T>? comparer) => Add(
-        (object)value == null ? 0 : (comparer != null ? comparer.GetHashCode(value) : value.GetHashCode())
+        value is not null ? 0 : comparer?.GetHashCode(value) ?? value?.GetHashCode() ?? 0
     );
 
     /// <summary>Adds a span of bytes to the hash code.</summary>
