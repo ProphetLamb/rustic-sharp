@@ -5,6 +5,7 @@ using Rustic;
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #if !(NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER)
+#nullable disable
 /*
 
 The xxHash32 implementation is based on the code published by Yann Collet:
@@ -73,7 +74,7 @@ public struct HashCode {
     /// <typeparam name="T1">The type of the value to add the hash code.</typeparam>
     /// <returns>The hash code that represents the single value.</returns>
     public static int Combine<T1>(T1 value1) {
-        uint queuedValue = (object)value1 != null ? (uint)value1.GetHashCode() : 0U;
+        uint queuedValue = value1 is not null ? (uint)value1.GetHashCode() : 0U;
         return (int)MixFinal(QueueRound(MixEmptyState() + 4U, queuedValue));
     }
 
@@ -84,8 +85,8 @@ public struct HashCode {
     /// <typeparam name="T2">The type of the second value to combine into the hash code.</typeparam>
     /// <returns>The hash code that represents the two values.</returns>
     public static int Combine<T1, T2>(T1 value1, T2 value2) {
-        uint queuedValue1 = (object)value1 != null ? (uint)value1.GetHashCode() : 0U;
-        uint queuedValue2 = (object)value2 != null ? (uint)value2.GetHashCode() : 0U;
+        uint queuedValue1 = value1 is not null ? (uint)value1.GetHashCode() : 0U;
+        uint queuedValue2 = value2 is not null ? (uint)value2.GetHashCode() : 0U;
         return (int)MixFinal(
             QueueRound(QueueRound(MixEmptyState() + 8U, queuedValue1), queuedValue2)
         );
@@ -100,9 +101,9 @@ public struct HashCode {
     /// <typeparam name="T3">The type of the third value to combine into the hash code.</typeparam>
     /// <returns>The hash code that represents the three values.</returns>
     public static int Combine<T1, T2, T3>(T1 value1, T2 value2, T3 value3) {
-        uint queuedValue1 = (object)value1 != null ? (uint)value1.GetHashCode() : 0U;
-        uint queuedValue2 = (object)value2 != null ? (uint)value2.GetHashCode() : 0U;
-        uint queuedValue3 = (object)value3 != null ? (uint)value3.GetHashCode() : 0U;
+        uint queuedValue1 = value1 is not null ? (uint)value1.GetHashCode() : 0U;
+        uint queuedValue2 = value2 is not null ? (uint)value2.GetHashCode() : 0U;
+        uint queuedValue3 = value3 is not null ? (uint)value3.GetHashCode() : 0U;
         return (int)MixFinal(
             QueueRound(
                 QueueRound(QueueRound(MixEmptyState() + 12U, queuedValue1), queuedValue2),
@@ -122,10 +123,10 @@ public struct HashCode {
     /// <typeparam name="T4">The type of the fourth value to combine into the hash code.</typeparam>
     /// <returns>The hash code that represents the four values.</returns>
     public static int Combine<T1, T2, T3, T4>(T1 value1, T2 value2, T3 value3, T4 value4) {
-        uint input1 = (object)value1 != null ? (uint)value1.GetHashCode() : 0U;
-        uint input2 = (object)value2 != null ? (uint)value2.GetHashCode() : 0U;
-        uint input3 = (object)value3 != null ? (uint)value3.GetHashCode() : 0U;
-        uint input4 = (object)value4 != null ? (uint)value4.GetHashCode() : 0U;
+        uint input1 = value1 is not null ? (uint)value1.GetHashCode() : 0U;
+        uint input2 = value2 is not null ? (uint)value2.GetHashCode() : 0U;
+        uint input3 = value3 is not null ? (uint)value3.GetHashCode() : 0U;
+        uint input4 = value4 is not null ? (uint)value4.GetHashCode() : 0U;
         uint v1_1;
         uint v2;
         uint v3;
@@ -156,11 +157,11 @@ public struct HashCode {
         T3 value3,
         T4 value4,
         T5 value5) {
-        uint input1 = (object)value1 != null ? (uint)value1.GetHashCode() : 0U;
-        uint input2 = (object)value2 != null ? (uint)value2.GetHashCode() : 0U;
-        uint input3 = (object)value3 != null ? (uint)value3.GetHashCode() : 0U;
-        uint input4 = (object)value4 != null ? (uint)value4.GetHashCode() : 0U;
-        uint queuedValue = (object)value5 != null ? (uint)value5.GetHashCode() : 0U;
+        uint input1 = value1 is not null ? (uint)value1.GetHashCode() : 0U;
+        uint input2 = value2 is not null ? (uint)value2.GetHashCode() : 0U;
+        uint input3 = value3 is not null ? (uint)value3.GetHashCode() : 0U;
+        uint input4 = value4 is not null ? (uint)value4.GetHashCode() : 0U;
+        uint queuedValue = value5 is not null ? (uint)value5.GetHashCode() : 0U;
         uint v1_1;
         uint v2;
         uint v3;
@@ -194,12 +195,12 @@ public struct HashCode {
         T4 value4,
         T5 value5,
         T6 value6) {
-        uint input1 = (object)value1 != null ? (uint)value1.GetHashCode() : 0U;
-        uint input2 = (object)value2 != null ? (uint)value2.GetHashCode() : 0U;
-        uint input3 = (object)value3 != null ? (uint)value3.GetHashCode() : 0U;
-        uint input4 = (object)value4 != null ? (uint)value4.GetHashCode() : 0U;
-        uint queuedValue1 = (object)value5 != null ? (uint)value5.GetHashCode() : 0U;
-        uint queuedValue2 = (object)value6 != null ? (uint)value6.GetHashCode() : 0U;
+        uint input1 = value1 is not null ? (uint)value1.GetHashCode() : 0U;
+        uint input2 = value2 is not null ? (uint)value2.GetHashCode() : 0U;
+        uint input3 = value3 is not null ? (uint)value3.GetHashCode() : 0U;
+        uint input4 = value4 is not null ? (uint)value4.GetHashCode() : 0U;
+        uint queuedValue1 = value5 is not null ? (uint)value5.GetHashCode() : 0U;
+        uint queuedValue2 = value6 is not null ? (uint)value6.GetHashCode() : 0U;
         uint v1_1;
         uint v2;
         uint v3;
@@ -241,13 +242,13 @@ public struct HashCode {
         T5 value5,
         T6 value6,
         T7 value7) {
-        uint input1 = (object)value1 != null ? (uint)value1.GetHashCode() : 0U;
-        uint input2 = (object)value2 != null ? (uint)value2.GetHashCode() : 0U;
-        uint input3 = (object)value3 != null ? (uint)value3.GetHashCode() : 0U;
-        uint input4 = (object)value4 != null ? (uint)value4.GetHashCode() : 0U;
-        uint queuedValue1 = (object)value5 != null ? (uint)value5.GetHashCode() : 0U;
-        uint queuedValue2 = (object)value6 != null ? (uint)value6.GetHashCode() : 0U;
-        uint queuedValue3 = (object)value7 != null ? (uint)value7.GetHashCode() : 0U;
+        uint input1 = value1 is not null ? (uint)value1.GetHashCode() : 0U;
+        uint input2 = value2 is not null ? (uint)value2.GetHashCode() : 0U;
+        uint input3 = value3 is not null ? (uint)value3.GetHashCode() : 0U;
+        uint input4 = value4 is not null ? (uint)value4.GetHashCode() : 0U;
+        uint queuedValue1 = value5 is not null ? (uint)value5.GetHashCode() : 0U;
+        uint queuedValue2 = value6 is not null ? (uint)value6.GetHashCode() : 0U;
+        uint queuedValue3 = value7 is not null ? (uint)value7.GetHashCode() : 0U;
         uint v1_1;
         uint v2;
         uint v3;
@@ -295,14 +296,14 @@ public struct HashCode {
         T6 value6,
         T7 value7,
         T8 value8) {
-        uint input1 = (object)value1 != null ? (uint)value1.GetHashCode() : 0U;
-        uint input2 = (object)value2 != null ? (uint)value2.GetHashCode() : 0U;
-        uint input3 = (object)value3 != null ? (uint)value3.GetHashCode() : 0U;
-        uint input4 = (object)value4 != null ? (uint)value4.GetHashCode() : 0U;
-        uint input5 = (object)value5 != null ? (uint)value5.GetHashCode() : 0U;
-        uint input6 = (object)value6 != null ? (uint)value6.GetHashCode() : 0U;
-        uint input7 = (object)value7 != null ? (uint)value7.GetHashCode() : 0U;
-        uint input8 = (object)value8 != null ? (uint)value8.GetHashCode() : 0U;
+        uint input1 = value1 is not null ? (uint)value1.GetHashCode() : 0U;
+        uint input2 = value2 is not null ? (uint)value2.GetHashCode() : 0U;
+        uint input3 = value3 is not null ? (uint)value3.GetHashCode() : 0U;
+        uint input4 = value4 is not null ? (uint)value4.GetHashCode() : 0U;
+        uint input5 = value5 is not null ? (uint)value5.GetHashCode() : 0U;
+        uint input6 = value6 is not null ? (uint)value6.GetHashCode() : 0U;
+        uint input7 = value7 is not null ? (uint)value7.GetHashCode() : 0U;
+        uint input8 = value8 is not null ? (uint)value8.GetHashCode() : 0U;
         uint v1_1;
         uint v2;
         uint v3;
@@ -358,7 +359,7 @@ public struct HashCode {
     /// <summary>Adds a single value to the hash code.</summary>
     /// <param name="value">The value to add to the hash code.</param>
     /// <typeparam name="T">The type of the value to add to the hash code.</typeparam>
-    public void Add<T>(T value) => Add((object)value != null ? value.GetHashCode() : 0);
+    public void Add<T>(T value) => Add(value is not null ? value.GetHashCode() : 0);
 
     /// <summary>Adds a single value to the hash code, specifying the type that provides the hash code function.</summary>
     /// <param name="value">The value to add to the hash code.</param>
@@ -412,7 +413,7 @@ public struct HashCode {
         }
     }
 
-    /// <summary>Calculates the final hash code after consecutive <see cref="Overload:System.HashCode.Add" /> invocations.</summary>
+    /// <summary>Calculates the final hash code after consecutive <see cref="System.HashCode.Add" /> invocations.</summary>
     /// <returns>The calculated hash code.</returns>
     public int ToHashCode() {
         uint length = _length;
