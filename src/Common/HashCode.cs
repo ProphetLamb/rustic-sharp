@@ -434,6 +434,7 @@ public struct HashCode {
         return (int)MixFinal(hash);
     }
 
+#pragma warning disable CS0809
     /// <summary>This method is not supported and should not be called.</summary>
     /// <exception cref="T:System.NotSupportedException">Always thrown when this method is called.</exception>
     /// <returns>This method will always throw a <see cref="T:System.NotSupportedException" />.</returns>
@@ -451,5 +452,6 @@ public struct HashCode {
     [Obsolete("HashCode is a mutable struct and should not be compared with other HashCodes.", true)]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override bool Equals(object? obj) => throw new NotSupportedException("HashCode is a mutable struct and should not be compared with other HashCodes.");
+#pragma warning restore CS0809
 }
 #endif
