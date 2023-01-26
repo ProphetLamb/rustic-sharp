@@ -11,7 +11,7 @@ namespace Rustic;
 #pragma warning disable RCS1138,CS1591
 public static class ThrowHelper
 {
-    #region ArgumentExceptions
+#region ArgumentExceptions
 
     [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
     public static void ThrowArgumentException(string message, string? name = null, Exception? inner = null)
@@ -31,9 +31,9 @@ public static class ThrowHelper
         throw new ArgumentOutOfRangeException(name, actual, message);
     }
 
-    #endregion ArgumentExceptions
+#endregion ArgumentExceptions
 
-    #region InvalidOperation
+#region InvalidOperation
 
     [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
     public static void ThrowInvalidOperationException(string? message = null, Exception? ex = null)
@@ -47,9 +47,18 @@ public static class ThrowHelper
         throw new NotSupportedException(message, ex);
     }
 
-    #endregion InvalidOperation
+#endregion InvalidOperation
 
-    #region Validations
+#region Format
+
+    [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
+    public static void ThrowFormatExceptions(string? message = null, Exception? ex = null) {
+        throw new FormatException(message, ex);
+    }
+
+#endregion
+
+#region Validations
 
     [DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void ArgumentIs<T>(T value, [DoesNotReturnIf(false)] bool condition, [CallerArgumentExpression("value")] string name = null!, [CallerArgumentExpression("condition")] string message = null!)
@@ -80,6 +89,6 @@ public static class ThrowHelper
         }
     }
 
-    #endregion Validations
+#endregion Validations
 }
 #pragma warning disable RCS1138,CS1591
