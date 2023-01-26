@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Text;
 
 namespace Rustic.Source;
@@ -33,6 +32,7 @@ public class SrcBuilder
         SetIndent(indentSize, 0);
     }
 
+    /// <summary>The <see cref="StringBuilder"/> used within the <see cref="SrcBuilder"/>.</summary>
     public StringBuilder Builder { get; }
 
     /// <summary>Specifies the number of `space` characters used to indent a level.</summary>
@@ -373,7 +373,9 @@ public class SrcBuilder
     /// <summary>Parameter formatting callback with a given context object.</summary>
     public delegate void ParamsAction<C>(in C ctx, ref SrcColl p);
 
-    /// <inheritdoc cref="Decl{T}(string,T,ParamsAction{T})"/>
+    /// <summary>Appends the specified <paramref name="definition"/>, and creates a new block builder, which can be used fluently.</summary>
+    /// <param name="definition">The definition for the call target.</param>
+    /// <param name="parameters">The callback used to create the arguments for the call.</param>
     public SrcBlock Decl(string definition, ParamsAction parameters)
     {
         AppendIndent(definition);
