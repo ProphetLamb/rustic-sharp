@@ -1,6 +1,7 @@
 # Version 0.6
 
 - Add UnreachableException
+- Return Random.Shared for .NET 6.0 or greater instead of thread static instance.
 
 # Version 0.5
 
