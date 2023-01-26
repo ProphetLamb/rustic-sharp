@@ -20,7 +20,7 @@ public class Fmt
     /// <param name="comparer">The comparer determining whether two chars are equal.</param>
     /// <typeparam name="D">The type of the definition.</typeparam>
     /// <returns>The formatted string.</returns>
-    public static string Format<D>(ReadOnlySpan<char> format, in D definition,
+    public static string Format<D>(ReadOnlySpan<char> format, D definition,
         IEqualityComparer<char>? comparer = null)
         where D : IFmtDef
     {
@@ -81,7 +81,7 @@ public ref struct FmtBuilder<D>
     /// <param name="input">The format string.</param>
     /// <param name="definition">The format definition</param>
     /// <param name="comparer">The comparer determining whether two chars are equal.</param>
-    public FmtBuilder(StrBuilder builder, ReadOnlySpan<char> input, in D definition, IEqualityComparer<char>? comparer)
+    public FmtBuilder(StrBuilder builder, ReadOnlySpan<char> input, D definition, IEqualityComparer<char>? comparer)
     {
         _definition = definition;
         _tokenizer = new Tokenizer<char>(input, comparer);
