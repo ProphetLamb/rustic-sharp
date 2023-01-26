@@ -61,11 +61,11 @@ public class Vec<T> : IVector<T>
         {
             Debug.Assert(value >= 0);
             Debug.Assert(value <= Capacity);
-            Length = value;
+            _count = value;
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IVector{T}.Count" />
     public int Count => Length;
 
     /// <inheritdoc/>
@@ -363,7 +363,7 @@ public class Vec<T> : IVector<T>
     /// <inheritdoc cref="List{T}.RemoveAt"/>
     public void RemoveAt(int index)
     {
-        ThrowHelper.ArgumentIs(this, index >= 0 && index < Length);
+        ThrowHelper.ArgumentInRange(this, index >= 0 && index < Length);
         int last = Length - 1;
         int remaining = last - index;
         if (remaining != 0) {
@@ -455,7 +455,7 @@ public class Vec<T> : IVector<T>
     {
         Debug.Assert(additionalCapacityBeyondPos > 0);
 
-        if (Capacity == 0)
+        if (Capacity != 0)
         {
             Debug.Assert(Length > Capacity - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
 
