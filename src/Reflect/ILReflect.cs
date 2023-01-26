@@ -1,3 +1,5 @@
+// ReSharper disable InconsistentNaming
+
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -10,12 +12,23 @@ using Rustic.Memory;
 
 namespace Rustic.Reflect;
 
+/// <summary>Sets a member in the target to the value specified.</summary>
+/// <typeparam name="T">The type of the target.</typeparam>
+/// <typeparam name="V">The type of the value required by the setter.</typeparam>
 public delegate void MemberSetter<T, in V>(ref T target, V value);
 
+/// <summary>Gets the value of a member in the target.</summary>
+/// <typeparam name="T">The type of the target.</typeparam>
+/// <typeparam name="R">The return type of the getter.</typeparam>
 public delegate R MemberGetter<in T, out R>(T target);
 
+/// <summary>Calls a function on the target</summary>
+/// <typeparam name="T">The type of the target.</typeparam>
+/// <typeparam name="R">The return type of the function.</typeparam>
 public delegate R MethodCaller<in T, out R>(T target, object[] args);
 
+/// <summary>Constructs the target type with the parameters specified.</summary>
+/// <typeparam name="T">The type of the target.</typeparam>
 public delegate T CtorInvoker<out T>(object[] parameters);
 
 /// <summary>
@@ -27,17 +40,24 @@ public delegate T CtorInvoker<out T>(object[] parameters);
 public static class ILReflect
 {
     [ThreadStatic] private static ILEmitter? EmitInst;
+    /// <summary>The <see cref="ILEmitter"/> used to generate code.</summary>
     [CLSCompliant(false)]
     public static ILEmitter Emit => EmitInst ??= new ILEmitter();
 
     private static readonly Lazy<ConcurrentDictionary<Key, Delegate>> CacheInst = new(() => new ConcurrentDictionary<Key, Delegate>());
     internal static ConcurrentDictionary<Key, Delegate> Cache => CacheInst.Value;
 
+    /// <summary>The function name for a generated constructor.</summary>
     public const string CtorInvokerName = "CI<>";
+    /// <summary>The function name for a generated method call.</summary>
     public const string MethodCallerName = "MC<>";
+    /// <summary>The function name for a generated field setter.</summary>
     public const string FieldSetterName = "FS<>";
+    /// <summary>The function name for a generated field getter.</summary>
     public const string FieldGetterName = "FG<>";
+    /// <summary>The function name for a generated property setter.</summary>
     public const string PropertySetterName = "PS<>";
+    /// <summary>The function name for a generated property getter.</summary>
     public const string PropertyGetterName = "PG<>";
 
     /// <summary>
@@ -691,11 +711,20 @@ public static class ILReflect
     /// <summary>16 byte integer Guid</summary>
     public readonly struct Key : IEquatable<Key>
     {
+        /// <summary>The caller part of the key</summary>
         public readonly int Caller;
+        /// <summary>The member part of the key</summary>
         public readonly int Member;
+        /// <summary>The target part of the key</summary>
         public readonly int Target;
+        /// <summary>The return part of the key</summary>
         public readonly int Return;
 
+        /// <summary>Creates a new key from member identifying features.</summary>
+        /// <param name="callerName">The name of the caller.</param>
+        /// <param name="member">The oder of the member.</param>
+        /// <param name="target">The type of the target owning the member.</param>
+        /// <param name="ret">The type of the return value.</param>
         public Key(string callerName, int member, Type target, Type ret)
         {
             Caller = callerName.GetHashCode();
@@ -704,16 +733,19 @@ public static class ILReflect
             Return = ret.GetHashCode();
         }
 
+        /// <inheritdoc />
         public bool Equals(Key other)
         {
             return Caller == other.Caller && Member == other.Member && Target == other.Target && Return == other.Return;
         }
 
+        /// <inheritdoc />
         public override bool Equals(object? obj)
         {
             return obj is Key other && Equals(other);
         }
 
+        /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int GetHashCode()
         {
