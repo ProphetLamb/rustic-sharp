@@ -84,7 +84,7 @@ public class SrcBuilder
     {
         if (!text.IsEmpty)
         {
-#if NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
             Builder.Append(text);
 #else
 #pragma warning disable CS1503,CA1830

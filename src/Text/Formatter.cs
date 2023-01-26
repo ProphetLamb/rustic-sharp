@@ -172,7 +172,7 @@ public readonly struct IdxDef<T> : IFmtDef
 
     public bool TryGetValue(in ReadOnlySpan<char> key, out ReadOnlySpan<char> value)
     {
-#if NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
         if (!Int32.TryParse(key, NumberStyles.Integer, Format, out var idx))
 #else
         if (!Int32.TryParse(key.ToString(), NumberStyles.Integer, Format, out var idx))

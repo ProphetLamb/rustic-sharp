@@ -75,7 +75,7 @@ public ref struct RefVec<T>
         }
     }
 
-#if NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
     /// <summary>
     ///     Gets or sets the element at the specified <paramref name="index"/>.
     /// </summary>
