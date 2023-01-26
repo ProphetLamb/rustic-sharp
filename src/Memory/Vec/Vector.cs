@@ -448,8 +448,11 @@ public static class VectorTraits
         self.Reverse(0, self.Count);
     }
 
-    /// <summary>Removes to topmost element from the stack.</summary>
-    /// <returns>Returns <see cref="Option.Some{T}"/> if an element was removed; otherwise, returns <see cref="Option.None{T}"/>.</returns>
+    /// <summary>Attempts to remove the topmost element from the stack.</summary>
+    /// <param name="self">The stack</param>
+    /// <param name="value">The value removed from the stack, or default</param>
+    /// <typeparam name="T">The type of elements in the stack</typeparam>
+    /// <returns><c>true</c> if a value was removed; otherwise <c>false</c></returns>
     public static bool TryPop<T>(this IVector<T> self, [NotNullWhen(true)] out T? value)
     {
         if (!self.IsEmpty)

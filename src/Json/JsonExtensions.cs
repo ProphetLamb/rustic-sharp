@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Rustic.Json;
 
+/// <summary>Extensions methods for <see cref="JsonElement"/>, <see cref="Utf8JsonReader"/> and similar types.</summary>
 public static class JsonExtensions
 {
     /// <summary>Attempts to enumerate the objects in the <see cref="JsonElement"/>.</summary>

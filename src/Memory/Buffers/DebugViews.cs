@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace Rustic.Memory;
 
-public sealed class PoolBufWriterDebuggerView<T>
+internal sealed class PoolBufWriterDebuggerView<T>
 {
     private readonly WeakReference<BufWriter<T>> _ref;
 
