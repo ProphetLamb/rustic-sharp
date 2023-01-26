@@ -47,9 +47,7 @@ public ref struct Tokenizer<T>
     /// <summary>The comparer used to determine whether two elements are equal.</summary>
     public IEqualityComparer<T>? Comparer => _comparer;
 
-    /// <summary>
-    ///     Defines the current position of the iterator.
-    /// </summary>
+    /// <summary>Defines the current cursor position of the iterator.</summary>
     public int Head
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -96,6 +94,11 @@ public ref struct Tokenizer<T>
             _tokenLength = value;
         }
     }
+
+    /// <summary>Indicates whether the end of the source sequence is reached.</summary>
+    public bool IsCursorEnd => Head >= Length;
+    /// <summary>Indicates whether the cursor is at the beginning of the source sequence.</summary>
+    public bool IsCursorStart => Head == 0;
 
     /// <inheritdoc cref="Span{T}.Length"/>
     public int Length => _source.Length;
