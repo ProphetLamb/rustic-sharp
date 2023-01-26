@@ -347,7 +347,7 @@ public readonly struct TinyRoVec<T>
 
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         return MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef(in _arg0), _length);
-#endif
+#else
         if (onlyIfCheap) {
             return default;
         }
@@ -362,6 +362,7 @@ public readonly struct TinyRoVec<T>
         };
 
         return new ReadOnlySpan<T>(array, 0, _length);
+#endif
     }
 
     /// <summary>Initializes a new span from the value.</summary>
