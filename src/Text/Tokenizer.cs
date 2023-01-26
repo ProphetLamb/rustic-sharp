@@ -41,8 +41,10 @@ public ref struct Tokenizer<T>
         _tokenLength = 0;
     }
 
+    /// <summary>The reference to the source buffer.</summary>
     public ReadOnlySpan<T> Raw => _source;
 
+    /// <summary>The comparer used to determine whether two elements are equal.</summary>
     public IEqualityComparer<T>? Comparer => _comparer;
 
     /// <summary>
@@ -101,6 +103,7 @@ public ref struct Tokenizer<T>
     /// <summary>Represents the token currently being built.</summary>
     public ReadOnlySpan<T> Token => _source.Slice(_pos, _tokenLength);
 
+    /// <summary>The reference to the current element.</summary>
     public ref readonly T Current => ref _source[_pos];
 
     /// <summary>Represents the token at an offset relative to the <see cref="Head"/>.</summary>
@@ -109,6 +112,8 @@ public ref struct Tokenizer<T>
         return ref this[Head + offset];
     }
 
+    /// <summary>Allows access to an arbitrary element inside the source buffer.</summary>
+    /// <param name="index"></param>
     public ref readonly T this[int index]
     {
         get
