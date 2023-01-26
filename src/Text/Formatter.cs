@@ -12,7 +12,7 @@ public class Fmt
     private static readonly Lazy<Fmt> s_fmtInstance = new(() => new Fmt());
 
     /// <summary>The global instance containing definitions.</summary>
-    public static Fmt Definition => s_fmtInstance.Value;
+    public static Fmt Def => s_fmtInstance.Value;
 
     /// <summary>Formats a string using the specified definition.</summary>
     /// <param name="format">The format string.</param>
