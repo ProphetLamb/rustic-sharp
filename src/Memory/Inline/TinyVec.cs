@@ -29,6 +29,15 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
         _values = SingleValueGuard;
     }
 
+    /// <summary>
+    /// Initializes a new <see cref="TinyVec{T}"/> with the specified capacity.
+    /// </summary>
+    /// <param name="capacity">The capacity.</param>
+    public TinyVec(int capacity) {
+        _singleValue = default;
+        _values = capacity >= 2 ? new(capacity) : default;
+    }
+
     public bool IsEmpty => Count == 0;
 
     bool ICollection<T>.IsReadOnly => false;
@@ -37,6 +46,9 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
     /// Number of entries in this collections.
     /// </summary>
     public int Count => ReferenceEquals(_values, SingleValueGuard) ? 1 : _values?.Length ?? 0;
+
+    /// <summary>Returns the maximum number of elements the vector can hold before resizing.</summary>
+    public int Capacity => ReferenceEquals(_values, SingleValueGuard) ? 1 : _values?.Capacity ?? 1;
 
     /// <inheritdoc />
     public T this[int index] {
@@ -97,6 +109,9 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
         _singleValue = value;
     }
 
+    /// <inheritdoc cref="VectorTraits.AddRange(IVector{T}, ReadOnlySpan{T})"/>
+    public void AddRange(ReadOnlySpan<T> values) => InsertRange(Count, values);
+
     /// <inheritdoc />
     public bool Remove(T value)
     {
@@ -125,10 +140,8 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
     }
 
     /// <inheritdoc />
-    public void Insert(int index, T item)
-    {
-        if (ReferenceEquals(_values, SingleValueGuard))
-        {
+    public void Insert(int index, T item) {
+        if (ReferenceEquals(_values, SingleValueGuard)) {
             ThrowHelper.ArgumentInRange(index, index is >= 0 and <= 1);
             _values = index == 0 ? new() { item, _singleValue } : new() { _singleValue, item };
             _singleValue = default;
@@ -145,6 +158,42 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
         _singleValue = item;
     }
 
+    /// <inheritdoc cref="IVector{T}.InsertRange"/>
+    public void InsertRange(int index, ReadOnlySpan<T> values) {
+        if (values.IsEmpty) {
+            return;
+        }
+        if (values.Length == 1) {
+            Insert(index, values[0]);
+            return;
+        }
+        // we will always need to construct a list, bc we will have at least two elements.
+        // other conditions are handled above
+        if (ReferenceEquals(_values, SingleValueGuard)) {
+            ThrowHelper.ArgumentInRange(index, index is >= 0 and <= 1);
+            _values = new(values.Length + 1);
+            if (index == 0) {
+                _values.Add(_singleValue);
+            }
+            _values.AddRange(values);
+            if (index != 0) {
+                _values.Add(_singleValue);
+            }
+
+            _singleValue = default;
+            return;
+        }
+
+        if (_values is not null) {
+            _values.InsertRange(index, values);
+            return;
+        }
+
+        ThrowHelper.ArgumentInRange(index, index == 0);
+        _values = new();
+        _values.AddRange(values);
+    }
+
     /// <inheritdoc />
     public void RemoveAt(int index)
     {
@@ -158,6 +207,23 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
 
         if (_values is not null) {
             _values.RemoveAt(index);
+            return;
+        }
+
+        ThrowHelper.ThrowArgumentOutOfRangeException(nameof(index), index);
+    }
+
+    /// <see cref="VectorTraits.SwapRemove(IVector{T}, int)"/>
+    public void SwapRemove(int index) {
+        if (ReferenceEquals(_values, SingleValueGuard)) {
+            ThrowHelper.ArgumentInRange(index, index == 0);
+            _values = default;
+            _singleValue = default;
+            return;
+        }
+
+        if (_values is not null) {
+            _values.SwapRemove(index);
             return;
         }
 
@@ -180,23 +246,26 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
     public bool Contains(T item) => IndexOf(item) != -1;
 
     /// <inheritdoc />
-    public void CopyTo(T[] array, int arrayIndex) => CopyTo(array.AsSpan(arrayIndex));
-
-    public void CopyTo(Span<T> span)
-    {
-        if (_values is null)
-        {
-            return;
+    public void CopyTo(T[] array, int arrayIndex) {
+        if (!TryCopyTo(array.AsSpan(arrayIndex))) {
+            ThrowHelper.ThrowArgumentOutOfRangeException(nameof(array), array);
         }
+    }
 
-        if (_values is T existing)
-        {
+    /// <inheritdoc cref="IReadOnlyVector{T}.TryCopyTo(Span{T})"/>
+    public bool TryCopyTo(Span<T> span) {
+        if (span.Length < Count) {
+            return false;
+        }
+        switch (_values) {
+        case null:
+            return true;
+        case T existing:
             span[0] = existing;
-            return;
+            return true;
+        default:
+            return _values.TryCopyTo(span);
         }
-
-        Vec<T> list = Unsafe.As<Vec<T>>(_values);
-        list.CopyTo(span);
     }
 
     /// <summary>
