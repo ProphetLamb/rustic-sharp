@@ -200,19 +200,21 @@ public struct IdxDef<T> : IFmtDef {
                 return false; // No more holes
             }
 
-            ReversibleIndexedSpan<char> token = tokenizer.FinalizeToken().SliceEnd(1);
-            builder.Append(token);
+            ReversibleIndexedSpan<char> token = tokenizer.FinalizeToken();
 
             if (Prefix.IsEmpty()) {
+                builder.Append(token);
                 return true; // Hole found
             }
 
             ReadOnlySpan<char> possiblePrefix = token.Slice(token.Length - Prefix.Length).ToSpan();
             if (possiblePrefix.SequenceEqual(Prefix.AsSpan())) {
+                builder.Append(token.SliceEnd(1));
                 return true; // Hole found
             }
 
             // Hole found, but not with the correct prefix; skip
+            builder.Append(token);
         }
     }
 
@@ -341,19 +343,21 @@ public struct NamedDef<T> : IFmtDef {
                 return false; // No more holes
             }
 
-            ReversibleIndexedSpan<char> token = tokenizer.FinalizeToken().SliceEnd(1);
-            builder.Append(token);
+            ReversibleIndexedSpan<char> token = tokenizer.FinalizeToken();
 
             if (Prefix.IsEmpty()) {
+                builder.Append(token);
                 return true; // Hole found
             }
 
             ReadOnlySpan<char> possiblePrefix = token.Slice(token.Length - Prefix.Length).ToSpan();
             if (possiblePrefix.SequenceEqual(Prefix.AsSpan())) {
+                builder.Append(token.SliceEnd(1));
                 return true; // Hole found
             }
 
             // Hole found, but not with the correct prefix; skip
+            builder.Append(token);
         }
     }
 
