@@ -15,7 +15,7 @@ namespace Rustic.Memory;
 /// <remarks>If only insertions, and no removals are performed the order of values for a key is stable; otherwise the order may change.</remarks>
 /// <remarks>For .NET 6.0 or greater this implementation requires no additional object, or array allocation for 1-1 key-value relations.</remarks>
 [DebuggerDisplay("Keys={KeyCount} Values={ValueCount}"), DebuggerTypeProxy(typeof(MultiDictionaryDebugView<,>))]
-public sealed class MultiDictionary<K, V> : IEnumerable<KeyValuePair<K, IReadOnlyCollection<V>>>
+public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyCollection<V>>
     where K : notnull {
     /// <summary>Backing dictionary.</summary>
 #if NET6_0_OR_GREATER
@@ -45,11 +45,39 @@ public sealed class MultiDictionary<K, V> : IEnumerable<KeyValuePair<K, IReadOnl
     /// <summary>Number of values over all keys</summary>
     public int ValueCount => _valueCount;
 
+    int IReadOnlyCollection<KeyValuePair<K, IReadOnlyCollection<V>>>.Count => KeyCount;
+
     /// <summary>A collection of all keys in the <see cref="MultiDictionary{K,V}"/></summary>
     public KeyCollection Keys { get; }
+    IEnumerable<K> IReadOnlyDictionary<K, IReadOnlyCollection<V>>.Keys => Keys;
 
     /// <summary>A collection of values in the <see cref="MultiDictionary{K,V}"/></summary>
     public ValueCollection Values { get; }
+    IEnumerable<IReadOnlyCollection<V>> IReadOnlyDictionary<K, IReadOnlyCollection<V>>.Values => Values;
+
+    /// <inheritdoc />
+    public bool ContainsKey(K key) => _backing.TryGetValue(key, out var value) && !value.IsEmpty;
+
+    bool IReadOnlyDictionary<K, IReadOnlyCollection<V>>.TryGetValue(K key, out IReadOnlyCollection<V> value) {
+        bool flag = false;
+        if (_backing.TryGetValue(key, out var list) && !list.IsEmpty) {
+            value = new ReadOnlyCollection<V>(list);
+            flag = true;
+        }
+
+        value = default!;
+        return flag;
+    }
+
+    IReadOnlyCollection<V> IReadOnlyDictionary<K, IReadOnlyCollection<V>>.this[K key] {
+        get {
+            Vec<V> list = _backing[key];
+            if (list.IsEmpty) {
+                ThrowHelper.ThrowKeyNotFoundException();
+            }
+            return new ReadOnlyCollection<V>(list);
+        }
+    }
 
     /// <summary>Span over values that have the specified key, empty if the key is not present.</summary>
     public ReadOnlySpan<V> this[K key] {
@@ -300,7 +328,7 @@ public sealed class MultiDictionary<K, V> : IEnumerable<KeyValuePair<K, IReadOnl
 
     /// <inheritdoc cref="Dictionary{K, V}.ValueCollection"/>
     [DebuggerDisplay("Count={Count}"), DebuggerTypeProxy(typeof(DictionaryValueCollectionDebugView<,>))]
-    public readonly struct ValueCollection : IReadOnlyCollection<IEnumerable<V>> {
+    public readonly struct ValueCollection : IReadOnlyCollection<IReadOnlyCollection<V>> {
         private readonly MultiDictionary<K, V> _dict;
 
         internal ValueCollection(MultiDictionary<K, V> dict) {
@@ -323,12 +351,12 @@ public sealed class MultiDictionary<K, V> : IEnumerable<KeyValuePair<K, IReadOnl
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Enumerator GetEnumerator() => new(_dict);
 
-        IEnumerator<IEnumerable<V>> IEnumerable<IEnumerable<V>>.GetEnumerator() => GetEnumerator();
+        IEnumerator<IReadOnlyCollection<V>> IEnumerable<IReadOnlyCollection<V>>.GetEnumerator() => GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         /// <inheritdoc cref="Dictionary{K, V}.ValueCollection.Enumerator"/>
-        public struct Enumerator : IEnumerator<IEnumerable<V>> {
+        public struct Enumerator : IEnumerator<IReadOnlyCollection<V>> {
             private readonly MultiDictionary<K, V> _dict;
             private KeyCollection.Enumerator _keys;
 
@@ -351,9 +379,9 @@ public sealed class MultiDictionary<K, V> : IEnumerable<KeyValuePair<K, IReadOnl
                 get => _dict[_keys.Current];
             }
 
-            IEnumerable<V> IEnumerator<IEnumerable<V>>.Current => new ReadOnlyCollection<V>(_dict._backing[_keys.Current]);
+            IReadOnlyCollection<V> IEnumerator<IReadOnlyCollection<V>>.Current => new ReadOnlyCollection<V>(_dict._backing[_keys.Current]);
 
-            object IEnumerator.Current => ((IEnumerator<IEnumerable<V>>)this).Current!;
+            object IEnumerator.Current => ((IEnumerator<IReadOnlyCollection<V>>)this).Current!;
 
             /// <inheritdoc />
             public void Dispose() { }
@@ -414,5 +442,4 @@ public sealed class MultiDictionary<K, V> : IEnumerable<KeyValuePair<K, IReadOnl
             values = Values;
         }
     }
-
 }
