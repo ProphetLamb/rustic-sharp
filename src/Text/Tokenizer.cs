@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 
@@ -109,12 +110,6 @@ public ref struct Tokenizer<T>
     /// <summary>The reference to the current element.</summary>
     public ref readonly T Current => ref _source[_pos];
 
-    /// <summary>Represents the token at an offset relative to the <see cref="CursorHead"/>.</summary>
-    public ref readonly T Offset(int offset)
-    {
-        return ref this[CursorHead + offset];
-    }
-
     /// <summary>Allows access to an arbitrary element inside the source buffer.</summary>
     /// <param name="index"></param>
     public ref readonly T this[int index]
@@ -124,6 +119,47 @@ public ref struct Tokenizer<T>
             ThrowHelper.ArgumentInRange(index, index >= 0 && index < Length);
             return ref _source[index];
         }
+    }
+
+    /// <summary>Accesses the element at a specific offset from the <see cref="CursorHead"/>.</summary>
+    public ref readonly T GetAtCursor(int offset)
+    {
+        return ref this[CursorHead + offset];
+    }
+
+    /// <summary>Attempts to obtain the element at a specific offset from the <see cref="CursorHead"/>.</summary>
+    /// <param name="offset">The offset from the cursor</param>
+    /// <param name="value">The element at the offset, if any.</param>
+    /// <returns><c>true</c> if the element exists; otherwise <c>false</c>.</returns>
+    public bool TryGetAtCursor(int offset, [NotNullWhen(true)] out T? value) {
+        int index = CursorHead + offset;
+        if (index >= 0 && index <= Length) {
+            value = _source[index]!;
+            return true;
+        }
+
+        value = default;
+        return false;
+    }
+
+    /// <summary>Accesses the element at a specific offset from the <see cref="Position"/>.</summary>
+    public ref readonly T GetAtPosition(int offset) {
+        return ref this[Position + offset];
+    }
+
+    /// <summary>Attempts to obtain the element at a specific offset from the <see cref="Position"/>.</summary>
+    /// <param name="offset">The offset from the position</param>
+    /// <param name="value">The element at the offset, if any.</param>
+    /// <returns><c>true</c> if the element exists; otherwise <c>false</c>.</returns>
+    public bool TryGetAtPosition(int offset, [NotNullWhen(true)] out T? value) {
+        int index = Position + offset;
+        if (index >= 0 && index <= Length) {
+            value = _source[index]!;
+            return true;
+        }
+
+        value = default;
+        return false;
     }
 
     /// <summary>Consumes one element.</summary>
