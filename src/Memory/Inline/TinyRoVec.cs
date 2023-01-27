@@ -377,6 +377,22 @@ public readonly struct TinyRoVec<T>
     /// <param name="self">The sequence of values.</param>
     public static implicit operator TinyRoVec<T>(in ArraySegment<T> self) => TinyRoVec.From(self);
 
+
+    /// <summary>Initializes a new span from the sequence.</summary>
+    /// <param name="self">The sequence of values.</param>
+    public static implicit operator TinyRoVec<T>(in (T, T) self) =>
+        TinyRoVec.From(self.Item1, self.Item2);
+
+    /// <summary>Initializes a new span from the sequence.</summary>
+    /// <param name="self">The sequence of values.</param>
+    public static implicit operator TinyRoVec<T>(in (T, T, T) self) => TinyRoVec.From(self.Item1, self.Item2, self.Item3);
+
+#if !NET472
+    /// <summary>Initializes a new span from the sequence.</summary>
+    /// <param name="self">The sequence of values.</param>
+    public static implicit operator TinyRoVec<T>(in (T, T, T, T) self) => TinyRoVec.From(self.Item1, self.Item2, self.Item3, self.Item4);
+#endif
+
     private string GetDebuggerDisplay()
     {
         StrBuilder vsb = new(stackalloc char[256]);

@@ -451,6 +451,21 @@ public readonly ref struct TinyRoSpan<T>
     /// <param name="self">The sequence of values.</param>
     public static implicit operator TinyRoSpan<T>(in T[] self) => TinyRoSpan.From(self);
 
+    /// <summary>Initializes a new span from the sequence.</summary>
+    /// <param name="self">The sequence of values.</param>
+    public static implicit operator TinyRoSpan<T>(in (T, T) self) =>
+        TinyRoSpan.From(self.Item1, self.Item2);
+
+    /// <summary>Initializes a new span from the sequence.</summary>
+    /// <param name="self">The sequence of values.</param>
+    public static implicit operator TinyRoSpan<T>(in (T, T, T) self) => TinyRoSpan.From(self.Item1, self.Item2, self.Item3);
+
+#if !NET472
+    /// <summary>Initializes a new span from the sequence.</summary>
+    /// <param name="self">The sequence of values.</param>
+    public static implicit operator TinyRoSpan<T>(in (T, T, T, T) self) => TinyRoSpan.From(self.Item1, self.Item2, self.Item3, self.Item4);
+#endif
+
     private string GetDebuggerDisplay()
     {
         StrBuilder sb = new();

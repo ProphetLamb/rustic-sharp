@@ -1,6 +1,7 @@
 # Version 0.6
 
 - Add TinyVec list implementation
+- Add implicit from tuple conversion
 - Optimize ToSpan performance for newer framework versions
 - Rename TinyRoSpan and TinyRoVec
 - Fix ref an in keyword related compiler errors introduced in C#11
