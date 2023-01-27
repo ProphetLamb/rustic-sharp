@@ -40,13 +40,17 @@ public class Fmt
             }
 
             tokenizer.FinalizeToken();
-            if (!definition.NextHoleEnd(ref tokenizer))
-            {
+            if (!definition.NextHoleEnd(ref tokenizer)) {
+                ThrowHelper.ThrowFormatException(tokenizer.Position, tokenizer.CursorHead, "The hole is never closed.");
                 break;
             }
 
-            if (definition.TryGetValue(tokenizer.FinalizeToken(), out ReadOnlySpan<char> value)) {
+            ReadOnlySpan<char> hole = tokenizer.FinalizeToken();
+            if (definition.TryGetValue(hole, out ReadOnlySpan<char> value)) {
                 value.CopyTo(builder.AppendSpan(value.Length));
+            } else {
+                ThrowHelper.ThrowFormatException(tokenizer.Position-hole.Length, tokenizer.Position, $"The hole `{hole.ToString()}` in the format does not have a corresponding definition provided.");
+                break;
             }
 
             if (!definition.NextTextStart(ref tokenizer)) {
@@ -55,11 +59,9 @@ public class Fmt
 
             tokenizer.FinalizeToken();
         }
-        // The definition must guarantee that we are always end of file when breaking
+
         if (!tokenizer.IsCursorEnd) {
-            ThrowHelper.ThrowFormatExceptions(
-                $"Invalid format. String formatter definition failed at {tokenizer.Position}..{tokenizer.CursorHead}."
-            );
+            ThrowHelper.ThrowFormatException(tokenizer.Position, tokenizer.CursorHead, "The format string was not fully processed.");
         }
 
         // Add remainder of format string in which no holes exist to the builder
@@ -68,6 +70,7 @@ public class Fmt
 
         return builder.ToString();
     }
+
 
     /// <summary>Formats a string using index based definitions.</summary>
     /// <param name="format">The format string</param>
@@ -179,7 +182,7 @@ public readonly struct IdxDef<T> : IFmtDef
     {
         if ((!Prefix.IsEmpty() && !tokenizer.Read(Prefix.AsSpan())) || !tokenizer.ReadUntilAny('{')) {
             // No more holes in the format string
-            tokenizer.Consume(tokenizer.Length - tokenizer.CursorHead);
+            tokenizer.CursorHead = tokenizer.Length;
             return false;
         }
 
@@ -283,9 +286,12 @@ public readonly struct NamedDef<T> : IFmtDef
     /// <inheritdoc />
     public bool NextTextEnd(ref Tokenizer<char> tokenizer)
     {
-        while ((Prefix.Length == 0 || tokenizer.Read(Prefix.AsSpan())) && tokenizer.ReadAny('{') && tokenizer.TryReadNext('{')) { }
+        if ((!Prefix.IsEmpty() && !tokenizer.Read(Prefix.AsSpan())) || !tokenizer.ReadUntilAny('{')) {
+            tokenizer.CursorHead = tokenizer.Length;
+            return false;
+        }
 
-        tokenizer.Consume(-Prefix.Length - 1);
+        tokenizer.Consume(-1); // do not consume '{' char
         return true;
     }
 
@@ -298,10 +304,12 @@ public readonly struct NamedDef<T> : IFmtDef
     /// <inheritdoc />
     public bool NextHoleEnd(ref Tokenizer<char> tokenizer)
     {
-        while (tokenizer.ReadUntilAny('}') && tokenizer.TryReadNext('}')) { }
+        if (!tokenizer.ReadUntilAny('}')) {
+            return false;
+        }
 
         tokenizer.Consume(-1);
-        return false;
+        return true;
     }
 
     /// <inheritdoc />
