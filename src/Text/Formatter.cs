@@ -24,10 +24,48 @@ public class Fmt
         IEqualityComparer<char>? comparer = null)
         where D : IFmtDef
     {
-        StrBuilder sb = new(stackalloc char[2048.Min(format.Length + (48 * definition.Count))]);
-        FmtBuilder<D> fb = new(sb, format, definition, comparer);
-        while (fb.Next()) { }
-        return fb.ToString();
+        StrBuilder builder = new(stackalloc char[2048.Min(format.Length + (48 * definition.Count))]);
+        Tokenizer<char> tokenizer = new(format, comparer);
+
+        while (true) {
+            tokenizer.FinalizeToken();
+            if (!definition.NextTextEnd(ref tokenizer))
+            {
+                break;
+            }
+            builder.Append(tokenizer.FinalizeToken());
+
+            if (!definition.NextHoleBegin(ref tokenizer))
+            {
+                break;
+            }
+
+            tokenizer.FinalizeToken();
+            if (!definition.NextHoleEnd(ref tokenizer))
+            {
+                break;
+            }
+
+            if (definition.TryGetValue(tokenizer.FinalizeToken(), out ReadOnlySpan<char> value)) {
+                value.CopyTo(builder.AppendSpan(value.Length));
+            }
+
+            if (!definition.NextTextStart(ref tokenizer)) {
+                break;
+            }
+        }
+        // The definition must guarantee that we are always end of file when breaking
+        if (!tokenizer.IsCursorEnd) {
+            ThrowHelper.ThrowFormatExceptions(
+                $"Invalid format. String formatter definition failed at {tokenizer.Position}..{tokenizer.CursorHead}."
+            );
+        }
+
+        // Add remainder of format string in which no holes exist to the builder
+        ReadOnlySpan<char> tailingFormat = tokenizer.Token;
+        tailingFormat.CopyTo(builder.AppendSpan(tailingFormat.Length));
+
+        return builder.ToString();
     }
 
     /// <summary>Formats a string using index based definitions.</summary>
@@ -64,73 +102,6 @@ public class Fmt
         IEqualityComparer<char>? comparer = null, IFormatProvider? provider = null)
     {
         return Format(format, new NamedDef<T>(arguments, provider), comparer);
-    }
-}
-
-/// <summary>Controls the formatting using a definition.</summary>
-/// <typeparam name="D">The type of the definition.</typeparam>
-public ref struct FmtBuilder<D>
-    where D : IFmtDef
-{
-    private D _definition;
-    private Tokenizer<char> _tokenizer;
-    private StrBuilder _builder;
-
-    /// <summary>Creates a new instance of <see cref="FmtBuilder{D}"/>.</summary>
-    /// <param name="builder">The <see cref="StrBuilder"/> written to.</param>
-    /// <param name="input">The format string.</param>
-    /// <param name="definition">The format definition</param>
-    /// <param name="comparer">The comparer determining whether two chars are equal.</param>
-    public FmtBuilder(StrBuilder builder, ReadOnlySpan<char> input, D definition, IEqualityComparer<char>? comparer)
-    {
-        _definition = definition;
-        _tokenizer = new Tokenizer<char>(input, comparer);
-        _builder = builder;
-    }
-
-    /// <summary>Attempts to format the next token.</summary>
-    /// <returns><c>true</c> if successful; otherwise <c>false</c>.</returns>
-    public bool Next()
-    {
-        _tokenizer.FinalizeToken();
-        if (!_definition.NextTextEnd(ref _tokenizer))
-        {
-            return false;
-        }
-        _builder.Append(_tokenizer.FinalizeToken());
-
-        if (!_definition.NextHoleBegin(ref _tokenizer))
-        {
-            return false;
-        }
-
-        _tokenizer.FinalizeToken();
-        if (!_definition.NextHoleEnd(ref _tokenizer))
-        {
-            return false;
-        }
-
-        if (_definition.TryGetValue(_tokenizer.FinalizeToken(), out var value)) {
-            value.CopyTo(_builder.AppendSpan(value.Length));
-        }
-
-        return _definition.NextTextStart(ref _tokenizer);
-    }
-
-    /// <summary>Builds the string representation of the format. Disposes the builder.</summary>
-    public override string ToString()
-    {
-        var s = _builder.ToString();
-        Dispose();
-        return s;
-    }
-
-    /// <summary>Releases all resources held by the builder, and rests the state.</summary>
-    public void Dispose()
-    {
-        _tokenizer.Dispose();
-        _builder.Dispose();
-        this = default;
     }
 }
 
@@ -194,7 +165,7 @@ public readonly struct IdxDef<T> : IFmtDef
     public string Prefix { get; }
 
     /// <summary>The formatting arguments used to fill holes in the format.</summary>
-    public TinyRoVec<object?> Arguments { get; }
+    public TinyRoVec<T> Arguments { get; }
 
     /// <summary>The number of formatting arguments.</summary>
     public int Count => Arguments.Count;
@@ -205,8 +176,13 @@ public readonly struct IdxDef<T> : IFmtDef
     /// <inheritdoc />
     public bool NextTextEnd(ref Tokenizer<char> tokenizer)
     {
-        while ((Prefix.Length == 0 || tokenizer.Read(Prefix.AsSpan())) && tokenizer.ReadUntilAny('{') && tokenizer.TryReadNext('{')) { }
-        tokenizer.Consume(-Prefix.Length - 1);
+        if ((!Prefix.IsEmpty() && !tokenizer.Read(Prefix.AsSpan())) || !tokenizer.ReadUntilAny('{')) {
+            // No more holes in the format string
+            tokenizer.Consume(tokenizer.Length - tokenizer.CursorHead);
+            return false;
+        }
+
+        tokenizer.Consume(-1); // do not consume '{' char
         return true;
     }
 
@@ -219,10 +195,12 @@ public readonly struct IdxDef<T> : IFmtDef
     /// <inheritdoc />
     public bool NextHoleEnd(ref Tokenizer<char> tokenizer)
     {
-        while (tokenizer.ReadUntilAny('}') && tokenizer.TryReadNext('}')) { }
+        if (!tokenizer.ReadUntilAny('}')) {
+            return false;
+        }
 
         tokenizer.Consume(-1);
-        return false;
+        return true;
     }
 
     /// <inheritdoc />
