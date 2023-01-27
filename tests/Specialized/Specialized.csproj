@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net48;netcoreapp31;net60</TargetFrameworks>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>Rustic.Reflect.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Reflect\Reflect.csproj" />
+    <ProjectReference Include="..\..\src\Common\Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\.editorconfig" Link=".editorconfig" />
+  </ItemGroup>
+
+</Project>
