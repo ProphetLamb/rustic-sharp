@@ -1,5 +1,7 @@
 # Version 0.6.0
 
+- Target .NET Core App 3.1
+- Target .NET 7.0
 - Attributes: Fix invalid preprocessor directives for certain target frameworks.
 - Common: Add UnreachableException
 - Common: Return Random.Shared for .NET 6.0 or greater instead of thread static instance.
