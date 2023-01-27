@@ -40,4 +40,36 @@ public class FormatterTests {
     public void IndexFormatInvalid(string format, string[] substitutes) {
         Assert.Catch<FormatException>(() => Fmt.Def.Index(format.AsSpan(), substitutes));
     }
+
+    public static IEnumerable<object[]> NamedFormatTestCases = new List<object[]> {
+        new object[] { "Hello World", new Dictionary<string, string>(), "Hello World" },
+        new object[] { "{foo}", new Dictionary<string, string> { ["foo"] = "Hello World" }, "Hello World" },
+        new object[] { "Hello {foo}", new Dictionary<string, string> { ["foo"] = "World" }, "Hello World" },
+        new object[] { "Hello{foo}World", new Dictionary<string, string> { ["foo"] = " " }, "Hello World" },
+        new object[] { "{foo} {bar}", new Dictionary<string, string> { ["foo"] = "Hello", ["bar"] = "World" }, "Hello World" },
+        new object[] { "{foo}{bar}{boo}", new Dictionary<string, string> { ["foo"] = "Hello", ["bar"] = " ", ["boo"] = "World" }, "Hello World" },
+        new object[] { "{bar}{foo}{boo}", new Dictionary<string, string> { ["foo"] = " ", ["bar"] = "Hello", ["boo"] = "World" }, "Hello World" },
+        new object[] { "", new Dictionary<string, string>(), "" },
+        new object[] { "", new Dictionary<string, string> { ["foo"] = "Empty", ["bar"] = "Format" }, "" },
+        new object[] { "{foo} {bar} {boo}", new Dictionary<string, string> { ["foo"] = "Hello", ["bar"] = "World", ["boo"] = "!", ["goo"] = "?" }, "Hello World !" },
+        new object[] { "", new Dictionary<string, string> { ["foo"] = "Empty", ["bar"] = "Format" }, "" },
+    };
+
+    [Test, TestCaseSource(nameof(NamedFormatTestCases))]
+    public void NamedFormat(string format, Dictionary<string, string> substitutes, string expected) {
+        Fmt.Def.Named(format.AsSpan(), substitutes).Should().Be(expected);
+    }
+
+    public static IEnumerable<object[]> NamedFormatInvalidTestCases = new List<object[]> {
+        new object[] { "{", new Dictionary<string, string>() },
+        new object[] { "{0", new Dictionary<string, string>() },
+        new object[] { "{0}", new Dictionary<string, string>() },
+        new object[] { "{1}", new Dictionary<string, string> { ["foo"] = "Hello World" } },
+        new object[] { "{poof}", new Dictionary<string, string> { ["foop"] = "Hello World" } },
+    };
+
+    [Test, TestCaseSource(nameof(NamedFormatInvalidTestCases))]
+    public void NamedFormatInvalid(string format, Dictionary<string, string> substitutes) {
+        Assert.Catch<FormatException>(() => Fmt.Def.Named(format.AsSpan(), substitutes));
+    }
 }
