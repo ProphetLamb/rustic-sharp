@@ -24,7 +24,18 @@ public class FormatterTests
     };
 
     [Test, TestCaseSource(nameof(IndexFormatTestCases))]
-    public void IndexNoValue(string format, string[] substitutes, string expected) {
+    public void IndexFormat(string format, string[] substitutes, string expected) {
         Fmt.Def.Index(format.AsSpan(), substitutes).Should().Be(expected);
+    }
+
+    public static IEnumerable<object[]> IndexFormatInvalidTestCases = new List<object[]>
+    {
+        new object[] { "{", Array.Empty<string>() },
+        new object[] { "{0", Array.Empty<string>() },
+    };
+
+    [Test, TestCaseSource(nameof(IndexFormatInvalidTestCases))]
+    public void IndexFormatInvalid(string format, string[] substitutes) {
+        Assert.Catch<FormatException>(() => Fmt.Def.Index(format.AsSpan(), substitutes));
     }
 }
