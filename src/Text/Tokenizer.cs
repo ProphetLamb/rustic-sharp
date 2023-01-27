@@ -22,8 +22,7 @@ namespace Rustic.Text;
 /// <br />
 ///     Read always consumes elements, if not successful elements will still be consumed.
 /// </remarks>
-public ref struct Tokenizer<T>
-{
+public ref struct Tokenizer<T> {
     private ReversibleIndexedSpan<T> _source;
     private IEqualityComparer<T>? _comparer;
     private int _pos;
@@ -34,8 +33,7 @@ public ref struct Tokenizer<T>
     /// </summary>
     /// <param name="input">The input sequence.</param>
     /// <param name="comparer">The comparer used to determine whether two objects are equal.</param>
-    public Tokenizer(ReversibleIndexedSpan<T> input, IEqualityComparer<T>? comparer)
-    {
+    public Tokenizer(ReversibleIndexedSpan<T> input, IEqualityComparer<T>? comparer) {
         _source = input;
         _comparer = comparer;
         _pos = 0;
@@ -49,21 +47,16 @@ public ref struct Tokenizer<T>
     public IEqualityComparer<T>? Comparer => _comparer;
 
     /// <summary>Defines the current cursor position of the iterator.</summary>
-    public int CursorHead
-    {
+    public int CursorPosition {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _pos + _tokenLength;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        set
-        {
+        set {
             ThrowHelper.ArgumentInRange(value, value >= 0 && value <= Length);
 
-            if (value > _pos)
-            {
+            if (value > _pos) {
                 _tokenLength = value - _pos;
-            }
-            else
-            {
+            } else {
                 _pos = value;
                 _tokenLength = 0;
             }
@@ -71,68 +64,64 @@ public ref struct Tokenizer<T>
     }
 
     /// <summary>Represents the zero-based start-index of the current token inside the span.</summary>
-    public int Position
-    {
+    public int Position {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _pos;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        set
-        {
+        set {
             ThrowHelper.ArgumentInRange(value, value >= 0 && value <= Length - Width);
             _pos = value;
         }
     }
 
     /// <summary>Represents the length of the current token.</summary>
-    public int Width
-    {
+    public int Width {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _tokenLength;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        set
-        {
+        set {
             ThrowHelper.ArgumentInRange(value, value >= 0 && value <= Length - Position);
             _tokenLength = value;
         }
     }
 
     /// <summary>Indicates whether the end of the source sequence is reached.</summary>
-    public bool IsCursorEnd => CursorHead >= Length;
+    public bool IsCursorEnd => CursorPosition >= Length;
     /// <summary>Indicates whether the cursor is at the beginning of the source sequence.</summary>
-    public bool IsCursorStart => CursorHead == 0;
+    public bool IsCursorStart => CursorPosition == 0;
 
     /// <inheritdoc cref="Span{T}.Length"/>
     public int Length => _source.Length;
 
-    /// <summary>Represents the token currently being built.</summary>
+    /// <summary>Represents the token currently being built from <see cref="Position"/> to see <see cref="CursorPosition"/>.</summary>
     public ReversibleIndexedSpan<T> Token => _source.Slice(_pos, _tokenLength);
 
-    /// <summary>The reference to the current element.</summary>
+    /// <summary>The reference to the current element at <see cref="Position"/>.</summary>
     public ref readonly T Current => ref _source[_pos];
+
+    /// <summary>The reference to the current element at <see cref="CursorPosition"/>.</summary>
+    public ref readonly T Cursor => ref _source[CursorPosition];
 
     /// <summary>Allows access to an arbitrary element inside the source buffer.</summary>
     /// <param name="index"></param>
-    public ref readonly T this[int index]
-    {
-        get
-        {
+    public ref readonly T this[int index] {
+        get {
             ThrowHelper.ArgumentInRange(index, index >= 0 && index < Length);
             return ref _source[index];
         }
     }
 
-    /// <summary>Accesses the element at a specific offset from the <see cref="CursorHead"/>.</summary>
-    public ref readonly T GetAtCursor(int offset)
-    {
-        return ref this[CursorHead + offset];
+    /// <summary>Accesses the element at a specific offset from the <see cref="CursorPosition"/>.</summary>
+    public ref readonly T GetAtCursor(int offset) {
+        return ref this[CursorPosition + offset];
     }
 
-    /// <summary>Attempts to obtain the element at a specific offset from the <see cref="CursorHead"/>.</summary>
+    /// <summary>Attempts to obtain the element at a specific offset from the <see cref="CursorPosition"/>.</summary>
     /// <param name="offset">The offset from the cursor</param>
     /// <param name="value">The element at the offset, if any.</param>
     /// <returns><c>true</c> if the element exists; otherwise <c>false</c>.</returns>
     public bool TryGetAtCursor(int offset, [NotNullWhen(true)] out T? value) {
-        int index = CursorHead + offset;
+        int index = CursorPosition + offset;
         if (index >= 0 && index <= Length) {
             value = _source[index]!;
             return true;
@@ -164,10 +153,8 @@ public ref struct Tokenizer<T>
 
     /// <summary>Consumes one element.</summary>
     /// <returns><see langword="true"/> if the element could be consumed; otherwise, <see langword="false"/>.</returns>
-    public bool Consume()
-    {
-        if (_pos != _source.Length - _tokenLength)
-        {
+    public bool Consume() {
+        if (_pos != _source.Length - _tokenLength) {
             _tokenLength += 1;
             return true;
         }
@@ -178,12 +165,10 @@ public ref struct Tokenizer<T>
     /// <summary>Consumes a specified amount of elements. Moves the cursor by amount</summary>
     /// <returns><see langword="true"/> if the elements could be consumed; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">If `amount &lt; -Token.Length`: Cannot move the cursor to before the start of the current token. The token length cannot be negative.</exception>
-    public bool Consume(int amount)
-    {
+    public bool Consume(int amount) {
         ThrowHelper.ArgumentInRange(amount, amount >= -_tokenLength, "Cannot move the cursor to before the start of the current token. The token length cannot be negative.");
 
-        if (_pos <= Length - _tokenLength - amount)
-        {
+        if (_pos <= Length - _tokenLength - amount) {
             _tokenLength += amount;
             return true;
         }
@@ -194,8 +179,7 @@ public ref struct Tokenizer<T>
     }
 
     /// <inheritdoc cref="IDisposable.Dispose"/>
-    public void Dispose()
-    {
+    public void Dispose() {
         this = default;
     }
 
@@ -204,8 +188,7 @@ public ref struct Tokenizer<T>
     /// </summary>
     /// <returns>The span representing the token.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ReversibleIndexedSpan<T> FinalizeToken()
-    {
+    public ReversibleIndexedSpan<T> FinalizeToken() {
         var token = Token;
         _pos += _tokenLength;
         _tokenLength = 0;
@@ -213,48 +196,42 @@ public ref struct Tokenizer<T>
     }
 
     /// <summary>Discards the current token &amp; resets the iterator to the start of the token.</summary>
-    public void Discard()
-    {
+    public void Discard() {
         _tokenLength = 0;
     }
 
     /// <summary>
     ///     Resets teh builder to the initial state.
     /// </summary>
-    public void Reset()
-    {
-        CursorHead = 0;
+    public void Reset() {
+        CursorPosition = 0;
     }
 
     /// <summary>
-    ///     Advances the <see cref="CursorHead"/> to a specific <paramref name="position"/>, always consumes elements.
+    ///     Advances the <see cref="CursorPosition"/> to a specific <paramref name="position"/>, always consumes elements.
     /// </summary>
     /// <param name="position">The target position</param>
-    public void Advance(int position)
-    {
+    public void Advance(int position) {
         ThrowHelper.ArgumentInRange(position, position >= 0 && position < Length);
-        ThrowHelper.ArgumentInRange(position, position >= CursorHead);
-        _tokenLength = position - CursorHead;
+        ThrowHelper.ArgumentInRange(position, position >= CursorPosition);
+        _tokenLength = position - CursorPosition;
     }
 
     /// <summary>
-    ///     Advances the <see cref="CursorHead"/> to a specific <paramref name="position"/>, consumes elements only if successful.
+    ///     Advances the <see cref="CursorPosition"/> to a specific <paramref name="position"/>, consumes elements only if successful.
     /// </summary>
     /// <param name="position">The target position</param>
     /// <returns><see langword="true"/> if the elements could be consumed; otherwise, <see langword="false"/>.</returns>
     /// <remarks>
-    ///     If the target <paramref name="position"/> is behind the <see cref="CursorHead"/> the state won't change.
+    ///     If the target <paramref name="position"/> is behind the <see cref="CursorPosition"/> the state won't change.
     /// </remarks>
-    public bool TryAdvance(int position)
-    {
-        if ((uint)position >= (uint)_source.Length)
-        {
+    public bool TryAdvance(int position) {
+        if ((uint)position >= (uint)_source.Length) {
             return false;
         }
 
-        var head = CursorHead;
-        if (head < position)
-        {
+        var head = CursorPosition;
+        if (head < position) {
             _tokenLength = position - head;
             return true;
         }
@@ -273,10 +250,9 @@ public ref struct Tokenizer<T>
     /// <typeparam name="S">The type of the sequence.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Read<S>(in S expectedSequence, out int len)
-        where S : IEnumerable<T>
-    {
+        where S : IEnumerable<T> {
         var success = Peek(expectedSequence, out var head, out len);
-        CursorHead = head;
+        CursorPosition = head;
         return success;
     }
 
@@ -289,11 +265,9 @@ public ref struct Tokenizer<T>
     /// <typeparam name="S">The type of the sequence.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryRead<S>(in S expectedSequence, out int len)
-        where S : IEnumerable<T>
-    {
-        if (Peek(expectedSequence, out var head, out len))
-        {
-            CursorHead = head;
+        where S : IEnumerable<T> {
+        if (Peek(expectedSequence, out var head, out len)) {
+            CursorPosition = head;
             return true;
         }
 
@@ -310,11 +284,9 @@ public ref struct Tokenizer<T>
     /// <typeparam name="S">The type of the sequence.</typeparam>
     [Pure]
     public bool Peek<S>(in S expectedSequence, out int head, out int len)
-        where S : IEnumerable<T>
-    {
-        head = CursorHead;
-        if (head == _source.Length)
-        {
+        where S : IEnumerable<T> {
+        head = CursorPosition;
+        if (head == _source.Length) {
             len = 0;
             return false;
         }
@@ -322,36 +294,27 @@ public ref struct Tokenizer<T>
         var matched = 0;
         var comparer = _comparer;
 
-        do
-        {
+        do {
             len = 0;
 
-            if (comparer is null)
-            {
-                if (typeof(T).IsValueType)
-                {
-                    foreach (var match in expectedSequence)
-                    {
-                        if (head >= _source.Length)
-                        {
+            if (comparer is null) {
+                if (typeof(T).IsValueType) {
+                    foreach (var match in expectedSequence) {
+                        if (head >= _source.Length) {
                             matched = -1;
                             break;
                         }
                         // ValueType: Devirtualize with EqualityComparer<TValue>.Default intrinsic
-                        if (!EqualityComparer<T>.Default.Equals(_source[head], match))
-                        {
+                        if (!EqualityComparer<T>.Default.Equals(_source[head], match)) {
                             matched = 0;
-                        }
-                        else
-                        {
+                        } else {
                             matched += 1;
                         }
                         head += 1;
                         len += 1;
                     }
 
-                    if (matched == -1)
-                    {
+                    if (matched == -1) {
                         return false;
                     }
                     continue;
@@ -362,27 +325,21 @@ public ref struct Tokenizer<T>
                 comparer = EqualityComparer<T>.Default;
             }
 
-            foreach (var match in expectedSequence)
-            {
-                if (head >= _source.Length)
-                {
+            foreach (var match in expectedSequence) {
+                if (head >= _source.Length) {
                     matched = -1;
                     break;
                 }
-                if (!comparer.Equals(_source[head], match))
-                {
+                if (!comparer.Equals(_source[head], match)) {
                     matched = 0;
-                }
-                else
-                {
+                } else {
                     matched += 1;
                 }
                 head += 1;
                 len += 1;
             }
 
-            if (matched == -1)
-            {
+            if (matched == -1) {
                 return false;
             }
         } while (matched == 0 && head < _source.Length);
@@ -398,10 +355,9 @@ public ref struct Tokenizer<T>
     /// <typeparam name="S">The type of the sequence.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool ReadNext<S>(in S expectedSequence)
-        where S : IEnumerable<T>
-    {
+        where S : IEnumerable<T> {
         var success = PeekNext(expectedSequence, out var head);
-        CursorHead = head;
+        CursorPosition = head;
         return success;
     }
 
@@ -413,11 +369,9 @@ public ref struct Tokenizer<T>
     /// <typeparam name="S">The type of the sequence.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryReadNext<S>(in S expectedSequence)
-        where S : IEnumerable<T>
-    {
-        if (PeekNext(expectedSequence, out var head))
-        {
-            CursorHead = head;
+        where S : IEnumerable<T> {
+        if (PeekNext(expectedSequence, out var head)) {
+            CursorPosition = head;
             return true;
         }
 
@@ -433,35 +387,26 @@ public ref struct Tokenizer<T>
     /// <typeparam name="S">The type of the sequence.</typeparam>
     [Pure]
     public bool PeekNext<S>(in S expectedSequence, out int head)
-        where S : IEnumerable<T>
-    {
-        head = CursorHead;
-        if (head == _source.Length)
-        {
+        where S : IEnumerable<T> {
+        head = CursorPosition;
+        if (head == _source.Length) {
             return false;
         }
 
         var comparer = _comparer;
         var matched = 0;
 
-        if (comparer is null)
-        {
-            if (typeof(T).IsValueType)
-            {
-                foreach (var match in expectedSequence)
-                {
-                    if (head >= _source.Length)
-                    {
+        if (comparer is null) {
+            if (typeof(T).IsValueType) {
+                foreach (var match in expectedSequence) {
+                    if (head >= _source.Length) {
                         return false;
                     }
                     // ValueType: Devirtualize with EqualityComparer<TValue>.Default intrinsic
-                    if (EqualityComparer<T>.Default.Equals(_source[head], match))
-                    {
+                    if (EqualityComparer<T>.Default.Equals(_source[head], match)) {
                         matched += 1;
                         head += 1;
-                    }
-                    else
-                    {
+                    } else {
                         matched = 0;
                     }
                 }
@@ -474,19 +419,14 @@ public ref struct Tokenizer<T>
             comparer = EqualityComparer<T>.Default;
         }
 
-        foreach (var match in expectedSequence)
-        {
-            if (head >= _source.Length)
-            {
+        foreach (var match in expectedSequence) {
+            if (head >= _source.Length) {
                 return false;
             }
-            if (comparer.Equals(_source[head], match))
-            {
+            if (comparer.Equals(_source[head], match)) {
                 matched += 1;
                 head += 1;
-            }
-            else
-            {
+            } else {
                 matched = 0;
             }
         }
@@ -504,10 +444,9 @@ public ref struct Tokenizer<T>
     /// <param name="expectedSequence">The expected sequence.</param>
     /// <returns><see langword="true"/> if the remaining elements contain the sequence of elements; otherwise, <see langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Read(in TinyRoSpan<T> expectedSequence)
-    {
+    public bool Read(in TinyRoSpan<T> expectedSequence) {
         var success = Peek(expectedSequence, out var head);
-        CursorHead = head;
+        CursorPosition = head;
         return success;
     }
 
@@ -517,11 +456,9 @@ public ref struct Tokenizer<T>
     /// <param name="expectedSequence">The sequence of elements.</param>
     /// <returns><see langword="true"/> if the remaining elements contain the sequence of elements; otherwise, <see langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryRead(in TinyRoSpan<T> expectedSequence)
-    {
-        if (Peek(expectedSequence, out var head))
-        {
-            CursorHead = head;
+    public bool TryRead(in TinyRoSpan<T> expectedSequence) {
+        if (Peek(expectedSequence, out var head)) {
+            CursorPosition = head;
             return true;
         }
 
@@ -535,30 +472,22 @@ public ref struct Tokenizer<T>
     /// <param name="head">The position of the element after the sequence.</param>
     /// <returns><see langword="true"/> if the remaining elements contain the sequence of elements; otherwise, <see langword="false"/>.</returns>
     [Pure]
-    public bool Peek(in TinyRoSpan<T> expectedSequence, out int head)
-    {
-        head = CursorHead;
-        if (head == _source.Length)
-        {
+    public bool Peek(in TinyRoSpan<T> expectedSequence, out int head) {
+        head = CursorPosition;
+        if (head == _source.Length) {
             return false;
         }
 
         var matched = 0;
         var comparer = _comparer;
 
-        if (comparer is null)
-        {
-            if (typeof(T).IsValueType)
-            {
-                do
-                {
+        if (comparer is null) {
+            if (typeof(T).IsValueType) {
+                do {
                     // ValueType: Devirtualize with EqualityComparer<TValue>.Default intrinsic
-                    if (!EqualityComparer<T>.Default.Equals(_source[head], expectedSequence[matched]))
-                    {
+                    if (!EqualityComparer<T>.Default.Equals(_source[head], expectedSequence[matched])) {
                         matched = 0;
-                    }
-                    else
-                    {
+                    } else {
                         matched += 1;
                     }
                 } while ((matched != expectedSequence.Length) & (++head < _source.Length));
@@ -571,14 +500,10 @@ public ref struct Tokenizer<T>
             comparer = EqualityComparer<T>.Default;
         }
 
-        do
-        {
-            if (!comparer.Equals(_source[head], expectedSequence[matched]))
-            {
+        do {
+            if (!comparer.Equals(_source[head], expectedSequence[matched])) {
                 matched = 0;
-            }
-            else
-            {
+            } else {
                 matched += 1;
             }
         } while ((matched != expectedSequence.Length) & (++head < _source.Length));
@@ -592,10 +517,9 @@ public ref struct Tokenizer<T>
     /// <param name="expectedSequence">The sequence of elements.</param>
     /// <returns><see langword="true"/> if the following elements are equal to the sequence of elements; otherwise, <see langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool ReadNext(in TinyRoSpan<T> expectedSequence)
-    {
+    public bool ReadNext(in TinyRoSpan<T> expectedSequence) {
         var success = PeekNext(expectedSequence, out var head);
-        CursorHead = head;
+        CursorPosition = head;
         return success;
     }
 
@@ -605,11 +529,9 @@ public ref struct Tokenizer<T>
     /// <param name="expectedSequence">The sequence of elements.</param>
     /// <returns><see langword="true"/> if the following elements are equal to the sequence of elements; otherwise, <see langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryReadNext(in TinyRoSpan<T> expectedSequence)
-    {
-        if (PeekNext(expectedSequence, out var head))
-        {
-            CursorHead = head;
+    public bool TryReadNext(in TinyRoSpan<T> expectedSequence) {
+        if (PeekNext(expectedSequence, out var head)) {
+            CursorPosition = head;
             return true;
         }
 
@@ -623,30 +545,22 @@ public ref struct Tokenizer<T>
     /// <param name="head">The position of the element after the sequence.</param>
     /// <returns><see langword="true"/> if the following elements are equal to the sequence of elements; otherwise, <see langword="false"/>.</returns>
     [Pure]
-    public bool PeekNext(in TinyRoSpan<T> expectedSequence, out int head)
-    {
-        head = CursorHead;
-        if (head == _source.Length)
-        {
+    public bool PeekNext(in TinyRoSpan<T> expectedSequence, out int head) {
+        head = CursorPosition;
+        if (head == _source.Length) {
             return false;
         }
 
         var matched = 0;
         var comparer = _comparer;
 
-        if (comparer is null)
-        {
-            if (typeof(T).IsValueType)
-            {
-                do
-                {
+        if (comparer is null) {
+            if (typeof(T).IsValueType) {
+                do {
                     // ValueType: Devirtualize with EqualityComparer<TValue>.Default intrinsic
-                    if (EqualityComparer<T>.Default.Equals(_source[head], expectedSequence[matched]))
-                    {
+                    if (EqualityComparer<T>.Default.Equals(_source[head], expectedSequence[matched])) {
                         matched += 1;
-                    }
-                    else
-                    {
+                    } else {
                         return false;
                     }
                 } while ((matched != expectedSequence.Length) & (++head < _source.Length));
@@ -659,14 +573,10 @@ public ref struct Tokenizer<T>
             comparer = EqualityComparer<T>.Default;
         }
 
-        do
-        {
-            if (comparer.Equals(_source[head], expectedSequence[matched]))
-            {
+        do {
+            if (comparer.Equals(_source[head], expectedSequence[matched])) {
                 matched += 1;
-            }
-            else
-            {
+            } else {
                 return false;
             }
         } while ((matched != expectedSequence.Length) && (++head < _source.Length));
@@ -684,10 +594,9 @@ public ref struct Tokenizer<T>
     /// <param name="expected">The expected elements.</param>
     /// <returns><see langword="true"/> if the element is as expected; otherwise, <see langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool ReadAny(in TinyRoSpan<T> expected)
-    {
+    public bool ReadAny(in TinyRoSpan<T> expected) {
         var success = PeekAny(expected);
-        CursorHead += 1;
+        CursorPosition += 1;
         return success;
     }
 
@@ -697,11 +606,9 @@ public ref struct Tokenizer<T>
     /// <param name="expected">The expected elements.</param>
     /// <returns><see langword="true"/> if the element is as expected; otherwise, <see langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryReadAny(in TinyRoSpan<T> expected)
-    {
-        if (PeekAny(expected))
-        {
-            CursorHead += 1;
+    public bool TryReadAny(in TinyRoSpan<T> expected) {
+        if (PeekAny(expected)) {
+            CursorPosition += 1;
             return true;
         }
 
@@ -714,36 +621,27 @@ public ref struct Tokenizer<T>
     /// <param name="expected">The expected elements.</param>
     /// <returns><see langword="true"/> if the element is as expected; otherwise, <see langword="false"/>.</returns>
     [Pure]
-    public bool PeekAny(in TinyRoSpan<T> expected)
-    {
-        var head = CursorHead;
-        if (head == _source.Length)
-        {
+    public bool PeekAny(in TinyRoSpan<T> expected) {
+        var head = CursorPosition;
+        if (head == _source.Length) {
             return false;
         }
 
         var current = _source[head];
         var comparer = _comparer;
 
-        if (comparer is null)
-        {
-            for (var i = 0; i < expected.Length; i += 1)
-            {
+        if (comparer is null) {
+            for (var i = 0; i < expected.Length; i += 1) {
                 // If ValueType: Devirtualize with EqualityComparer<TValue>.Default intrinsic
-                if (!EqualityComparer<T>.Default.Equals(expected[i], current))
-                {
+                if (!EqualityComparer<T>.Default.Equals(expected[i], current)) {
                     continue;
                 }
 
                 return true;
             }
-        }
-        else
-        {
-            for (var i = 0; i < expected.Length; i += 1)
-            {
-                if (!comparer.Equals(expected[i], current))
-                {
+        } else {
+            for (var i = 0; i < expected.Length; i += 1) {
+                if (!comparer.Equals(expected[i], current)) {
                     continue;
                 }
 
@@ -760,10 +658,9 @@ public ref struct Tokenizer<T>
     /// <param name="expected">The expected elements.</param>
     /// <returns><see langword="true"/> if one or more of the expected elements occur in the remaining elements; otherwise, <see langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool ReadUntilAny(in TinyRoSpan<T> expected)
-    {
+    public bool ReadUntilAny(in TinyRoSpan<T> expected) {
         var success = PeekUntilAny(expected, out var head);
-        CursorHead = head;
+        CursorPosition = head;
         return success;
     }
 
@@ -773,11 +670,9 @@ public ref struct Tokenizer<T>
     /// <param name="expected">The expected elements.</param>
     /// <returns><see langword="true"/> if one or more of the expected elements occur in the remaining elements; otherwise, <see langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryReadUntilAny(in TinyRoSpan<T> expected)
-    {
-        if (PeekUntilAny(expected, out var head))
-        {
-            CursorHead = head;
+    public bool TryReadUntilAny(in TinyRoSpan<T> expected) {
+        if (PeekUntilAny(expected, out var head)) {
+            CursorPosition = head;
             return true;
         }
 
@@ -791,29 +686,22 @@ public ref struct Tokenizer<T>
     /// <param name="head">The position at which the expected element occured.</param>
     /// <returns><see langword="true"/> if one or more of the expected elements occur in the remaining elements; otherwise, <see langword="false"/>.</returns>
     [Pure]
-    public bool PeekUntilAny(in TinyRoSpan<T> expected, out int head)
-    {
-        head = CursorHead;
-        if (head == _source.Length)
-        {
+    public bool PeekUntilAny(in TinyRoSpan<T> expected, out int head) {
+        head = CursorPosition;
+        if (head == _source.Length) {
             return false;
         }
 
         var consumeNext = true;
         var comparer = _comparer;
 
-        if (comparer is null)
-        {
-            if (typeof(T).IsValueType)
-            {
-                do
-                {
+        if (comparer is null) {
+            if (typeof(T).IsValueType) {
+                do {
                     var current = _source[head];
-                    for (var i = 0; i < expected.Length; i++)
-                    {
+                    for (var i = 0; i < expected.Length; i++) {
                         // ValueType: Devirtualize with EqualityComparer<TValue>.Default intrinsic
-                        if (!EqualityComparer<T>.Default.Equals(expected[i], current))
-                        {
+                        if (!EqualityComparer<T>.Default.Equals(expected[i], current)) {
                             continue;
                         }
 
@@ -831,13 +719,10 @@ public ref struct Tokenizer<T>
             comparer = EqualityComparer<T>.Default;
         }
 
-        do
-        {
+        do {
             var current = _source[head];
-            for (var i = 0; i < expected.Length; i++)
-            {
-                if (!comparer.Equals(expected[i], current))
-                {
+            for (var i = 0; i < expected.Length; i++) {
+                if (!comparer.Equals(expected[i], current)) {
                     continue;
                 }
 
