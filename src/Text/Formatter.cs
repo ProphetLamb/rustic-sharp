@@ -20,7 +20,7 @@ public class Fmt
     /// <param name="comparer">The comparer determining whether two chars are equal.</param>
     /// <typeparam name="D">The type of the definition.</typeparam>
     /// <returns>The formatted string.</returns>
-    public static string Format<D>(ReadOnlySpan<char> format, D definition,
+    public static string Format<D>(ReadOnlySpan<char> format, ref D definition,
         IEqualityComparer<char>? comparer = null)
         where D : IFmtDef
     {
@@ -78,15 +78,15 @@ public class Fmt
     /// <param name="comparer">The comparer determining whether two chars are equal.</param>
     /// <param name="provider">The localizing formatter used.</param>
     /// <returns>The formatted string.</returns>
-    public string Index(ReadOnlySpan<char> format, TinyRoVec<object?> arguments, IEqualityComparer<char>? comparer = null, IFormatProvider? provider = null)
-    {
-        return Format(format, new IdxDef<object?>(arguments, provider), comparer);
+    public string Index(ReadOnlySpan<char> format, TinyRoVec<object?> arguments, IEqualityComparer<char>? comparer = null, IFormatProvider? provider = null) {
+        IdxDef<object?> def = new(arguments, provider);
+        return Format(format, ref def, comparer);
     }
 
     /// <inheritdoc cref="Index"/>
-    public string Index<T>(ReadOnlySpan<char> format, TinyRoVec<T> arguments, IEqualityComparer<char>? comparer = null, IFormatProvider? provider = null)
-    {
-        return Format(format, new IdxDef<T>(arguments, provider), comparer);
+    public string Index<T>(ReadOnlySpan<char> format, TinyRoVec<T> arguments, IEqualityComparer<char>? comparer = null, IFormatProvider? provider = null) {
+        IdxDef<T> def = new(arguments, provider);
+        return Format(format, ref def, comparer);
     }
 
     /// <summary>Formats a string using name based definitions.</summary>
@@ -96,16 +96,16 @@ public class Fmt
     /// <param name="provider">The localizing formatter used.</param>
     /// <returns>The formatted string.</returns>
     public string Named(ReadOnlySpan<char> format, IReadOnlyDictionary<string, object?> arguments,
-        IEqualityComparer<char>? comparer = null, IFormatProvider? provider = null)
-    {
-        return Format(format, new NamedDef<object?>(arguments, provider), comparer);
+        IEqualityComparer<char>? comparer = null, IFormatProvider? provider = null) {
+        NamedDef<object?> def = new(arguments, provider);
+        return Format(format, ref def, comparer);
     }
 
     /// <inheritdoc cref="Named"/>
     public string Named<T>(ReadOnlySpan<char> format, IReadOnlyDictionary<string, T> arguments,
-        IEqualityComparer<char>? comparer = null, IFormatProvider? provider = null)
-    {
-        return Format(format, new NamedDef<T>(arguments, provider), comparer);
+        IEqualityComparer<char>? comparer = null, IFormatProvider? provider = null) {
+        NamedDef<T> def = new(arguments, provider);
+        return Format(format, ref def, comparer);
     }
 }
 
