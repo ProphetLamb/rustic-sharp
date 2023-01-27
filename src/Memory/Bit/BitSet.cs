@@ -15,6 +15,7 @@ public readonly ref struct BitSet
     ///     Initializes a new instance of <see cref="BitSet"/>.
     /// </summary>
     /// <param name="span">The span of 32bit integers to be used for marking bits.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public BitSet(Span<int> span)
     {
         _span = span;

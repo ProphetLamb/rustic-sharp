@@ -194,6 +194,7 @@ public ref struct SeqSplitIter<T, S>
     private SplitOptions _options;
     private int _sepLen;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal SeqSplitIter(ReadOnlySpan<T> input, TinyRoSpan<S> separators, SplitOptions options, IEqualityComparer<T>? comparer) {
         _separators = separators;
         _tokenizer = new Tokenizer<T>(input, comparer);
@@ -203,19 +204,27 @@ public ref struct SeqSplitIter<T, S>
 
     /// <summary>The segment of the current state of the enumerator.</summary>
     public ReadOnlySpan<T> Current {
-        [Pure]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Pure,MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _tokenizer.Raw.Slice(Position, Width);
     }
 
     /// <summary>Represents the zero-based start-index of the current segment inside the source span.</summary>
-    public int Position => _tokenizer.Position;
+    public int Position {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _tokenizer.Position;
+    }
 
     /// <summary>Represents the length of the current segment.</summary>
-    public int Width => _tokenizer.Width - SepOff();
+    public int Width {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _tokenizer.Width - SepOff();
+    }
 
     /// <summary>Indicates whether the <see cref="Current"/> item is terminated by the separator.</summary>
-    public bool IncludesSeparator => (_options & SplitOptions.IncludeSeparator) != 0 && _tokenizer.CursorPosition < _tokenizer.Length;
+    public bool IncludesSeparator {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => (_options & SplitOptions.IncludeSeparator) != 0 && _tokenizer.CursorPosition < _tokenizer.Length;
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private int SepOff() {
@@ -223,8 +232,7 @@ public ref struct SeqSplitIter<T, S>
     }
 
     /// <summary>Returns a new <see cref="SplitIter{T}"/> enumerator with the same input in the initial state. </summary>
-    [Pure]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure,MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SeqSplitIter<T, S> GetEnumerator() {
         return new SeqSplitIter<T, S>(_tokenizer.Raw, _separators, _options, _tokenizer.Comparer);
     }

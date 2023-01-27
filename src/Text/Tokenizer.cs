@@ -33,6 +33,7 @@ public ref struct Tokenizer<T> {
     /// </summary>
     /// <param name="input">The input sequence.</param>
     /// <param name="comparer">The comparer used to determine whether two objects are equal.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Tokenizer(ReversibleIndexedSpan<T> input, IEqualityComparer<T>? comparer) {
         _source = input;
         _comparer = comparer;
@@ -41,7 +42,10 @@ public ref struct Tokenizer<T> {
     }
 
     /// <summary>The reference to the source buffer.</summary>
-    public ReadOnlySpan<T> Raw => _source.Span;
+    public ReadOnlySpan<T> Raw {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _source.Span;
+    }
 
     /// <summary>The comparer used to determine whether two elements are equal.</summary>
     public IEqualityComparer<T>? Comparer => _comparer;
@@ -86,25 +90,44 @@ public ref struct Tokenizer<T> {
     }
 
     /// <summary>Indicates whether the end of the source sequence is reached.</summary>
-    public bool IsCursorEnd => CursorPosition >= Length;
+    public bool IsCursorEnd {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => CursorPosition >= Length;
+    }
     /// <summary>Indicates whether the cursor is at the beginning of the source sequence.</summary>
-    public bool IsCursorStart => CursorPosition == 0;
+    public bool IsCursorStart {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => CursorPosition == 0;
+    }
 
     /// <inheritdoc cref="Span{T}.Length"/>
-    public int Length => _source.Length;
+    public int Length {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _source.Length;
+    }
 
     /// <summary>Represents the token currently being built from <see cref="Position"/> to see <see cref="CursorPosition"/>.</summary>
-    public ReversibleIndexedSpan<T> Token => _source.Slice(_pos, _tokenLength);
+    public ReversibleIndexedSpan<T> Token {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _source.Slice(_pos, _tokenLength);
+    }
 
     /// <summary>The reference to the current element at <see cref="Position"/>.</summary>
-    public ref readonly T Current => ref _source[_pos];
+    public ref readonly T Current {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => ref _source[_pos];
+    }
 
     /// <summary>The reference to the next element after the cursor at index <see cref="CursorPosition"/>.</summary>
-    public ref readonly T Cursor => ref _source[CursorPosition];
+    public ref readonly T Cursor {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => ref _source[CursorPosition];
+    }
 
     /// <summary>Allows access to an arbitrary element inside the source buffer.</summary>
     /// <param name="index"></param>
     public ref readonly T this[int index] {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get {
             ThrowHelper.ArgumentInRange(index, index >= 0 && index < Length);
             return ref _source[index];
@@ -112,6 +135,7 @@ public ref struct Tokenizer<T> {
     }
 
     /// <summary>Accesses the element at a specific offset from the <see cref="CursorPosition"/>.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref readonly T GetAtCursor(int offset) {
         return ref this[CursorPosition + offset];
     }
@@ -120,6 +144,7 @@ public ref struct Tokenizer<T> {
     /// <param name="offset">The offset from the cursor</param>
     /// <param name="value">The element at the offset, if any.</param>
     /// <returns><c>true</c> if the element exists; otherwise <c>false</c>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryGetAtCursor(int offset, [NotNullWhen(true)] out T? value) {
         int index = CursorPosition + offset;
         if (index >= 0 && index <= Length) {
@@ -132,6 +157,7 @@ public ref struct Tokenizer<T> {
     }
 
     /// <summary>Accesses the element at a specific offset from the <see cref="Position"/>.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref readonly T GetAtPosition(int offset) {
         return ref this[Position + offset];
     }
@@ -140,6 +166,7 @@ public ref struct Tokenizer<T> {
     /// <param name="offset">The offset from the position</param>
     /// <param name="value">The element at the offset, if any.</param>
     /// <returns><c>true</c> if the element exists; otherwise <c>false</c>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryGetAtPosition(int offset, [NotNullWhen(true)] out T? value) {
         int index = Position + offset;
         if (index >= 0 && index <= Length) {
@@ -153,6 +180,7 @@ public ref struct Tokenizer<T> {
 
     /// <summary>Consumes one element.</summary>
     /// <returns><see langword="true"/> if the element could be consumed; otherwise, <see langword="false"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Consume() {
         if (_pos != _source.Length - _tokenLength) {
             _tokenLength += 1;
@@ -165,6 +193,7 @@ public ref struct Tokenizer<T> {
     /// <summary>Consumes a specified amount of elements. Moves the cursor by amount</summary>
     /// <returns><see langword="true"/> if the elements could be consumed; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">If `amount &lt; -Token.Length`: Cannot move the cursor to before the start of the current token. The token length cannot be negative.</exception>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Consume(int amount) {
         ThrowHelper.ArgumentInRange(amount, amount >= -_tokenLength, "Cannot move the cursor to before the start of the current token. The token length cannot be negative.");
 
@@ -196,6 +225,7 @@ public ref struct Tokenizer<T> {
     }
 
     /// <summary>Discards the current token &amp; resets the iterator to the start of the token.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Discard() {
         _tokenLength = 0;
     }
@@ -203,6 +233,7 @@ public ref struct Tokenizer<T> {
     /// <summary>
     ///     Resets teh builder to the initial state.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Reset() {
         CursorPosition = 0;
     }
@@ -211,6 +242,7 @@ public ref struct Tokenizer<T> {
     ///     Advances the <see cref="CursorPosition"/> to a specific <paramref name="position"/>, always consumes elements.
     /// </summary>
     /// <param name="position">The target position</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Advance(int position) {
         ThrowHelper.ArgumentInRange(position, position >= 0 && position < Length);
         ThrowHelper.ArgumentInRange(position, position >= CursorPosition);

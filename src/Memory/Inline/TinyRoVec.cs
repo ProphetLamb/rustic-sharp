@@ -168,6 +168,7 @@ public readonly struct TinyRoVec<T>
     /// <param name="arg1">The second value.</param>
     /// <param name="arg2">The third value.</param>
     /// <param name="arg3">The fourth value.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal TinyRoVec(int length, [AllowNull] in T arg0, [AllowNull] in T arg1, [AllowNull] in T arg2, [AllowNull] in T arg3)
     {
         ThrowHelper.ArgumentInRange(length, length <= 4);
@@ -182,6 +183,7 @@ public readonly struct TinyRoVec<T>
 
     /// <summary>Initializes a new parameter span with a sequence of parameters.</summary>
     /// <param name="segment">The segment of parameters.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal TinyRoVec(in ArraySegment<T> segment)
     {
         _params = segment;
@@ -196,7 +198,10 @@ public readonly struct TinyRoVec<T>
     public int Count => _length;
 
     /// <inheritdoc cref="IReadOnlyVector{T}.IsEmpty"/>
-    public bool IsEmpty => 0 >= (uint)_length;
+    public bool IsEmpty {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => 0 >= (uint)_length;
+    }
 
     /// <inheritdoc/>
     public T this[int index]
@@ -283,6 +288,7 @@ public readonly struct TinyRoVec<T>
     }
 
     /// <inheritdoc/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Equals(in TinyRoVec<T> other)
     {
         return this == other;
@@ -325,12 +331,13 @@ public readonly struct TinyRoVec<T>
     ///     Returns <see langword="false"/> if left and right point at the same memory and have the same length.  Note that
     ///     this does *not* check to see if the *contents* are equal.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool operator !=(TinyRoVec<T> left, TinyRoVec<T> right) => !(left == right);
 
     /// <summary>Retrieves the backing span of the <see cref="TinyRoVec{T}"/> or allocates a array which is returned as a span.</summary>
     /// <returns>The span containing all items.</returns>
     /// <remarks>When using .NET Standard 2.1 or greater, or .NET Core 2.1 or greater the operation always is cheap and never allocates.</remarks>
-    [Pure]
+    [Pure,MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadOnlySpan<T> ToSpan() => ToSpan(false);
 
     /// <summary>Returns the span representation of the <see cref="TinyRoVec{T}"/>.</summary>
@@ -367,29 +374,35 @@ public readonly struct TinyRoVec<T>
 
     /// <summary>Initializes a new span from the value.</summary>
     /// <param name="self">The value.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator TinyRoVec<T>(in T self) => TinyRoVec.From(self);
 
     /// <summary>Initializes a new span from the sequence.</summary>
     /// <param name="self">The sequence of values.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator TinyRoVec<T>(in T[] self) => TinyRoVec.From(self);
 
     /// <summary>Initializes a new span from the sequence.</summary>
     /// <param name="self">The sequence of values.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator TinyRoVec<T>(in ArraySegment<T> self) => TinyRoVec.From(self);
 
 
     /// <summary>Initializes a new span from the sequence.</summary>
     /// <param name="self">The sequence of values.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator TinyRoVec<T>(in (T, T) self) =>
         TinyRoVec.From(self.Item1, self.Item2);
 
     /// <summary>Initializes a new span from the sequence.</summary>
     /// <param name="self">The sequence of values.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator TinyRoVec<T>(in (T, T, T) self) => TinyRoVec.From(self.Item1, self.Item2, self.Item3);
 
 #if !NET472
     /// <summary>Initializes a new span from the sequence.</summary>
     /// <param name="self">The sequence of values.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator TinyRoVec<T>(in (T, T, T, T) self) => TinyRoVec.From(self.Item1, self.Item2, self.Item3, self.Item4);
 #endif
 
@@ -417,8 +430,7 @@ public readonly struct TinyRoVec<T>
     }
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
-    [Pure]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure,MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Enumerator GetEnumerator() => new(this);
 
     /// <inheritdoc/>

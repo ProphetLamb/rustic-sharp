@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -66,6 +67,7 @@ public sealed class MultiDictionary<K, V> : IEnumerable<KeyValuePair<K, IReadOnl
     /// Add a single value under the specified key.
     /// Value may not be null.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add(K key, V value) {
 #if NET6_0_OR_GREATER
         ref TinyVec<V> entry = ref CollectionsMarshal.GetValueRefOrAddDefault(_backing, key, out bool exists);
@@ -93,6 +95,7 @@ public sealed class MultiDictionary<K, V> : IEnumerable<KeyValuePair<K, IReadOnl
     /// Add multiple values under the specified key.
     /// Value may not be null.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AddRange(K key, ReadOnlySpan<V> values) {
 #if NET6_0_OR_GREATER
         ref TinyVec<V> entry = ref CollectionsMarshal.GetValueRefOrAddDefault(_backing, key, out bool exists);
@@ -122,6 +125,7 @@ public sealed class MultiDictionary<K, V> : IEnumerable<KeyValuePair<K, IReadOnl
     /// </summary>
     /// <param name="key">The key to drop.</param>
     /// <returns><c>true</c> if values have been removed; otherwise <c>false</c>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Remove(K key) {
 #if NET6_0_OR_GREATER
         ref TinyVec<V> entry = ref CollectionsMarshal.GetValueRefOrNullRef(_backing, key);
@@ -147,6 +151,7 @@ public sealed class MultiDictionary<K, V> : IEnumerable<KeyValuePair<K, IReadOnl
     /// Returns true if found, false otherwise.
     /// </summary>
     /// <returns><c>true</c> if keys have been removed; otherwise <c>false</c>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Remove(K key, V value) {
 #if NET6_0_OR_GREATER
         ref TinyVec<V> entry = ref CollectionsMarshal.GetValueRefOrNullRef(_backing, key);
@@ -184,6 +189,7 @@ public sealed class MultiDictionary<K, V> : IEnumerable<KeyValuePair<K, IReadOnl
     }
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Enumerator GetEnumerator() => new(this);
 
     IEnumerator<KeyValuePair<K, IReadOnlyCollection<V>>> IEnumerable<KeyValuePair<K, IReadOnlyCollection<V>>>.GetEnumerator() {
@@ -201,12 +207,17 @@ public sealed class MultiDictionary<K, V> : IEnumerable<KeyValuePair<K, IReadOnl
     [DebuggerDisplay("Count={Count}"), DebuggerTypeProxy(typeof(DictionaryKeyCollectionDebugView<,>))]
     public readonly struct KeyCollection : IReadOnlyCollection<K>, ICollection<K> {
         private readonly MultiDictionary<K, V> _dict;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal KeyCollection(MultiDictionary<K, V> dict) {
             _dict = dict;
         }
 
         /// <inheritdoc cref="ICollection{T}.Count" />
-        public int Count => _dict.KeyCount;
+        public int Count {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _dict.KeyCount;
+        }
 
         /// <inheritdoc />
         public void CopyTo(K[] array, int arrayIndex) {
@@ -219,9 +230,11 @@ public sealed class MultiDictionary<K, V> : IEnumerable<KeyValuePair<K, IReadOnl
         }
 
         /// <inheritdoc cref="ICollection{K}.Contains" />
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(K item) => !_dict[item].IsEmpty;
 
         /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Enumerator GetEnumerator() => new(_dict);
 
         IEnumerator<K> IEnumerable<K>.GetEnumerator() => GetEnumerator();
@@ -250,12 +263,14 @@ public sealed class MultiDictionary<K, V> : IEnumerable<KeyValuePair<K, IReadOnl
             private Dictionary<K, Vec<V>>.KeyCollection.Enumerator _keys;
 #endif
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             internal Enumerator(MultiDictionary<K, V> dict) {
                 _dict = dict;
                 _keys = dict._backing.Keys.GetEnumerator();
             }
 
             /// <inheritdoc />
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext() {
                 while (_keys.MoveNext()) {
                     if (!_dict[_keys.Current!].IsEmpty) {
@@ -270,7 +285,10 @@ public sealed class MultiDictionary<K, V> : IEnumerable<KeyValuePair<K, IReadOnl
             public void Reset() => _keys = _dict._backing.Keys.GetEnumerator();
 
             /// <inheritdoc />
-            public readonly K Current => _keys.Current!;
+            public readonly K Current {
+                [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => _keys.Current!;
+            }
 
             readonly object IEnumerator.Current => ((IEnumerator)_keys).Current!;
 
@@ -290,12 +308,19 @@ public sealed class MultiDictionary<K, V> : IEnumerable<KeyValuePair<K, IReadOnl
         }
 
         /// <summary>The number of values over all keys. Equal to <see cref="MultiDictionary{K,V}.ValueCount"/></summary>
-        public int ValuesCount => _dict.ValueCount;
+        public int ValuesCount {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _dict.ValueCount;
+        }
 
         /// <summary>The number of value collections. Equal to <see cref="MultiDictionary{K,V}.KeyCount"/></summary>
-        public int Count => _dict.KeyCount;
+        public int Count {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _dict.KeyCount;
+        }
 
         /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Enumerator GetEnumerator() => new(_dict);
 
         IEnumerator<IEnumerable<V>> IEnumerable<IEnumerable<V>>.GetEnumerator() => GetEnumerator();
@@ -307,19 +332,24 @@ public sealed class MultiDictionary<K, V> : IEnumerable<KeyValuePair<K, IReadOnl
             private readonly MultiDictionary<K, V> _dict;
             private KeyCollection.Enumerator _keys;
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             internal Enumerator(MultiDictionary<K, V> dict) {
                 _dict = dict;
                 _keys = dict.Keys.GetEnumerator();
             }
 
             /// <inheritdoc />
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext() => _keys.MoveNext();
 
             /// <inheritdoc />
             public void Reset() => _keys = _dict.Keys.GetEnumerator();
 
             /// <inheritdoc cref="IEnumerator{T}.Current" />
-            public ReadOnlySpan<V> Current => _dict[_keys.Current];
+            public ReadOnlySpan<V> Current {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => _dict[_keys.Current];
+            }
 
             IEnumerable<V> IEnumerator<IEnumerable<V>>.Current => new ReadOnlyCollection<V>(_dict._backing[_keys.Current]);
 
@@ -336,6 +366,7 @@ public sealed class MultiDictionary<K, V> : IEnumerable<KeyValuePair<K, IReadOnl
         private KeyCollection.Enumerator _keys;
         private KeyValuesPair _current;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal Enumerator(MultiDictionary<K, V> dict) {
             _dict = dict;
             _keys = dict.Keys.GetEnumerator();
@@ -370,12 +401,14 @@ public sealed class MultiDictionary<K, V> : IEnumerable<KeyValuePair<K, IReadOnl
         public readonly ReadOnlySpan<V> Values;
 
         /// <inheritdoc cref="KeyValuePair{K,ReadOnlySpan}()"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public KeyValuesPair(K key, ReadOnlySpan<V> values) {
             Key = key;
             Values = values;
         }
 
         /// <summary>Returns the <see cref="Key"/> and <see cref="Values"/>.</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Deconstruct(out K key, out ReadOnlySpan<V> values) {
             key = Key;
             values = Values;

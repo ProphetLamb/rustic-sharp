@@ -236,6 +236,7 @@ public readonly ref struct TinyRoSpan<T>
     /// <param name="arg1">The second value.</param>
     /// <param name="arg2">The third value.</param>
     /// <param name="arg3">The fourth value.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal TinyRoSpan(int length, [AllowNull] T arg0, [AllowNull] T arg1, [AllowNull] T arg2, [AllowNull] T arg3)
     {
         ThrowHelper.ArgumentInRange(length, length <= 4);
@@ -250,6 +251,7 @@ public readonly ref struct TinyRoSpan<T>
 
     /// <summary>Initializes a new parameter span with a sequence of values.</summary>
     /// <param name="values">The values collection.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal TinyRoSpan(ReadOnlySpan<T> values)
     {
         _values = values;
@@ -264,11 +266,15 @@ public readonly ref struct TinyRoSpan<T>
     public int Length => _length;
 
     /// <summary>Returns true if Length is 0.</summary>
-    public bool IsEmpty => 0 >= (uint)_length;
+    public bool IsEmpty {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => 0 >= (uint)_length;
+    }
 
     /// <inheritdoc cref="IReadOnlyList{T}.this" />
     public T this[int index]
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
             ThrowHelper.ArgumentInRange(index, index >= 0 && index < Length);
@@ -289,8 +295,7 @@ public readonly ref struct TinyRoSpan<T>
 #pragma warning disable CS0809
 
     /// <inheritdoc cref="Object.Equals(Object)" />
-    [Obsolete("Not applicable to a ref struct.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    [Obsolete("Not applicable to a ref struct."),EditorBrowsable(EditorBrowsableState.Never)]
     public override bool Equals(object? obj)
     {
         ThrowHelper.ThrowNotSupportedException();
@@ -298,8 +303,7 @@ public readonly ref struct TinyRoSpan<T>
     }
 
     /// <inheritdoc cref="Object.GetHashCode" />
-    [Obsolete("Not applicable to a ref struct.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    [Obsolete("Not applicable to a ref struct."),EditorBrowsable(EditorBrowsableState.Never)]
     public override int GetHashCode()
     {
         ThrowHelper.ThrowNotSupportedException();
@@ -408,6 +412,7 @@ public readonly ref struct TinyRoSpan<T>
     /// <param name="onlyIfCheap">Whether return an empty span instead of allocating an array, if no span is backing the <see cref="TinyRoSpan{T}"/>.</param>
     /// <returns>The span containing all items.</returns>
     /// <remarks>When using .NET Standard 2.1 or greater, or .NET Core 2.1 or greater the operation always is cheap and never allocates.</remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadOnlySpan<T> ToSpan(bool onlyIfCheap)
     {
         if (IsEmpty || !_values.IsEmpty)
@@ -437,27 +442,32 @@ public readonly ref struct TinyRoSpan<T>
 
     /// <summary>Initializes a new span from the value.</summary>
     /// <param name="self">The value.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator TinyRoSpan<T>(in T self) => TinyRoSpan.From(self);
 
     /// <summary>Initializes a new span from the sequence.</summary>
     /// <param name="self">The sequence of values.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator TinyRoSpan<T>(in ReadOnlySpan<T> self) => TinyRoSpan.From(self);
 
     /// <summary>Initializes a new span from the sequence.</summary>
     /// <param name="self">The sequence of values.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator TinyRoSpan<T>(in Span<T> self) => TinyRoSpan.From(self);
 
     /// <summary>Initializes a new span from the sequence.</summary>
     /// <param name="self">The sequence of values.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator TinyRoSpan<T>(in T[] self) => TinyRoSpan.From(self);
 
     /// <summary>Initializes a new span from the sequence.</summary>
     /// <param name="self">The sequence of values.</param>
-    public static implicit operator TinyRoSpan<T>(in (T, T) self) =>
-        TinyRoSpan.From(self.Item1, self.Item2);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator TinyRoSpan<T>(in (T, T) self) => TinyRoSpan.From(self.Item1, self.Item2);
 
     /// <summary>Initializes a new span from the sequence.</summary>
     /// <param name="self">The sequence of values.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator TinyRoSpan<T>(in (T, T, T) self) => TinyRoSpan.From(self.Item1, self.Item2, self.Item3);
 
 #if !NET472
@@ -490,8 +500,7 @@ public readonly ref struct TinyRoSpan<T>
     }
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
-    [Pure]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure,MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Enumerator GetEnumerator() => new(this);
 
     /// <summary>Enumerates the elements of a <see cref="TinyRoSpan{T}"/>.</summary>

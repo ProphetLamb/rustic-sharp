@@ -22,6 +22,7 @@ public ref struct StrBuilder
     ///     Initializes a new <see cref="StrBuilder"/> with the specified buffer.
     /// </summary>
     /// <param name="initialBuffer">The stack-buffer used to build the string.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public StrBuilder(Span<char> initialBuffer)
     {
         _arrayToReturnToPool = null;
@@ -33,6 +34,7 @@ public ref struct StrBuilder
     ///     Initializes a new <see cref="StrBuilder"/> with a array from the <see cref="ArrayPool{T}.Shared"/> with the specific size.
     /// </summary>
     /// <param name="initialCapacity">The minimum capacity of the pool-array.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public StrBuilder(int initialCapacity)
     {
         _arrayToReturnToPool = ArrayPool<char>.Shared.Rent(initialCapacity);
@@ -63,6 +65,7 @@ public ref struct StrBuilder
     ///     Ensures that the builder has at least the given capacity.
     /// </summary>
     /// <param name="capacity">The minimum capacity of the pool-array.</param>
+    [MethodImpl(MethodImplOptions.NoInlining)]
     public void EnsureCapacity(int capacity)
     {
         // This is not expected to be called this with negative capacity
@@ -81,7 +84,7 @@ public ref struct StrBuilder
     ///     This overload is pattern matched in the C# 7.3+ compiler so you can omit
     ///     the explicit method call, and write eg "fixed (char* c = builder)"
     /// </summary>
-    [Pure]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref char GetPinnableReference()
     {
         return ref MemoryMarshal.GetReference(_chars);
@@ -91,6 +94,7 @@ public ref struct StrBuilder
     ///     Get a pinnable reference to the builder.
     /// </summary>
     /// <param name="terminate">Ensures that the builder has a null char after <see cref="Length" /></param>
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref char GetPinnableReference(bool terminate)
     {
         if (terminate)
@@ -108,8 +112,7 @@ public ref struct StrBuilder
     /// <param name="index">The zero-based index of the element.</param>
     public ref char this[int index]
     {
-        [Pure]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
             Debug.Assert(index >= 0 && index < Length);
@@ -121,6 +124,7 @@ public ref struct StrBuilder
     ///     Creates the string from the builder and disposes the instance.
     /// </summary>
     /// <returns>The string represented by the builder.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override string ToString()
     {
         var s = _chars.Slice(0, _pos).ToString();
@@ -151,6 +155,7 @@ public ref struct StrBuilder
     ///     Returns a span around the contents of the builder.
     /// </summary>
     /// <param name="terminate">Ensures that the builder has a null char after <see cref="Length" /></param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadOnlySpan<char> AsSpan(bool terminate)
     {
         if (terminate)
@@ -165,6 +170,7 @@ public ref struct StrBuilder
     /// <summary>
     ///     Returns the span representing the current string.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadOnlySpan<char> AsSpan()
     {
         return _chars.Slice(0, _pos);
@@ -174,6 +180,7 @@ public ref struct StrBuilder
     ///     Returns the span representing a portion of the current string.
     /// </summary>
     /// <param name="start">The zero-based index of the first char.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadOnlySpan<char> AsSpan(int start)
     {
         return _chars.Slice(start, _pos - start);
@@ -184,6 +191,7 @@ public ref struct StrBuilder
     /// </summary>
     /// <param name="start">The zero-based index of the first char.</param>
     /// <param name="length">The number of characters after the <paramref name="start"/>.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadOnlySpan<char> AsSpan(int start, int length)
     {
         return _chars.Slice(start, length);

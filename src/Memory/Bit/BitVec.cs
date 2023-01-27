@@ -13,6 +13,7 @@ public ref struct BitVec
     private int _pos;
 
     /// <summary>Initializes a new <see cref="BitVec"/> with the specified <paramref name="initialStorage"/>.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public BitVec(Span<int> initialStorage)
     {
         _returnToPool = null;
@@ -22,6 +23,7 @@ public ref struct BitVec
 
     /// <summary>Initializes a new <see cref="BitVec"/> able to contain the specified number of bits.</summary>
     /// <param name="capacity">The lower limit to the number of bits the collection can contain.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public BitVec(int capacity)
     {
         var cap = Arithmetic.IntsToContainBits(capacity);
@@ -44,16 +46,21 @@ public ref struct BitVec
     }
 
     /// <summary>The upper limit to the amount of bits the collection can hold without reallocating.</summary>
-    public int Capacity => _raw.RawStorage.Length << Arithmetic.IntWidth;
+    public int Capacity {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _raw.RawStorage.Length << Arithmetic.IntShift;
+    }
 
     /// <summary>Gets or sets the value of the bit at the specified index.</summary>
     public bool this[int index]
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
             ThrowHelper.ArgumentInRange(index, index >= 0 && index < Count);
             return _raw.IsMarked(index);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
             ThrowHelper.ArgumentInRange(index, index >= 0 && index < Count);
