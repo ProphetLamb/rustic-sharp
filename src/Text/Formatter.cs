@@ -8,10 +8,11 @@ namespace Rustic.Text;
 
 /// <summary>Allows dynamic string formatting according the templates.</summary>
 public sealed class Fmt {
-    private static readonly Lazy<Fmt> s_fmtInstance = new(() => new Fmt());
+    [ThreadStatic]
+    private static Fmt? t_fmtInstance;
 
     /// <summary>The global instance containing definitions.</summary>
-    public static Fmt Def => s_fmtInstance.Value;
+    public static Fmt Def => t_fmtInstance ??= new();
 
     /// <summary>Formats a string using the specified definition.</summary>
     /// <param name="format">The format string.</param>
