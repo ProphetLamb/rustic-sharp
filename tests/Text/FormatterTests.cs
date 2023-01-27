@@ -41,6 +41,12 @@ public class FormatterTests {
         Assert.Catch<FormatException>(() => Fmt.Def.Index(format.AsSpan(), substitutes));
     }
 
+    [Test, TestCaseSource(nameof(IndexFormatTestCases))]
+    public void PrefixIndexFormatMissingPrefix(string format, string[] substitutes, string expected) {
+        IdxDef<string> def = new("$", substitutes);
+        Fmt.Format(format.AsSpan(), ref def).Should().Be(format);
+    }
+
     public static IEnumerable<object[]> NamedFormatTestCases = new List<object[]> {
         new object[] { "Hello World", new Dictionary<string, string>(), "Hello World" },
         new object[] { "{foo}", new Dictionary<string, string> { ["foo"] = "Hello World" }, "Hello World" },
@@ -72,4 +78,11 @@ public class FormatterTests {
     public void NamedFormatInvalid(string format, Dictionary<string, string> substitutes) {
         Assert.Catch<FormatException>(() => Fmt.Def.Named(format.AsSpan(), substitutes));
     }
+
+    [Test, TestCaseSource(nameof(NamedFormatTestCases))]
+    public void PrefixNamedFormatMissingPrefix(string format, Dictionary<string, string> substitutes, string expected) {
+        NamedDef<string> def = new("$", substitutes);
+        Fmt.Format(format.AsSpan(), ref def).Should().Be(format);
+    }
+
 }
