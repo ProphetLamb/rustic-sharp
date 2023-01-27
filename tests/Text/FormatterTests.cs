@@ -8,10 +8,8 @@ using NUnit.Framework;
 namespace Rustic.Text.Tests;
 
 [TestFixture]
-public class FormatterTests
-{
-    public static IEnumerable<object[]> IndexFormatTestCases = new List<object[]>
-    {
+public class FormatterTests {
+    public static IEnumerable<object[]> IndexFormatTestCases = new List<object[]> {
         new object[] { "Hello World", Array.Empty<string>(), "Hello World" },
         new object[] { "{0}", new[] { "Hello World" }, "Hello World" },
         new object[] { "Hello {0}", new[] { "World" }, "Hello World" },
@@ -21,6 +19,8 @@ public class FormatterTests
         new object[] { "{1}{0}{2}", new[] { " ", "Hello", "World" }, "Hello World" },
         new object[] { "", Array.Empty<string>(), "" },
         new object[] { "", new[] { "Empty", "Format" }, "" },
+        new object[] { "{0} {1} {2}", new[] { "Hello", "World", "!", "?" }, "Hello World !" },
+        new object[] { "", new[] { "Empty", "Format" }, "" },
     };
 
     [Test, TestCaseSource(nameof(IndexFormatTestCases))]
@@ -28,10 +28,12 @@ public class FormatterTests
         Fmt.Def.Index(format.AsSpan(), substitutes).Should().Be(expected);
     }
 
-    public static IEnumerable<object[]> IndexFormatInvalidTestCases = new List<object[]>
-    {
+    public static IEnumerable<object[]> IndexFormatInvalidTestCases = new List<object[]> {
         new object[] { "{", Array.Empty<string>() },
         new object[] { "{0", Array.Empty<string>() },
+        new object[] { "{0}", Array.Empty<string>() },
+        new object[] { "{1}", new[] { "Hello World" } },
+        new object[] { "{poof}", new[] { "Hello World" } },
     };
 
     [Test, TestCaseSource(nameof(IndexFormatInvalidTestCases))]
