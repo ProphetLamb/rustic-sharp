@@ -6,7 +6,7 @@ using Rustic.Memory;
 
 namespace Rustic.Text;
 
-/// <summary>Allows dynamic string formatting accoring the templates.</summary>
+/// <summary>Allows dynamic string formatting according the templates.</summary>
 public class Fmt {
     private static readonly Lazy<Fmt> s_fmtInstance = new(() => new Fmt());
 
@@ -88,17 +88,15 @@ public class Fmt {
     /// <returns>The formatted string.</returns>
     public string Named(ReadOnlySpan<char> format, IReadOnlyDictionary<string, object?> arguments,
         IEqualityComparer<char>? comparer = null, IFormatProvider? provider = null) {
-        // NamedDef<object?> def = new(arguments, provider);
-        // return Format(format, ref def, comparer);
-        return null!;
+        NamedDef<object?> def = new(arguments, provider);
+        return Format(format, ref def, comparer);
     }
 
     /// <inheritdoc cref="Named"/>
     public string Named<T>(ReadOnlySpan<char> format, IReadOnlyDictionary<string, T> arguments,
         IEqualityComparer<char>? comparer = null, IFormatProvider? provider = null) {
-        // NamedDef<T> def = new(arguments, provider);
-        // return Format(format, ref def, comparer);
-        return null!;
+        NamedDef<T> def = new(arguments, provider);
+        return Format(format, ref def, comparer);
     }
 }
 
@@ -263,6 +261,135 @@ public struct IdxDef<T> : IFmtDef {
         }
 
         var arg = Arguments[idx];
+        string? s;
+        if (Format?.GetFormat(arg?.GetType()) is ICustomFormatter f) {
+            s = f.Format("{0}", arg, Format);
+        } else {
+            s = arg?.ToString();
+        }
+
+        value = s.AsSpan();
+        return true;
+    }
+}
+
+/// <summary>Format definition for named text based formatting</summary>
+/// <typeparam name="T">The type of the formatting arguments.</typeparam>
+public struct NamedDef<T> : IFmtDef {
+    private int _escapedHoleLevel = 0;
+
+    /// <summary>Initializes a new instance of <see cref="IdxDef{T}"/>.</summary>
+    /// <param name="arguments">The formatting arguments used to fill holes in the format.</param>
+    /// <param name="format">The formatter providing localization.</param>
+    public NamedDef(IReadOnlyDictionary<string, T> arguments, IFormatProvider? format = null)
+        : this(String.Empty, arguments, format) {
+    }
+
+    /// <summary>Initializes a new instance of <see cref="IdxDef{T}"/>.</summary>
+    /// <param name="prefix">The prefix required before curly bracket open to identify a hole.</param>
+    /// <param name="arguments">The formatting arguments used to fill holes in the format.</param>
+    /// <param name="format">The formatter providing localization.</param>
+    public NamedDef(string prefix, IReadOnlyDictionary<string, T> arguments, IFormatProvider? format = null) {
+        Prefix = prefix;
+        Arguments = arguments;
+        Format = format;
+    }
+
+    /// <summary>The prefix required before curly bracket open to identify a hole.</summary>
+    public string Prefix { get; }
+
+    /// <summary>The formatting arguments used to fill holes in the format.</summary>
+    public IReadOnlyDictionary<string, T> Arguments { get; }
+
+    /// <summary>The number of formatting arguments.</summary>
+    public int Count => Arguments.Count;
+
+    /// <summary>The formatter providing localization.</summary>
+    public IFormatProvider? Format { get; }
+
+    /// <summary>Consumed chars until a non escaped curly bracket is found. Does not append the latest <see cref="Tokenizer{T}.Token"/> to the builder.</summary>
+    /// <returns><c>true</c> if a curly bracket was found; otherwise <c>false</c>.</returns>
+    private unsafe bool NextBracket(scoped ref Tokenizer<char> tokenizer, scoped ref StrBuilder builder, delegate*<char, bool> predicate) {
+        while (tokenizer.TryReadUntilAny(('{', '}'))) {
+            var cursor = tokenizer.GetAtCursor(-1);
+
+            if (cursor == '{' && tokenizer.TryReadNext('{')) {
+                builder.Append(tokenizer.FinalizeToken().SliceEnd(1));
+                _escapedHoleLevel += 1;
+                continue;
+            }
+            if (cursor == '}' && tokenizer.TryReadNext('}')) {
+                builder.Append(tokenizer.FinalizeToken().SliceEnd(1));
+                _escapedHoleLevel -= 1;
+                continue;
+            }
+
+            if (predicate(cursor)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <inheritdoc />
+    public unsafe bool NextTextEnd(scoped ref Tokenizer<char> tokenizer, scoped ref StrBuilder builder) {
+        static bool determineHoleEnd(char c) => c == '{';
+
+        while (true) {
+            if (!NextBracket(ref tokenizer, ref builder, &determineHoleEnd)) {
+                return false; // No more holes
+            }
+
+            ReversibleIndexedSpan<char> token = tokenizer.FinalizeToken().SliceEnd(1);
+            builder.Append(token);
+
+            if (Prefix.IsEmpty()) {
+                return true; // Hole found
+            }
+
+            ReadOnlySpan<char> possiblePrefix = token.Slice(token.Length - Prefix.Length).ToSpan();
+            if (possiblePrefix.SequenceEqual(Prefix.AsSpan())) {
+                return true; // Hole found
+            }
+
+            // Hole found, but not with the correct prefix; skip
+        }
+    }
+
+    /// <inheritdoc />
+    public unsafe bool NextTextStart(scoped ref Tokenizer<char> tokenizer, scoped ref StrBuilder builder) {
+        static bool determineHoleEnd(char c) => c == '}';
+
+        if (!NextBracket(ref tokenizer, ref builder, &determineHoleEnd)) {
+            return false; // Hole not terminated
+        }
+
+        ReversibleIndexedSpan<char> token = tokenizer.FinalizeToken().SliceEnd(1);
+        builder.Append(token);
+        return true;
+    }
+
+    /// <inheritdoc />
+    public unsafe void FinalTextEnd(scoped ref Tokenizer<char> tokenizer, scoped ref StrBuilder builder) {
+        static bool noop(char _) => true;
+        NextBracket(ref tokenizer, ref builder, &noop);
+
+        if (_escapedHoleLevel != 0) {
+            ThrowHelper.ThrowFormatException(tokenizer.Position, tokenizer.CursorPosition, "Escaped brackets are not balanced. The number of opening brackets `{{` must match the number of closing brackets `}}`.");
+        }
+
+        // Append the remaining formatted string
+        tokenizer.CursorPosition = tokenizer.Length;
+        builder.Append(tokenizer.FinalizeToken());
+    }
+
+    /// <inheritdoc />
+    public readonly bool TryGetValue(in ReadOnlySpan<char> key, out ReadOnlySpan<char> value) {
+        if (!Arguments.TryGetValue(key.ToString(), out T? arg)) {
+            value = default;
+            return false;
+        }
         string? s;
         if (Format?.GetFormat(arg?.GetType()) is ICustomFormatter f) {
             s = f.Format("{0}", arg, Format);
