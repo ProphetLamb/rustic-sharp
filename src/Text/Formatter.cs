@@ -204,7 +204,7 @@ public struct IdxDef<T> : IFmtDef {
             ReversibleIndexedSpan<char> token = tokenizer.FinalizeToken();
 
             if (Prefix.IsEmpty()) {
-                builder.Append(token);
+                builder.Append(token.SliceEnd(1));
                 return true; // Hole found
             }
 
@@ -347,7 +347,7 @@ public struct NamedDef<T> : IFmtDef {
             ReversibleIndexedSpan<char> token = tokenizer.FinalizeToken();
 
             if (Prefix.IsEmpty()) {
-                builder.Append(token);
+                builder.Append(token.SliceEnd(1));
                 return true; // Hole found
             }
 
