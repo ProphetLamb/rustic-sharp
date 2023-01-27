@@ -8,14 +8,12 @@ using Bogus.Extensions;
 
 namespace Rustic.Memory.Tests;
 
-public static class SampleData
-{
+public static class SampleData {
     public static Order[] Orders { get; } = GetFakers().OrderFaker.Generate(3000).ToArray();
 
     public static User[] Users { get; } = GetFakers().UserFaker.Generate(1000).ToArray();
 
-    private static (Faker<User> UserFaker, Faker<Order> OrderFaker) GetFakers()
-    {
+    private static (Faker<User> UserFaker, Faker<Order> OrderFaker) GetFakers() {
         Randomizer.Seed = new Random(3897234);
         string[] fruit = { "apple", "banana", "orange", "strawberry", "kiwi" };
 
@@ -61,18 +59,15 @@ public static class SampleData
     }
 }
 
-public class Order
-{
+public class Order {
     public int OrderId { get; set; }
     public string Item { get; set; }
     public int Quantity { get; set; }
     public int? LotNumber { get; set; }
 }
 
-public class User
-{
-    public User(int userId, string ssn)
-    {
+public class User {
+    public User(int userId, string ssn) {
         Id = userId;
         SSN = ssn;
     }
@@ -94,64 +89,52 @@ public class User
     public List<Order> Orders { get; set; }
 }
 
-public class UserComparer : IComparer<User>, System.Collections.IComparer
-{
+public class UserComparer : IComparer<User>, System.Collections.IComparer {
     public static UserComparer Instance => new();
 
     public static Comparison<User> Comparison => (left, right) => Instance.Compare(left, right);
 
-    public int Compare(User x, User y)
-    {
-        if (ReferenceEquals(x, y))
-        {
+    public int Compare(User x, User y) {
+        if (ReferenceEquals(x, y)) {
             return 0;
         }
 
-        if (y is null)
-        {
+        if (y is null) {
             return 1;
         }
 
-        if (x is null)
-        {
+        if (x is null) {
             return -1;
         }
 
         var firstNameComparison = String.CompareOrdinal(x.FirstName, y.FirstName);
-        if (firstNameComparison != 0)
-        {
+        if (firstNameComparison != 0) {
             return firstNameComparison;
         }
 
         var lastNameComparison = String.CompareOrdinal(x.LastName, y.LastName);
-        if (lastNameComparison != 0)
-        {
+        if (lastNameComparison != 0) {
             return lastNameComparison;
         }
 
         return x.Gender.CompareTo(y.Gender);
     }
 
-    public int Compare(object x, object y)
-    {
-        if (x == y)
-        {
+    public int Compare(object x, object y) {
+        if (x == y) {
             return 0;
         }
 
-        if (x is null)
-        {
+        if (x is null) {
             return -1;
         }
 
-        if (y is null)
-        {
+        if (y is null) {
             return 1;
         }
 
         if (x is User a
-            && y is User b)
-        {
+            && y is User b) {
             return Compare(a, b);
         }
 

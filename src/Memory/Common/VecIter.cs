@@ -11,8 +11,7 @@ namespace Rustic.Memory;
 /// </summary>
 /// <typeparam name="T">The type of items of the array.</typeparam>
 public struct VecIter<T>
-    : IEnumerator<T>, IReadOnlyList<T>
-{
+    : IEnumerator<T>, IReadOnlyList<T> {
     private T[]? _array;
     private int _offset;
     private int _count;
@@ -24,8 +23,7 @@ public struct VecIter<T>
     /// <param name="array">The array to iterate.</param>
     /// <param name="offset">The index of the first element to iterate.</param>
     /// <param name="count">The number of elements to iterate.</param>
-    public VecIter(T[]? array, int offset, int count)
-    {
+    public VecIter(T[]? array, int offset, int count) {
         ThrowHelper.ArgumentInRange(offset, offset >= 0);
         ThrowHelper.ArgumentInRange(count, count >= 0);
         var arrayLength = (array?.Length) ?? 0;
@@ -68,11 +66,9 @@ public struct VecIter<T>
     public int Offset => _offset;
 
     /// <inheritdoc cref="IReadOnlyList{T}.this" />
-    public ref readonly T this[int index]
-    {
+    public ref readonly T this[int index] {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get
-        {
+        get {
             ThrowHelper.ArgumentInRange(index, index >= 0 && index < Length);
 
             return ref _array![_offset + index];
@@ -80,11 +76,9 @@ public struct VecIter<T>
     }
 
     /// <inheritdoc/>
-    T IReadOnlyList<T>.this[int index]
-    {
+    T IReadOnlyList<T>.this[int index] {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get
-        {
+        get {
             ThrowHelper.ArgumentInRange(index, index >= 0 && index < Length);
 
             return _array![_offset + index];
@@ -103,10 +97,8 @@ public struct VecIter<T>
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
     [Pure]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public VecIter<T> GetEnumerator()
-    {
-        if (_pos == -1)
-        {
+    public VecIter<T> GetEnumerator() {
+        if (_pos == -1) {
             return this;
         }
 
@@ -114,8 +106,7 @@ public struct VecIter<T>
     }
 
     /// <inheritdoc />
-    public void Dispose()
-    {
+    public void Dispose() {
         this = default;
     }
 
@@ -126,12 +117,10 @@ public struct VecIter<T>
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <inheritdoc />
-    public bool MoveNext()
-    {
+    public bool MoveNext() {
         var index = _pos + 1;
 
-        if ((uint)index < (uint)_count)
-        {
+        if ((uint)index < (uint)_count) {
             _pos = index;
             return true;
         }
@@ -140,8 +129,7 @@ public struct VecIter<T>
     }
 
     /// <inheritdoc />
-    public void Reset()
-    {
+    public void Reset() {
         _pos = -1;
     }
 
@@ -154,8 +142,7 @@ public struct VecIter<T>
 /// <summary>
 ///     Extension methods for <see cref="ArraySegment{T}"/> and <see cref="Array"/>.
 /// </summary>
-public static class VecIterExtensions
-{
+public static class VecIterExtensions {
     /// <summary>
     ///     Initializes a new <see cref="VecIter{T}"/> for the segment.
     /// </summary>

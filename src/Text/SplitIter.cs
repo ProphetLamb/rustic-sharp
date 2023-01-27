@@ -193,7 +193,7 @@ public ref struct SplitIter<T> {
 
     /// <summary>The segment of the current state of the enumerator.</summary>
     public ReadOnlySpan<T> Current {
-        [Pure,MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _tokenizer.Raw.Slice(Position, Width);
     }
 
@@ -221,7 +221,7 @@ public ref struct SplitIter<T> {
     }
 
     /// <summary>Returns a new <see cref="SplitIter{T}"/> enumerator with the same input in the initial state. </summary>
-    [Pure,MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SplitIter<T> GetEnumerator() {
         return new SplitIter<T>(_tokenizer.Raw, _separators, _options, _tokenizer.Comparer);
     }

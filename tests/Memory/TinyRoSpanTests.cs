@@ -8,11 +8,9 @@ using NUnit.Framework;
 namespace Rustic.Memory.Tests;
 
 [TestFixture]
-public class TinySpanTests
-{
+public class TinySpanTests {
     [Test]
-    public void TestConstruct()
-    {
+    public void TestConstruct() {
         var vec = TinyRoSpan.From(SampleData.Users[0]);
         vec.Count().Should().Be(1);
         vec = TinyRoSpan.From(SampleData.Users[0], SampleData.Users[1]);
@@ -28,14 +26,11 @@ public class TinySpanTests
     }
 }
 
-internal static class TinySpanExtensions
-{
-    public static int Count<T>(in this TinyRoSpan<T> self)
-    {
+internal static class TinySpanExtensions {
+    public static int Count<T>(in this TinyRoSpan<T> self) {
         var count = 0;
         var en = self.GetEnumerator();
-        while (en.MoveNext())
-        {
+        while (en.MoveNext()) {
             var item = en.Current;
             count += 1;
         }

@@ -54,8 +54,7 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
     /// <inheritdoc />
     public T this[int index] {
         get {
-            if (ReferenceEquals(_values, SingleValueGuard))
-            {
+            if (ReferenceEquals(_values, SingleValueGuard)) {
                 ThrowHelper.ArgumentInRange(index, index == 0);
                 return _singleValue;
             }
@@ -63,13 +62,12 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
                 // this will throw since the list is EmptyListGuard
                 return _values[index];
             }
-            ThrowHelper.ArgumentInRange(index, index>=0 && index < Count);
+            ThrowHelper.ArgumentInRange(index, index >= 0 && index < Count);
             Debug.Fail("Unreachable, expected to throw above.");
             return default!;
         }
         set {
-            if (ReferenceEquals(_values, SingleValueGuard))
-            {
+            if (ReferenceEquals(_values, SingleValueGuard)) {
                 ThrowHelper.ArgumentInRange(index, index == 0);
                 _singleValue = value;
             }
@@ -79,7 +77,7 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
                 return;
             }
 
-            ThrowHelper.ArgumentInRange(index, index>=0 && index < Count);
+            ThrowHelper.ArgumentInRange(index, index >= 0 && index < Count);
             Debug.Fail("Unreachable, expected to throw above.");
         }
     }
@@ -92,10 +90,8 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
     IEnumerator IEnumerable.GetEnumerator() => new Enumerator(this);
 
     /// <inheritdoc />
-    public void Add(T value)
-    {
-        if (ReferenceEquals(_values, SingleValueGuard))
-        {
+    public void Add(T value) {
+        if (ReferenceEquals(_values, SingleValueGuard)) {
             // convert to a list boxing _singleValue and _values
             _values = new() { _singleValue, value };
             _singleValue = default; // set to default so that the GC may collect if T is a reference type.
@@ -114,11 +110,9 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
     public void AddRange(ReadOnlySpan<T> values) => InsertRange(Count, values);
 
     /// <inheritdoc />
-    public bool Remove(T value)
-    {
+    public bool Remove(T value) {
         int index = IndexOf(value);
-        if (index == -1)
-        {
+        if (index == -1) {
             return false;
         }
         RemoveAt(index);
@@ -126,10 +120,8 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
     }
 
     /// <inheritdoc />
-    public int IndexOf(T item)
-    {
-        if (ReferenceEquals(_values, SingleValueGuard))
-        {
+    public int IndexOf(T item) {
+        if (ReferenceEquals(_values, SingleValueGuard)) {
             return EqualityComparer<T>.Default.Equals(_singleValue, item) ? 0 : -1;
         }
 
@@ -196,10 +188,8 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
     }
 
     /// <inheritdoc />
-    public void RemoveAt(int index)
-    {
-        if (ReferenceEquals(_values, SingleValueGuard))
-        {
+    public void RemoveAt(int index) {
+        if (ReferenceEquals(_values, SingleValueGuard)) {
             ThrowHelper.ArgumentInRange(index, index == 0);
             _values = default;
             _singleValue = default;
@@ -233,8 +223,7 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
     }
 
     /// <inheritdoc />
-    public void Clear()
-    {
+    public void Clear() {
         if (_values is not null && !ReferenceEquals(_values, SingleValueGuard)) {
             _values.Clear();
             return;
@@ -276,16 +265,13 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
     /// <param name="start">The start index.</param>
     /// <param name="length">The length of the span.</param>
     /// <remarks>Do not modify the length of the collection while handling the span!</remarks>
-    public ReadOnlySpan<T> AsSpan(int start, int length)
-    {
+    public ReadOnlySpan<T> AsSpan(int start, int length) {
         ThrowHelper.ArgumentInRange(start, start >= 0);
         ThrowHelper.ArgumentInRange(length, length >= 0 && start + length <= Count);
-        if (_values is null)
-        {
+        if (_values is null) {
             return default;
         }
-        if (_values is T existing)
-        {
+        if (_values is T existing) {
 #if NETSTANDARD2_1_OR_GREATER ||NET5_0_OR_GREATER
             return MemoryMarshal.CreateReadOnlySpan(ref existing, 1);
 #else
@@ -319,12 +305,10 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
 
         object IEnumerator.Current => Current!;
 
-        public bool MoveNext()
-        {
+        public bool MoveNext() {
             int index = _index + 1;
 
-            if ((nuint)index >= (nuint)_source.Count)
-            {
+            if ((nuint)index >= (nuint)_source.Count) {
                 _index = -1;
                 return false;
             }
@@ -333,13 +317,11 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
             return true;
         }
 
-        public void Reset()
-        {
+        public void Reset() {
             _index = -1;
         }
 
-        public void Dispose()
-        {
+        public void Dispose() {
             _index = -2;
         }
     }

@@ -7,8 +7,7 @@ namespace Rustic;
 
 /// <summary>Collection of extension methods and utility functions related to integer arithmetic.</summary>
 /// <remarks>Most functions are ported from https://graphics.stanford.edu/~seander/bithacks.html</remarks>
-public static class Arithmetic
-{
+public static class Arithmetic {
     private static ReadOnlySpan<ulong> DigitCountTable => new ulong[32]
     {
             4294967296, 8589934582, 8589934582, 8589934582, 12884901788,
@@ -77,16 +76,14 @@ public static class Arithmetic
 
     /// <summary>Negates the value <paramref name="negate"/>, if the condition <paramref name="value"/> is 1.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int NegateIf(in this int negate, in int value)
-    {
+    public static int NegateIf(in this int negate, in int value) {
         Debug.Assert((negate & 1) == negate);
         return (value ^ -negate) + negate;
     }
 
     /// <summary>Negates the value <paramref name="negate"/>, if the condition <paramref name="value"/> is 1.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static long NegateIf(in this long negate, in long value)
-    {
+    public static long NegateIf(in this long negate, in long value) {
         Debug.Assert((negate & 1) == negate);
         return (value ^ -negate) + negate;
     }
@@ -95,8 +92,7 @@ public static class Arithmetic
     /// <remarks>This should only be used on 64-bit.</remarks>
     [CLSCompliant(false)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ulong GetFastModMultiplier(in uint divisor)
-    {
+    public static ulong GetFastModMultiplier(in uint divisor) {
         return (0xFFFFFFFFFFFFFFFFul / divisor) + 1;
     }
 
@@ -104,8 +100,7 @@ public static class Arithmetic
     /// <remarks>This should only be used on 64-bit.</remarks>
     [CLSCompliant(false)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static uint FastMod(in uint value, in uint divisor, in ulong multiplier)
-    {
+    public static uint FastMod(in uint value, in uint divisor, in ulong multiplier) {
         Debug.Assert(IntPtr.Size == 8);
         // We use modified Daniel Lemire's fastmod algorithm (https://github.com/dotnet/runtime/pull/406),
         // which allows to avoid the long multiplication if the divisor is less than 2**31.
@@ -121,8 +116,7 @@ public static class Arithmetic
 
     /// <summary>Performs a mod operation on a 32bit signed integer where the divisor is a multiple of 2.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int FastMod2(in this int value, in int divisor)
-    {
+    public static int FastMod2(in this int value, in int divisor) {
         Debug.Assert((divisor & 1) == 0);
         return value & (divisor - 1);
     }
@@ -130,16 +124,14 @@ public static class Arithmetic
     /// <summary>Performs a mod operation on a 32bit unsigned integer where the divisor is a multiple of 2.</summary>
     [CLSCompliant(false)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static uint FastMod2(in this uint value, in uint divisor)
-    {
+    public static uint FastMod2(in this uint value, in uint divisor) {
         Debug.Assert((divisor & 1) == 0);
         return value & (divisor - 1);
     }
 
     /// <summary>Performs a mod operation on a 64bit signed integer where the divisor is a multiple of 2.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static long FastMod2(in this long value, in long divisor)
-    {
+    public static long FastMod2(in this long value, in long divisor) {
         Debug.Assert((divisor & 1) == 0);
         return value & (divisor - 1);
     }
@@ -147,8 +139,7 @@ public static class Arithmetic
     /// <summary>Performs a mod operation on a 64bit unsigned integer where the divisor is a multiple of 2.</summary>
     [CLSCompliant(false)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ulong FastMod2(in this ulong value, in ulong divisor)
-    {
+    public static ulong FastMod2(in this ulong value, in ulong divisor) {
         Debug.Assert((divisor & 1) == 0);
         return value & (divisor - 1);
     }
@@ -166,8 +157,7 @@ public static class Arithmetic
     /// <summary>MurrMurrHash3 bit mixer.</summary>
     [CLSCompliant(false)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ulong Mix(this ulong key)
-    {
+    public static ulong Mix(this ulong key) {
         key ^= key >> 33;
         key *= 0xff51afd7ed558ccd;
         key ^= key >> 33;
@@ -181,8 +171,7 @@ public static class Arithmetic
     /// <remarks>Source: https://zimbry.blogspot.com/2011/09/better-bit-mixing-improving-on.html</remarks>
     [CLSCompliant(false)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ulong Mix2(this ulong key)
-    {
+    public static ulong Mix2(this ulong key) {
         key ^= key >> 33;
         key *= 0x3cd0eb9d47532dfb;
         key ^= key >> 33;
@@ -194,26 +183,22 @@ public static class Arithmetic
 
     /// <summary>Computes the unchecked absolute of a value.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Abs(in this int v)
-    {
+    public static int Abs(in this int v) {
         var mask = v >> ((sizeof(int) * 8) - 1);
         return (v + mask) ^ mask;
     }
 
     /// <summary>Computes the unchecked absolute of a value.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static long Abs(in this long v)
-    {
+    public static long Abs(in this long v) {
         var mask = v >> ((sizeof(long) * 8) - 1);
         return (v + mask) ^ mask;
     }
 
     /// <summary>Computes the unchecked absolute of a value.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static nint Abs(this nint v)
-    {
-        unsafe
-        {
+    public static nint Abs(this nint v) {
+        unsafe {
             var mask = v >> ((sizeof(nint) * 8) - 1);
             return (v + mask) ^ mask;
         }
@@ -221,48 +206,42 @@ public static class Arithmetic
 
     /// <summary>Computes the maximum of two given positive integers.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Max(in this int x, in int y)
-    {
+    public static int Max(in this int x, in int y) {
         Debug.Assert(Math.Abs(x) == x && Math.Abs(y) == y);
         return x - ((x - y) & ((x - y) >> 31));
     }
 
     /// <summary>Computes the minimum of two given positive integers.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Min(in this int x, in int y)
-    {
+    public static int Min(in this int x, in int y) {
         Debug.Assert(x.Abs() == x && y.Abs() == y);
         return y + ((x - y) & ((x - y) >> 31));
     }
 
     /// <summary>Computes the maximum of two given positive integers.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static long Max(in this long x, in long y)
-    {
+    public static long Max(in this long x, in long y) {
         Debug.Assert(x.Abs() == x && y.Abs() == y);
         return x - ((x - y) & ((x - y) >> 63));
     }
 
     /// <summary>Computes the minimum of two given positive integers.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static long Min(in this long x, in long y)
-    {
+    public static long Min(in this long x, in long y) {
         Debug.Assert(x.Abs() == x && y.Abs() == y);
         return y + ((x - y) & ((x - y) >> 63));
     }
 
     /// <summary>Computes the maximum of two given positive integers.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static long Max(this nint x, nint y)
-    {
+    public static long Max(this nint x, nint y) {
         Debug.Assert(x.Abs() == x && y.Abs() == y);
         return x - ((x - y) & ((x - y) >> (PtrWidth - 1)));
     }
 
     /// <summary>Computes the minimum of two given positive integers.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static long Min(this nint x, nint y)
-    {
+    public static long Min(this nint x, nint y) {
         Debug.Assert(Math.Abs(x) == x && Math.Abs(y) == y);
         return y + ((x - y) & ((x - y) >> (PtrWidth - 1)));
     }
@@ -303,16 +282,14 @@ public static class Arithmetic
     /// <summary>Computes the number of decimal digits required to represent the integer value.</summary>
     [CLSCompliant(false)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int DigitCount(in this uint value)
-    {
+    public static int DigitCount(in this uint value) {
         return (int)((value + Unsafe.AddByteOffset(ref MemoryMarshal.GetReference(DigitCountTable), (IntPtr)Log2(value))) >> 32);
     }
 
     /// <summary>Computes the base 10 logarithm of on a 64bit unsigned integer value.</summary>
     [CLSCompliant(false)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Log10(in this uint value)
-    {
+    public static int Log10(in this uint value) {
         var l2 = ((Log2(value) + 1) * 1233) >> 12;
         return l2 - (value < Int32Power10[l2] ? 1 : 0);
     }
@@ -320,8 +297,7 @@ public static class Arithmetic
     /// <summary>Computes the base 10 logarithm of on a 64bit unsigned integer value.</summary>
     [CLSCompliant(false)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Log10(in this ulong value)
-    {
+    public static int Log10(in this ulong value) {
         var l2 = ((Log2(value) + 1) * 1233) >> 12;
         return l2 - (value < Int64Power10[l2] ? 1 : 0);
     }
@@ -330,8 +306,7 @@ public static class Arithmetic
     /// <remarks>The value is floored to the next lowest multiple of two from the value, i.e. Log2Floor(3) == Log2(2), and Log2Floor(16) == Log2(16).</remarks>
     [CLSCompliant(false)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Log2(in this uint value)
-    {
+    public static int Log2(in this uint value) {
         return Unsafe.AddByteOffset(ref MemoryMarshal.GetReference(MultiplyDeBruijnBitPosition), (IntPtr)(int)(((value & 0xFFFFFFFE) * 0x07C4ACDDU) >> 27));
     }
 
@@ -339,8 +314,7 @@ public static class Arithmetic
     /// <remarks>The value is floored to the next lowest multiple of two from the value, i.e. Log2Floor(3) == Log2(2), and Log2Floor(16) == Log2(16).</remarks>
     [CLSCompliant(false)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Log2(in this ulong value)
-    {
+    public static int Log2(in this ulong value) {
         var hi = (uint)(value >> 32);
         if (hi == 0) // Log2 < 32 ?
         {
@@ -353,8 +327,7 @@ public static class Arithmetic
     /// <summary>If the value is even, returns the value; otherwise increases the value by one.</summary>
     [CLSCompliant(false)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static uint RoundUpToEven(this uint value)
-    {
+    public static uint RoundUpToEven(this uint value) {
         value--;
         value = FillTailingZeros(value);
         value++;
@@ -365,8 +338,7 @@ public static class Arithmetic
     /// <summary>Fills tailing zero b with ones.</summary>
     [CLSCompliant(false)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static uint FillTailingZeros(this uint value)
-    {
+    public static uint FillTailingZeros(this uint value) {
         value |= value >> 1;
         value |= value >> 2;
         value |= value >> 4;
@@ -379,15 +351,13 @@ public static class Arithmetic
     /// <summary>Counts the number of tailing zero b.</summary>
     [CLSCompliant(false)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int CountTrailingZeroBits(in this uint value)
-    {
+    public static int CountTrailingZeroBits(in this uint value) {
         // Unsafe AddByteOffset is remarkably faster then the indexer.
         return Unsafe.AddByteOffset(ref MemoryMarshal.GetReference(DeBruijnSequenceBitPosition), (IntPtr)((int)(uint)((value & -value) * 0x077CB531U) >> 27));
     }
 
     [StructLayout(LayoutKind.Explicit)]
-    private ref struct DFBits
-    {
+    private ref struct DFBits {
         [FieldOffset(0)]
         public ulong Bits;
         [FieldOffset(0)]
@@ -396,8 +366,7 @@ public static class Arithmetic
 
     /// <summary>Returns the storage of the value.</summary>
     [CLSCompliant(false)]
-    public static ulong GetBits(in this double v)
-    {
+    public static ulong GetBits(in this double v) {
         DFBits union = new();
         union.Value = v;
         return union.Bits;
@@ -405,16 +374,14 @@ public static class Arithmetic
 
     /// <summary>Returns the floating-point number of the storage.</summary>
     [CLSCompliant(false)]
-    public static double FromBits(in ulong b)
-    {
+    public static double FromBits(in ulong b) {
         DFBits union = new();
         union.Bits = b;
         return union.Value;
     }
 
     [StructLayout(LayoutKind.Explicit)]
-    private ref struct SFBits
-    {
+    private ref struct SFBits {
         [FieldOffset(0)]
         public uint Bits;
         [FieldOffset(0)]
@@ -423,8 +390,7 @@ public static class Arithmetic
 
     /// <summary>Returns the storage of the value.</summary>
     [CLSCompliant(false)]
-    public static uint GetBits(in this float v)
-    {
+    public static uint GetBits(in this float v) {
         SFBits union = new();
         union.Value = v;
         return union.Bits;
@@ -432,8 +398,7 @@ public static class Arithmetic
 
     /// <summary>Returns the floating-point number of the storage.</summary>
     [CLSCompliant(false)]
-    public static float FromBits(in uint b)
-    {
+    public static float FromBits(in uint b) {
         SFBits union = new();
         union.Bits = b;
         return union.Value;
@@ -477,8 +442,7 @@ public static class Arithmetic
     /// <returns>The rotated value.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [CLSCompliant(false)]
-    public static nuint RotateLeft(this nuint value, in int offset)
-    {
+    public static nuint RotateLeft(this nuint value, in int offset) {
 #if TARGET_64BIT
             return (nuint)RotateLeft((ulong)value, offset);
 #else
@@ -523,8 +487,7 @@ public static class Arithmetic
     /// <returns>The rotated value.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [CLSCompliant(false)]
-    public static nuint RotateRight(this nuint value, in int offset)
-    {
+    public static nuint RotateRight(this nuint value, in int offset) {
 #if TARGET_64BIT
             return (nuint)RotateRight((ulong)value, offset);
 #else

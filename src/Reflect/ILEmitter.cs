@@ -10,8 +10,7 @@ namespace Rustic.Reflect;
 
 /// <summary>Fluent builder simplifying the composition of IL code at runtime.</summary>
 [CLSCompliant(false)]
-public sealed class ILEmitter
-{
+public sealed class ILEmitter {
     public ILGenerator Gen = null!;
 
     public ILEmitter ret() { Gen.Emit(OpCodes.Ret); return this; }

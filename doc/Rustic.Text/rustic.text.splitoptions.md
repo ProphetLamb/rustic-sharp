@@ -13,9 +13,9 @@ Implements [IComparable](https://docs.microsoft.com/en-us/dotnet/api/system.icom
 
 ## Fields
 
-| Name | Value | Description |
-| --- | --: | --- |
-| None | 0 | Default behavior. No transformation. |
-| RemoveEmptyEntries | 1 | Do not return zero-length segments. Instead return the next result, if any. |
-| IncludeSeparator | 2 | Include the separator at the end of the resulting segment, if not at the end. |
-| All | 255 | All options. |
+| Name               | Value | Description                                                                   |
+| ------------------ | ----: | ----------------------------------------------------------------------------- |
+| None               |     0 | Default behavior. No transformation.                                          |
+| RemoveEmptyEntries |     1 | Do not return zero-length segments. Instead return the next result, if any.   |
+| IncludeSeparator   |     2 | Include the separator at the end of the resulting segment, if not at the end. |
+| All                |   255 | All options.                                                                  |

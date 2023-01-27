@@ -11,34 +11,29 @@ namespace Rustic.Source;
 
 /// <summary>Extension methods for the <see cref="SynModel"/> type.</summary>
 [CLSCompliant(false)]
-public static class SemCtxExtensions
-{
+public static class SemCtxExtensions {
     /// <summary>Casts the <see cref="SynModel"/> to <see cref="GeneratorSyntaxContext"/>.</summary>
-    public static GeneratorSyntaxContext ToGenCtx(this SynModel ctx)
-    {
+    public static GeneratorSyntaxContext ToGenCtx(this SynModel ctx) {
         return Unsafe.As<SynModel, GeneratorSyntaxContext>(ref ctx);
     }
 
     /// <summary>Returns the type name of the node inside the model.</summary>
     /// <param name="model">The model</param>
-    public static string? GetTypeName(this SynModel model)
-    {
-       return model.Model.GetTypeName(model.Node);
+    public static string? GetTypeName(this SynModel model) {
+        return model.Model.GetTypeName(model.Node);
     }
 
     /// <summary>Returns the type name of the node inside the model.</summary>
     /// <param name="model">The model</param>
     public static string? GetTypeName<N>(this SynModel<N> model)
-        where N : SyntaxNode
-    {
+        where N : SyntaxNode {
         return model.Model.GetTypeName(model.Node);
     }
 
     /// <summary>Creates a new <see cref="SynModel"/></summary>
     /// <param name="comp">The compilation used to obtain the semantic model.</param>
     /// <param name="node">The syntax node used</param>
-    public static SynModel GetSynModel(this Compilation comp, SyntaxNode node)
-    {
+    public static SynModel GetSynModel(this Compilation comp, SyntaxNode node) {
         return new(node, comp.GetSemanticModel(node.SyntaxTree));
     }
 
@@ -46,18 +41,15 @@ public static class SemCtxExtensions
     /// <param name="comp">The compilation used to obtain the semantic model.</param>
     /// <param name="node">The syntax node used</param>
     public static SynModel<N> GetSynModel<N>(this Compilation comp, N node)
-        where N : SyntaxNode
-    {
+        where N : SyntaxNode {
         return new(node, comp.GetSemanticModel(node.SyntaxTree));
     }
 }
 
 /// <summary>Weak-typed <see cref="SyntaxNode"/> and the associated <see cref="SemanticModel"/>.</summary>
 [CLSCompliant(false)]
-public readonly struct SynModel
-{
-    internal SynModel(SyntaxNode node, SemanticModel model)
-    {
+public readonly struct SynModel {
+    internal SynModel(SyntaxNode node, SemanticModel model) {
         Node = node;
         Model = model;
     }
@@ -71,10 +63,8 @@ public readonly struct SynModel
     /// <summary>Casts the strong-typed <see cref="SynModel"/> to the weak-typed equivalent.</summary>
     /// <typeparam name="N">The type of the <see cref="SyntaxNode"/>.</typeparam>
     public bool Is<N>(out SynModel<N> model)
-        where N : SyntaxNode
-    {
-        if (Node is N n)
-        {
+        where N : SyntaxNode {
+        if (Node is N n) {
 
             model = new SynModel<N>(n, Model);
             return true;
@@ -88,39 +78,33 @@ public readonly struct SynModel
     /// <param name="node">The node used for the new model.</param>
     /// <typeparam name="N">The type of the node.</typeparam>
     public SynModel<N> Sub<N>(N node)
-        where N : SyntaxNode
-    {
+        where N : SyntaxNode {
         return new SynModel<N>(node, Model);
     }
 
     /// <summary>Indicates whether two models are equivalent.</summary>
     /// <param name="other">The model to compare to.</param>
-    public bool Eq(in SynModel other)
-    {
+    public bool Eq(in SynModel other) {
         return Node.IsEquivalentTo(other.Node) && Model.Equals(other.Model);
     }
 
     /// <inheritdoc cref="ModelExtensions.GetDeclaredSymbol"/>
-    public ISymbol? GetDeclaredSymbol(CancellationToken ct = default)
-    {
+    public ISymbol? GetDeclaredSymbol(CancellationToken ct = default) {
         return Model.GetDeclaredSymbol(Node, ct);
     }
 
     /// <inheritdoc cref="ModelExtensions.GetMemberGroup"/>
-    public ImmutableArray<ISymbol> GetMemberGroup(CancellationToken ct = default)
-    {
+    public ImmutableArray<ISymbol> GetMemberGroup(CancellationToken ct = default) {
         return Model.GetMemberGroup(Node, ct);
     }
 
     /// <inheritdoc cref="ModelExtensions.GetSymbolInfo"/>
-    public SymbolInfo GetSymbolInfo(CancellationToken ct = default)
-    {
+    public SymbolInfo GetSymbolInfo(CancellationToken ct = default) {
         return Model.GetSymbolInfo(Node, ct);
     }
 
     /// <inheritdoc cref="ModelExtensions.GetTypeInfo"/>
-    public TypeInfo GetTypeInfo(CancellationToken ct = default)
-    {
+    public TypeInfo GetTypeInfo(CancellationToken ct = default) {
         return Model.GetTypeInfo(Node, ct);
     }
 
@@ -132,10 +116,8 @@ public readonly struct SynModel
 /// <typeparam name="N">The type of the <see cref="SyntaxNode"/>.</typeparam>
 [CLSCompliant(false)]
 public readonly struct SynModel<N>
-    where N : SyntaxNode
-{
-    internal SynModel(N node, SemanticModel model)
-    {
+    where N : SyntaxNode {
+    internal SynModel(N node, SemanticModel model) {
         Node = node;
         Model = model;
     }
@@ -150,46 +132,39 @@ public readonly struct SynModel<N>
     /// <param name="node">The node used for the new model.</param>
     /// <typeparam name="O">The type of the node.</typeparam>
     public SynModel<O> Sub<O>(O node)
-        where O : SyntaxNode
-    {
+        where O : SyntaxNode {
         return new SynModel<O>(node, Model);
     }
 
     /// <summary>Indicates whether two models are equivalent.</summary>
     /// <param name="other">The model to compare to.</param>
-    public bool Eq(in SynModel other)
-    {
+    public bool Eq(in SynModel other) {
         return other.Is<N>(out var model) && Eq(in model);
     }
 
     /// <summary>Indicates whether two models are equivalent.</summary>
     /// <param name="other">The model to compare to.</param>
-    public bool Eq(in SynModel<N> other)
-    {
+    public bool Eq(in SynModel<N> other) {
         return Node.Equals(other.Node) && Model.Equals(other.Model);
     }
 
     /// <inheritdoc cref="ModelExtensions.GetDeclaredSymbol"/>
-    public ISymbol? GetDeclaredSymbol(CancellationToken ct = default)
-    {
+    public ISymbol? GetDeclaredSymbol(CancellationToken ct = default) {
         return Model.GetDeclaredSymbol(Node, ct);
     }
 
     /// <inheritdoc cref="ModelExtensions.GetMemberGroup"/>
-    public ImmutableArray<ISymbol> GetMemberGroup(CancellationToken ct = default)
-    {
+    public ImmutableArray<ISymbol> GetMemberGroup(CancellationToken ct = default) {
         return Model.GetMemberGroup(Node, ct);
     }
 
     /// <inheritdoc cref="ModelExtensions.GetSymbolInfo"/>
-    public SymbolInfo GetSymbolInfo(CancellationToken ct = default)
-    {
+    public SymbolInfo GetSymbolInfo(CancellationToken ct = default) {
         return Model.GetSymbolInfo(Node, ct);
     }
 
     /// <inheritdoc cref="ModelExtensions.GetTypeInfo"/>
-    public TypeInfo GetTypeInfo(CancellationToken ct = default)
-    {
+    public TypeInfo GetTypeInfo(CancellationToken ct = default) {
         return Model.GetTypeInfo(Node, ct);
     }
 

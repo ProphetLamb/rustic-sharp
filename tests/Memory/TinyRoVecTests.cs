@@ -8,11 +8,9 @@ using NUnit.Framework;
 namespace Rustic.Memory.Tests;
 
 [TestFixture]
-public class TinyVecTests
-{
+public class TinyVecTests {
     [Test]
-    public void TestConstruct()
-    {
+    public void TestConstruct() {
         var vec = TinyRoVec.From(SampleData.Users[0]);
         vec.Count().Should().Be(1);
         vec = TinyRoVec.From(SampleData.Users[0], SampleData.Users[1]);

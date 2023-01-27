@@ -5,20 +5,16 @@ using System.Diagnostics;
 
 namespace Rustic.Memory;
 
-internal sealed class MultiDictionaryDebugView<K, V> where K : notnull
-{
+internal sealed class MultiDictionaryDebugView<K, V> where K : notnull {
     private readonly WeakReference<MultiDictionary<K, V>> _dict;
 
-    public MultiDictionaryDebugView(MultiDictionary<K, V> dictionary)
-    {
+    public MultiDictionaryDebugView(MultiDictionary<K, V> dictionary) {
         _dict = new(dictionary);
     }
 
     [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-    public KeyValuePair<K, V[]>[] Items
-    {
-        get
-        {
+    public KeyValuePair<K, V[]>[] Items {
+        get {
             if (!_dict.TryGetTarget(out var dict)) {
                 return Array.Empty<KeyValuePair<K, V[]>>();
             }
@@ -39,20 +35,16 @@ internal sealed class MultiDictionaryDebugView<K, V> where K : notnull
 }
 
 
-internal sealed class DictionaryKeyCollectionDebugView<K, V>
-{
+internal sealed class DictionaryKeyCollectionDebugView<K, V> {
     private readonly WeakReference<IReadOnlyCollection<K>> _collection;
 
-    public DictionaryKeyCollectionDebugView(IReadOnlyCollection<K> collection)
-    {
+    public DictionaryKeyCollectionDebugView(IReadOnlyCollection<K> collection) {
         _collection = new(collection);
     }
 
     [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-    public K[] Items
-    {
-        get
-        {
+    public K[] Items {
+        get {
             if (!_collection.TryGetTarget(out IReadOnlyCollection<K>? collection)) {
                 return Array.Empty<K>();
             }
@@ -72,20 +64,16 @@ internal sealed class DictionaryKeyCollectionDebugView<K, V>
     }
 }
 
-internal sealed class DictionaryValueCollectionDebugView<K, V>
-{
+internal sealed class DictionaryValueCollectionDebugView<K, V> {
     private readonly WeakReference<IReadOnlyCollection<V>> _collection;
 
-    public DictionaryValueCollectionDebugView(IReadOnlyCollection<V> collection)
-    {
+    public DictionaryValueCollectionDebugView(IReadOnlyCollection<V> collection) {
         _collection = new(collection);
     }
 
     [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-    public V[] Items
-    {
-        get
-        {
+    public V[] Items {
+        get {
             if (!_collection.TryGetTarget(out IReadOnlyCollection<V>? collection)) {
                 return Array.Empty<V>();
             }

@@ -3,22 +3,17 @@ using System.Diagnostics;
 
 namespace Rustic.Memory;
 
-internal sealed class PoolBufWriterDebuggerView<T>
-{
+internal sealed class PoolBufWriterDebuggerView<T> {
     private readonly WeakReference<BufWriter<T>> _ref;
 
-    public PoolBufWriterDebuggerView(BufWriter<T> writer)
-    {
+    public PoolBufWriterDebuggerView(BufWriter<T> writer) {
         _ref = new WeakReference<BufWriter<T>>(writer);
     }
 
     [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-    public T[] Items
-    {
-        get
-        {
-            if (_ref.TryGetTarget(out var writer) && !writer.RawStorage.IsEmpty)
-            {
+    public T[] Items {
+        get {
+            if (_ref.TryGetTarget(out var writer) && !writer.RawStorage.IsEmpty) {
                 var span = writer.AsSpan();
                 return span.ToArray();
             }

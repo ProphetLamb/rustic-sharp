@@ -25,8 +25,7 @@ namespace Rustic.Memory;
 /// }
 /// </code>
 /// </remarks>
-public struct RentArray<T> : IEnumerable<T>, IDisposable
-{
+public struct RentArray<T> : IEnumerable<T>, IDisposable {
     [ThreadStatic]
     private static T[]?[]? s_exactPool;
     private T[] _array;
@@ -34,8 +33,7 @@ public struct RentArray<T> : IEnumerable<T>, IDisposable
 
     /// <summary>Rents a new array of the specified length from the pool.</summary>
     /// <param name="length">The length of the array.</param>
-    public RentArray(int length)
-    {
+    public RentArray(int length) {
         _array = Rent(length);
         _pos = 0;
     }
@@ -49,11 +47,9 @@ public struct RentArray<T> : IEnumerable<T>, IDisposable
     public ref T this[int index] => ref _array[index];
 
     /// <summary>Returns the number of elements added to the list.</summary>
-    public int Count
-    {
+    public int Count {
         get => _pos;
-        set
-        {
+        set {
             Debug.Assert(value >= 0 && value <= Capacity);
             _pos = value;
         }
@@ -64,13 +60,11 @@ public struct RentArray<T> : IEnumerable<T>, IDisposable
 
     /// <summary>Adds the specified item to the list.</summary>
     /// <param name="item">The item to add.</param>
-    public void Add(in T item)
-    {
+    public void Add(in T item) {
         int pos = Count;
         T[] array = Array;
 
-        if (pos >= Capacity)
-        {
+        if (pos >= Capacity) {
             T[] poolArray = array;
             array = Rent(Capacity + 1);
             poolArray.AsSpan().CopyTo(array.AsSpan());
@@ -83,8 +77,7 @@ public struct RentArray<T> : IEnumerable<T>, IDisposable
     }
 
     /// <summary>Returns the array to the pool and resets this instance.</summary>
-    public void Dispose()
-    {
+    public void Dispose() {
         Return(Array);
         this = default;
     }
@@ -100,24 +93,20 @@ public struct RentArray<T> : IEnumerable<T>, IDisposable
     /// <summary>Rents an array with the exact number of elements.</summary>
     /// <param name="length">The number of elements.</param>
     /// <returns>The rented array.</returns>
-    public static T[] Rent(int length)
-    {
+    public static T[] Rent(int length) {
         Debug.Assert(length >= 0);
         T[]?[] pool = EnsurePool(length);
         T[]? rent = pool[length];
-        if (rent is null)
-        {
+        if (rent is null) {
             return new T[length];
         }
         pool[length] = null;
         return rent;
     }
 
-    private static T[]?[] EnsurePool(int length)
-    {
+    private static T[]?[] EnsurePool(int length) {
         T[]?[]? pool = s_exactPool;
-        if (pool is null || pool.Length <= length)
-        {
+        if (pool is null || pool.Length <= length) {
             int cap = length.Max(16).Max((pool?.Length ?? 0) * 2);
             T[]?[] newPool = new T[]?[cap];
             pool?.AsSpan().CopyTo(newPool.AsSpan());
@@ -130,12 +119,10 @@ public struct RentArray<T> : IEnumerable<T>, IDisposable
 
     /// <summary>Returns a rented array to the pool, or discards the array for GC.</summary>
     /// <param name="rented">The array to return.</param>
-    public static void Return(T[] rented)
-    {
+    public static void Return(T[] rented) {
         Debug.Assert(s_exactPool is null || rented.Length < s_exactPool.Length);
         T[]?[]? pool = s_exactPool;
-        if (pool is not null)
-        {
+        if (pool is not null) {
             pool[rented.Length] = rented;
         }
     }
