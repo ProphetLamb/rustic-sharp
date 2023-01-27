@@ -1,3 +1,7 @@
+# Version 0.6.0
+
+- Add documentation
+
 # Version 0.5
 
 - Build pipeline
