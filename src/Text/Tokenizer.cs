@@ -59,7 +59,7 @@ public ref struct Tokenizer<T>
 
             if (value > _pos)
             {
-                _tokenLength += value - _pos;
+                _tokenLength = value - _pos;
             }
             else
             {
