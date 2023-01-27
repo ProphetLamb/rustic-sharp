@@ -4,8 +4,6 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-using Rustic;
-
 namespace Rustic.Memory;
 
 /// <summary>Wrapper around <see cref="ReadOnlySpan{T}"/> that allows indexed access in reversed order.</summary>
@@ -14,7 +12,7 @@ public readonly ref struct ReversibleIndexedSpan<T> {
     /// <summary>The underlying data span, in the original order.</summary>
     public readonly ReadOnlySpan<T> Span;
 
-    /// <summary>Initializes a new <see cref="ReversibleIndexedSpan"/>.</summary>
+    /// <summary>Initializes a new <see cref="ReversibleIndexedSpan{T}"/>.</summary>
     /// <param name="span">The span</param>
     /// <param name="reverse">If the indexer access is reversed</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
