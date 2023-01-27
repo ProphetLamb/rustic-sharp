@@ -12,7 +12,7 @@
 		<AssemblyTitle>$(Product)</AssemblyTitle>
 		<PackageId>$(Product)</PackageId>
 		<Title>$(Product)</Title>
-		<Description>Specialized Dictionary implementations and extensions.</Description>
+		<Description>Specialized collection implementations and extensions.</Description>
 		<PackageTags>Dictionary;Span;Collections</PackageTags>
 	</PropertyGroup>
 
