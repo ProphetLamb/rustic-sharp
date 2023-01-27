@@ -134,17 +134,6 @@ public static class SeqSplitIterExtensions {
     /// <summary>Splits the <paramref name="span"/> span at the positions defined by the <paramref name="separator"/>.</summary>
     /// <param name="span">The span.</param>
     /// <param name="separator">The separator by which to split the <paramref name="span"/>.</param>
-    /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
-    /// <typeparam name="S">The type of a sequence of elements.</typeparam>
-    /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
-    public static SeqSplitIter<T, S> Split<T, S>(this Span<T> span, in S separator)
-        where S : IEnumerable<T> {
-        return new(span, TinyRoSpan.From(separator), SplitOptions.None, null);
-    }
-
-    /// <summary>Splits the <paramref name="span"/> span at the positions defined by the <paramref name="separator"/>.</summary>
-    /// <param name="span">The span.</param>
-    /// <param name="separator">The separator by which to split the <paramref name="span"/>.</param>
     /// <param name="options">The options defining how to return the segments.</param>
     /// <param name="comparer">The comparer used to determine whether two objects are equal.</param>
     /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
