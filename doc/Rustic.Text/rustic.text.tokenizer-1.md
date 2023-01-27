@@ -30,6 +30,8 @@ Provides utility to read the next element, to read until an element occurs, read
 
 ### **Raw**
 
+The reference to the source buffer.
+
 ```csharp
 public ReadOnlySpan<T> Raw { get; }
 ```
@@ -40,6 +42,8 @@ ReadOnlySpan&lt;T&gt;<br>
 
 ### **Comparer**
 
+The comparer used to determine whether two elements are equal.
+
 ```csharp
 public IEqualityComparer<T> Comparer { get; }
 ```
@@ -48,12 +52,12 @@ public IEqualityComparer<T> Comparer { get; }
 
 IEqualityComparer&lt;T&gt;<br>
 
-### **Head**
+### **CursorPosition**
 
-Defines the current position of the iterator.
+Defines the current cursor position of the iterator.
 
 ```csharp
-public int Head { get; set; }
+public int CursorPosition { get; set; }
 ```
 
 #### Property Value
@@ -84,6 +88,30 @@ public int Width { get; set; }
 
 [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
 
+### **IsCursorEnd**
+
+Indicates whether the end of the source sequence is reached.
+
+```csharp
+public bool IsCursorEnd { get; }
+```
+
+#### Property Value
+
+[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+
+### **IsCursorStart**
+
+Indicates whether the cursor is at the beginning of the source sequence.
+
+```csharp
+public bool IsCursorStart { get; }
+```
+
+#### Property Value
+
+[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+
 ### **Length**
 
 ```csharp
@@ -96,20 +124,34 @@ public int Length { get; }
 
 ### **Token**
 
-Represents the token currently being built.
+Represents the token currently being built from [Tokenizer&lt;T&gt;.Position](./rustic.text.tokenizer-1.md#position) to see [Tokenizer&lt;T&gt;.CursorPosition](./rustic.text.tokenizer-1.md#cursorposition).
 
 ```csharp
-public ReadOnlySpan<T> Token { get; }
+public ReversibleIndexedSpan<T> Token { get; }
 ```
 
 #### Property Value
 
-ReadOnlySpan&lt;T&gt;<br>
+ReversibleIndexedSpan&lt;T&gt;<br>
 
 ### **Current**
 
+The reference to the current element at [Tokenizer&lt;T&gt;.Position](./rustic.text.tokenizer-1.md#position).
+
 ```csharp
 public T& Current { get; }
+```
+
+#### Property Value
+
+T&<br>
+
+### **Cursor**
+
+The reference to the next element after the cursor at index [Tokenizer&lt;T&gt;.CursorPosition](./rustic.text.tokenizer-1.md#cursorposition).
+
+```csharp
+public T& Cursor { get; }
 ```
 
 #### Property Value
@@ -128,17 +170,17 @@ T&<br>
 
 ## Constructors
 
-### **Tokenizer(ReadOnlySpan&lt;T&gt;, IEqualityComparer&lt;T&gt;)**
+### **Tokenizer(ReversibleIndexedSpan&lt;T&gt;, IEqualityComparer&lt;T&gt;)**
 
 Initializes a new instance of [Tokenizer&lt;T&gt;](./rustic.text.tokenizer-1.md) with the specified  and .
 
 ```csharp
-Tokenizer(ReadOnlySpan<T> input, IEqualityComparer<T> comparer)
+Tokenizer(ReversibleIndexedSpan<T> input, IEqualityComparer<T> comparer)
 ```
 
 #### Parameters
 
-`input` ReadOnlySpan&lt;T&gt;<br>
+`input` ReversibleIndexedSpan&lt;T&gt;<br>
 The input sequence.
 
 `comparer` IEqualityComparer&lt;T&gt;<br>
@@ -146,12 +188,12 @@ The comparer used to determine whether two objects are equal.
 
 ## Methods
 
-### **Offset(Int32)**
+### **GetAtCursor(Int32)**
 
-Represents the token at an offset relative to the [Tokenizer&lt;T&gt;.Head](./rustic.text.tokenizer-1.md#head).
+Accesses the element at a specific offset from the [Tokenizer&lt;T&gt;.CursorPosition](./rustic.text.tokenizer-1.md#cursorposition).
 
 ```csharp
-T& Offset(int offset)
+T& GetAtCursor(int offset)
 ```
 
 #### Parameters
@@ -161,6 +203,64 @@ T& Offset(int offset)
 #### Returns
 
 T&<br>
+
+### **TryGetAtCursor(Int32, T&)**
+
+Attempts to obtain the element at a specific offset from the [Tokenizer&lt;T&gt;.CursorPosition](./rustic.text.tokenizer-1.md#cursorposition).
+
+```csharp
+bool TryGetAtCursor(int offset, T& value)
+```
+
+#### Parameters
+
+`offset` [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
+The offset from the cursor
+
+`value` T&<br>
+The element at the offset, if any.
+
+#### Returns
+
+[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+true if the element exists; otherwise false.
+
+### **GetAtPosition(Int32)**
+
+Accesses the element at a specific offset from the [Tokenizer&lt;T&gt;.Position](./rustic.text.tokenizer-1.md#position).
+
+```csharp
+T& GetAtPosition(int offset)
+```
+
+#### Parameters
+
+`offset` [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
+
+#### Returns
+
+T&<br>
+
+### **TryGetAtPosition(Int32, T&)**
+
+Attempts to obtain the element at a specific offset from the [Tokenizer&lt;T&gt;.Position](./rustic.text.tokenizer-1.md#position).
+
+```csharp
+bool TryGetAtPosition(int offset, T& value)
+```
+
+#### Parameters
+
+`offset` [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
+The offset from the position
+
+`value` T&<br>
+The element at the offset, if any.
+
+#### Returns
+
+[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+true if the element exists; otherwise false.
 
 ### **Consume()**
 
@@ -177,7 +277,7 @@ bool Consume()
 
 ### **Consume(Int32)**
 
-Consumes a specified amount of elements.
+Consumes a specified amount of elements. Moves the cursor by amount
 
 ```csharp
 bool Consume(int amount)
@@ -192,6 +292,11 @@ bool Consume(int amount)
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
  if the elements could be consumed; otherwise, .
 
+#### Exceptions
+
+[ArgumentOutOfRangeException](https://docs.microsoft.com/en-us/dotnet/api/system.argumentoutofrangeexception)<br>
+If `amount < -Token.Length`: Cannot move the cursor to before the start of the current token. The token length cannot be negative.
+
 ### **Dispose()**
 
 ```csharp
@@ -203,12 +308,12 @@ void Dispose()
 Returns &amp; clears the [Tokenizer&lt;T&gt;.Token](./rustic.text.tokenizer-1.md#token), and moves the iterator to the first element after the token.
 
 ```csharp
-ReadOnlySpan<T> FinalizeToken()
+ReversibleIndexedSpan<T> FinalizeToken()
 ```
 
 #### Returns
 
-ReadOnlySpan&lt;T&gt;<br>
+ReversibleIndexedSpan&lt;T&gt;<br>
 The span representing the token.
 
 ### **Discard()**
@@ -229,7 +334,7 @@ void Reset()
 
 ### **Advance(Int32)**
 
-Advances the [Tokenizer&lt;T&gt;.Head](./rustic.text.tokenizer-1.md#head) to a specific , always consumes elements.
+Advances the [Tokenizer&lt;T&gt;.CursorPosition](./rustic.text.tokenizer-1.md#cursorposition) to a specific , always consumes elements.
 
 ```csharp
 void Advance(int position)
@@ -242,7 +347,7 @@ The target position
 
 ### **TryAdvance(Int32)**
 
-Advances the [Tokenizer&lt;T&gt;.Head](./rustic.text.tokenizer-1.md#head) to a specific , consumes elements only if successful.
+Advances the [Tokenizer&lt;T&gt;.CursorPosition](./rustic.text.tokenizer-1.md#cursorposition) to a specific , consumes elements only if successful.
 
 ```csharp
 bool TryAdvance(int position)
@@ -260,7 +365,7 @@ The target position
 
 **Remarks:**
 
-If the target  is behind the [Tokenizer&lt;T&gt;.Head](./rustic.text.tokenizer-1.md#head) the state won't change.
+If the target  is behind the [Tokenizer&lt;T&gt;.CursorPosition](./rustic.text.tokenizer-1.md#cursorposition) the state won't change.
 
 ### **Read&lt;S&gt;(S&, Int32&)**
 
@@ -415,17 +520,17 @@ The position of the element after the sequence.
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
  if the following elements are equal to the sequence of elements; otherwise, .
 
-### **Read(TinySpan`1&)**
+### **Read(TinyRoSpan`1&)**
 
 Consumes elements until the specified sequence of elements has been encountered.
 
 ```csharp
-bool Read(TinySpan`1& expectedSequence)
+bool Read(TinyRoSpan`1& expectedSequence)
 ```
 
 #### Parameters
 
-`expectedSequence` TinySpan`1&<br>
+`expectedSequence` TinyRoSpan`1&<br>
 The expected sequence.
 
 #### Returns
@@ -433,17 +538,17 @@ The expected sequence.
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
  if the remaining elements contain the sequence of elements; otherwise, .
 
-### **TryRead(TinySpan`1&)**
+### **TryRead(TinyRoSpan`1&)**
 
 Returns whether the remaining span contains the sequence, consumes the elements only if it does.
 
 ```csharp
-bool TryRead(TinySpan`1& expectedSequence)
+bool TryRead(TinyRoSpan`1& expectedSequence)
 ```
 
 #### Parameters
 
-`expectedSequence` TinySpan`1&<br>
+`expectedSequence` TinyRoSpan`1&<br>
 The sequence of elements.
 
 #### Returns
@@ -451,17 +556,17 @@ The sequence of elements.
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
  if the remaining elements contain the sequence of elements; otherwise, .
 
-### **Peek(TinySpan`1&, Int32&)**
+### **Peek(TinyRoSpan`1&, Int32&)**
 
 Returns whether the remaining span contains the sequence.
 
 ```csharp
-bool Peek(TinySpan`1& expectedSequence, Int32& head)
+bool Peek(TinyRoSpan`1& expectedSequence, Int32& head)
 ```
 
 #### Parameters
 
-`expectedSequence` TinySpan`1&<br>
+`expectedSequence` TinyRoSpan`1&<br>
 The sequence of elements.
 
 `head` [Int32&](https://docs.microsoft.com/en-us/dotnet/api/system.int32&)<br>
@@ -472,17 +577,17 @@ The position of the element after the sequence.
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
  if the remaining elements contain the sequence of elements; otherwise, .
 
-### **ReadNext(TinySpan`1&)**
+### **ReadNext(TinyRoSpan`1&)**
 
 Returns whether the following elements are the sequence, consumes elements.
 
 ```csharp
-bool ReadNext(TinySpan`1& expectedSequence)
+bool ReadNext(TinyRoSpan`1& expectedSequence)
 ```
 
 #### Parameters
 
-`expectedSequence` TinySpan`1&<br>
+`expectedSequence` TinyRoSpan`1&<br>
 The sequence of elements.
 
 #### Returns
@@ -490,17 +595,17 @@ The sequence of elements.
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
  if the following elements are equal to the sequence of elements; otherwise, .
 
-### **TryReadNext(TinySpan`1&)**
+### **TryReadNext(TinyRoSpan`1&)**
 
 Returns whether the following elements are the sequence, consumes elements only if the successful.
 
 ```csharp
-bool TryReadNext(TinySpan`1& expectedSequence)
+bool TryReadNext(TinyRoSpan`1& expectedSequence)
 ```
 
 #### Parameters
 
-`expectedSequence` TinySpan`1&<br>
+`expectedSequence` TinyRoSpan`1&<br>
 The sequence of elements.
 
 #### Returns
@@ -508,17 +613,17 @@ The sequence of elements.
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
  if the following elements are equal to the sequence of elements; otherwise, .
 
-### **PeekNext(TinySpan`1&, Int32&)**
+### **PeekNext(TinyRoSpan`1&, Int32&)**
 
 Returns whether the following elements are the sequence.
 
 ```csharp
-bool PeekNext(TinySpan`1& expectedSequence, Int32& head)
+bool PeekNext(TinyRoSpan`1& expectedSequence, Int32& head)
 ```
 
 #### Parameters
 
-`expectedSequence` TinySpan`1&<br>
+`expectedSequence` TinyRoSpan`1&<br>
 The sequence of elements.
 
 `head` [Int32&](https://docs.microsoft.com/en-us/dotnet/api/system.int32&)<br>
@@ -529,17 +634,17 @@ The position of the element after the sequence.
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
  if the following elements are equal to the sequence of elements; otherwise, .
 
-### **ReadAny(TinySpan`1&)**
+### **ReadAny(TinyRoSpan`1&)**
 
 Consumes one element, and returns whether the element matches one of the expected elements.
 
 ```csharp
-bool ReadAny(TinySpan`1& expected)
+bool ReadAny(TinyRoSpan`1& expected)
 ```
 
 #### Parameters
 
-`expected` TinySpan`1&<br>
+`expected` TinyRoSpan`1&<br>
 The expected elements.
 
 #### Returns
@@ -547,17 +652,17 @@ The expected elements.
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
  if the element is as expected; otherwise, .
 
-### **TryReadAny(TinySpan`1&)**
+### **TryReadAny(TinyRoSpan`1&)**
 
 Returns whether the element matches one of the expected elements, and consumes the element only if it does.
 
 ```csharp
-bool TryReadAny(TinySpan`1& expected)
+bool TryReadAny(TinyRoSpan`1& expected)
 ```
 
 #### Parameters
 
-`expected` TinySpan`1&<br>
+`expected` TinyRoSpan`1&<br>
 The expected elements.
 
 #### Returns
@@ -565,17 +670,17 @@ The expected elements.
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
  if the element is as expected; otherwise, .
 
-### **PeekAny(TinySpan`1&)**
+### **PeekAny(TinyRoSpan`1&)**
 
 Returns whether the element matches one of the expected elements.
 
 ```csharp
-bool PeekAny(TinySpan`1& expected)
+bool PeekAny(TinyRoSpan`1& expected)
 ```
 
 #### Parameters
 
-`expected` TinySpan`1&<br>
+`expected` TinyRoSpan`1&<br>
 The expected elements.
 
 #### Returns
@@ -583,17 +688,17 @@ The expected elements.
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
  if the element is as expected; otherwise, .
 
-### **ReadUntilAny(TinySpan`1&)**
+### **ReadUntilAny(TinyRoSpan`1&)**
 
 Consumes elements until one of the expected elements occur.
 
 ```csharp
-bool ReadUntilAny(TinySpan`1& expected)
+bool ReadUntilAny(TinyRoSpan`1& expected)
 ```
 
 #### Parameters
 
-`expected` TinySpan`1&<br>
+`expected` TinyRoSpan`1&<br>
 The expected elements.
 
 #### Returns
@@ -601,17 +706,17 @@ The expected elements.
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
  if one or more of the expected elements occur in the remaining elements; otherwise, .
 
-### **TryReadUntilAny(TinySpan`1&)**
+### **TryReadUntilAny(TinyRoSpan`1&)**
 
 Returns whether the remaining span contains one of the expected elements, and consumes the elements only if it does.
 
 ```csharp
-bool TryReadUntilAny(TinySpan`1& expected)
+bool TryReadUntilAny(TinyRoSpan`1& expected)
 ```
 
 #### Parameters
 
-`expected` TinySpan`1&<br>
+`expected` TinyRoSpan`1&<br>
 The expected elements.
 
 #### Returns
@@ -619,17 +724,17 @@ The expected elements.
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
  if one or more of the expected elements occur in the remaining elements; otherwise, .
 
-### **PeekUntilAny(TinySpan`1&, Int32&)**
+### **PeekUntilAny(TinyRoSpan`1&, Int32&)**
 
 Returns whether the remaining span contains one of the expected elements.
 
 ```csharp
-bool PeekUntilAny(TinySpan`1& expected, Int32& head)
+bool PeekUntilAny(TinyRoSpan`1& expected, Int32& head)
 ```
 
 #### Parameters
 
-`expected` TinySpan`1&<br>
+`expected` TinyRoSpan`1&<br>
 The expected elements.
 
 `head` [Int32&](https://docs.microsoft.com/en-us/dotnet/api/system.int32&)<br>

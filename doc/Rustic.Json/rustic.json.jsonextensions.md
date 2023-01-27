@@ -2,6 +2,8 @@
 
 Namespace: Rustic.Json
 
+Extensions methods for ,  and similar types.
+
 ```csharp
 public static class JsonExtensions
 ```
@@ -9,27 +11,6 @@ public static class JsonExtensions
 Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) → [JsonExtensions](./rustic.json.jsonextensions.md)
 
 ## Methods
-
-### **ConfigureOptions&lt;T&gt;(JsonSerializerOptions)**
-
-Configures the  for  structures.
-
-```csharp
-public static JsonSerializerOptions ConfigureOptions<T>(JsonSerializerOptions self)
-```
-
-#### Type Parameters
-
-`T`<br>
-The type of the Option value.
-
-#### Parameters
-
-`self` JsonSerializerOptions<br>
-
-#### Returns
-
-JsonSerializerOptions<br>
 
 ### **TryEnumerateObject(JsonElement&, ObjectEnumerator&)**
 

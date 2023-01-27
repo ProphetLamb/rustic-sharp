@@ -2,7 +2,7 @@
 
 Namespace: Rustic.Memory
 
-Enables unaligned marking of bits in a memory area.
+Enables unaligned marking of bits in a fixed size memory area.
 
 ```csharp
 public struct BitSet
@@ -28,7 +28,7 @@ public ReadOnlySpan<int> RawStorage { get; }
 
 ### **BitSet(Span&lt;Int32&gt;)**
 
-initializes a new instance of [BitSet](./rustic.memory.bitset.md).
+Initializes a new instance of [BitSet](./rustic.memory.bitset.md).
 
 ```csharp
 BitSet(Span<int> span)

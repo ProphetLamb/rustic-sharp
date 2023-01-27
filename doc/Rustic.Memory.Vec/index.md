@@ -10,9 +10,9 @@
 
 [ReadOnlyVectorTraits](./rustic.memory.readonlyvectortraits.md)
 
-[RefVec&lt;T&gt;](./rustic.memory.refvec-1.md)
-
 [RefVecExtensions](./rustic.memory.refvecextensions.md)
+
+[RefVec&lt;T&gt;](./rustic.memory.refvec-1.md)
 
 [Vec&lt;T&gt;](./rustic.memory.vec-1.md)
 

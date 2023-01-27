@@ -2,6 +2,8 @@
 
 Namespace: Rustic.Text
 
+Interface used to identify a format defintion.
+
 ```csharp
 public interface IFmtDef
 ```
@@ -34,61 +36,68 @@ public abstract int Count { get; }
 
 ## Methods
 
-### **NextTextEnd(Tokenizer`1&)**
+### **NextTextEnd(Tokenizer`1&, StrBuilder&)**
+
+Moves the tokenizer to the char at which this text portion ended. Consumes the hole indicating characters. Adds the relevant text to the builder.
 
 ```csharp
-bool NextTextEnd(Tokenizer`1& tokenizer)
+bool NextTextEnd(Tokenizer`1& tokenizer, StrBuilder& builder)
 ```
 
 #### Parameters
 
 `tokenizer` [Tokenizer`1&](./rustic.text.tokenizer-1&.md)<br>
+The tokenizer used.
+
+`builder` StrBuilder&<br>
+The builder used to collect text.
 
 #### Returns
 
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+true if successful; otherwise false.
 
-### **NextHoleBegin(Tokenizer`1&)**
+### **NextTextStart(Tokenizer`1&, StrBuilder&)**
+
+Moves the tokenizer to the char at which the next text portion begins. Consumes the hole terminating characters. Adds the relevant hole definition to the builder.
 
 ```csharp
-bool NextHoleBegin(Tokenizer`1& tokenizer)
+bool NextTextStart(Tokenizer`1& tokenizer, StrBuilder& builder)
 ```
 
 #### Parameters
 
 `tokenizer` [Tokenizer`1&](./rustic.text.tokenizer-1&.md)<br>
+The tokenizer used.
+
+`builder` StrBuilder&<br>
+The builder used to collect the hole definition
 
 #### Returns
 
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+true if successful; otherwise false.
 
-### **NextHoleEnd(Tokenizer`1&)**
+### **FinalTextEnd(Tokenizer`1&, StrBuilder&)**
+
+Moves the tokenizer to the end of the format string. Ensures that the tokenizer cursor is at the end and empty.
 
 ```csharp
-bool NextHoleEnd(Tokenizer`1& tokenizer)
+void FinalTextEnd(Tokenizer`1& tokenizer, StrBuilder& builder)
 ```
 
 #### Parameters
 
 `tokenizer` [Tokenizer`1&](./rustic.text.tokenizer-1&.md)<br>
+The tokenizer used.
 
-#### Returns
+`builder` StrBuilder&<br>
+The builder used to collect text.
 
-[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+#### Exceptions
 
-### **NextTextStart(Tokenizer`1&)**
-
-```csharp
-bool NextTextStart(Tokenizer`1& tokenizer)
-```
-
-#### Parameters
-
-`tokenizer` [Tokenizer`1&](./rustic.text.tokenizer-1&.md)<br>
-
-#### Returns
-
-[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+[FormatException](https://docs.microsoft.com/en-us/dotnet/api/system.formatexception)<br>
+The format string is invalid or not fully processed.
 
 ### **TryGetValue(ReadOnlySpan`1&, ReadOnlySpan`1&)**
 

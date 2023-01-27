@@ -76,10 +76,38 @@ public static void ThrowNotSupportedException(string message, Exception ex)
 
 `ex` [Exception](https://docs.microsoft.com/en-us/dotnet/api/system.exception)<br>
 
-### **ValidateArg&lt;T&gt;(T, Boolean, String, String)**
+### **ThrowFormatException(String, Exception)**
 
 ```csharp
-public static void ValidateArg<T>(T value, bool condition, string name, string message)
+public static void ThrowFormatException(string message, Exception ex)
+```
+
+#### Parameters
+
+`message` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+
+`ex` [Exception](https://docs.microsoft.com/en-us/dotnet/api/system.exception)<br>
+
+### **ThrowFormatException(Int32, Int32, String, Exception)**
+
+```csharp
+public static void ThrowFormatException(int start, int end, string message, Exception ex)
+```
+
+#### Parameters
+
+`start` [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
+
+`end` [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
+
+`message` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+
+`ex` [Exception](https://docs.microsoft.com/en-us/dotnet/api/system.exception)<br>
+
+### **ArgumentIs&lt;T&gt;(T, Boolean, String, String)**
+
+```csharp
+public static void ArgumentIs<T>(T value, bool condition, string name, string message)
 ```
 
 #### Type Parameters
@@ -96,10 +124,10 @@ public static void ValidateArg<T>(T value, bool condition, string name, string m
 
 `message` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
 
-### **ValidateArgRange&lt;T&gt;(T, Boolean, String, String)**
+### **ArgumentInRange&lt;T&gt;(T, Boolean, String, String)**
 
 ```csharp
-public static void ValidateArgRange<T>(T value, bool condition, string name, string message)
+public static void ArgumentInRange<T>(T value, bool condition, string name, string message)
 ```
 
 #### Type Parameters
@@ -116,10 +144,10 @@ public static void ValidateArgRange<T>(T value, bool condition, string name, str
 
 `message` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
 
-### **ValidateArgNotNull(Object, String)**
+### **ArgumentNotNull(Object, String)**
 
 ```csharp
-public static void ValidateArgNotNull(object self, string name)
+public static void ArgumentNotNull(object self, string name)
 ```
 
 #### Parameters
@@ -127,3 +155,15 @@ public static void ValidateArgNotNull(object self, string name)
 `self` [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object)<br>
 
 `name` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+
+### **ThrowKeyNotFoundException(String, Exception)**
+
+```csharp
+public static void ThrowKeyNotFoundException(string message, Exception ex)
+```
+
+#### Parameters
+
+`message` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+
+`ex` [Exception](https://docs.microsoft.com/en-us/dotnet/api/system.exception)<br>

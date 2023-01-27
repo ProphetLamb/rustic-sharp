@@ -237,12 +237,12 @@ The comparer used to determine whether two objects are equal.
 SplitIter&lt;T&gt;<br>
 The iterator splitting the  span with the specified parameters.
 
-### **Split&lt;T&gt;(ReadOnlySpan&lt;T&gt;, TinySpan&lt;T&gt;, SplitOptions, IEqualityComparer&lt;T&gt;)**
+### **Split&lt;T&gt;(ReadOnlySpan&lt;T&gt;, TinyRoSpan&lt;T&gt;, SplitOptions, IEqualityComparer&lt;T&gt;)**
 
 Splits the  span at the positions defined by the .
 
 ```csharp
-public static SplitIter<T> Split<T>(ReadOnlySpan<T> span, TinySpan<T> separators, SplitOptions options, IEqualityComparer<T> comparer)
+public static SplitIter<T> Split<T>(ReadOnlySpan<T> span, TinyRoSpan<T> separators, SplitOptions options, IEqualityComparer<T> comparer)
 ```
 
 #### Type Parameters
@@ -255,7 +255,7 @@ The type of the elements of the .
 `span` ReadOnlySpan&lt;T&gt;<br>
 The span.
 
-`separators` TinySpan&lt;T&gt;<br>
+`separators` TinyRoSpan&lt;T&gt;<br>
 The separators by which to split the .
 
 `options` [SplitOptions](./rustic.text.splitoptions.md)<br>
@@ -362,12 +362,12 @@ The comparer used to determine whether two objects are equal.
 SplitIter&lt;T&gt;<br>
 The iterator splitting the  span with the specified parameters.
 
-### **Split&lt;T&gt;(Span&lt;T&gt;, TinySpan&lt;T&gt;, SplitOptions, IEqualityComparer&lt;T&gt;)**
+### **Split&lt;T&gt;(Span&lt;T&gt;, TinyRoSpan&lt;T&gt;, SplitOptions, IEqualityComparer&lt;T&gt;)**
 
 Splits the  span at the positions defined by the .
 
 ```csharp
-public static SplitIter<T> Split<T>(Span<T> span, TinySpan<T> separators, SplitOptions options, IEqualityComparer<T> comparer)
+public static SplitIter<T> Split<T>(Span<T> span, TinyRoSpan<T> separators, SplitOptions options, IEqualityComparer<T> comparer)
 ```
 
 #### Type Parameters
@@ -380,7 +380,7 @@ The type of the elements of the .
 `span` Span&lt;T&gt;<br>
 The span.
 
-`separators` TinySpan&lt;T&gt;<br>
+`separators` TinyRoSpan&lt;T&gt;<br>
 The separators by which to split the .
 
 `options` [SplitOptions](./rustic.text.splitoptions.md)<br>
