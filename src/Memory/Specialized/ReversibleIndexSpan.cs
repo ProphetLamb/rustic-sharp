@@ -1,15 +1,18 @@
 using System;
 using System.Buffers;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Rustic.Memory;
 
 /// <summary>Wrapper around <see cref="ReadOnlySpan{T}"/> that allows indexed access in reversed order.</summary>
+[DebuggerDisplay("Length = {Length}")]
 public readonly ref struct ReversibleIndexedSpan<T> {
     private readonly bool _reverse;
     /// <summary>The underlying data span, in the original order.</summary>
+    [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
     public readonly ReadOnlySpan<T> Span;
 
     /// <summary>Initializes a new <see cref="ReversibleIndexedSpan{T}"/>.</summary>
