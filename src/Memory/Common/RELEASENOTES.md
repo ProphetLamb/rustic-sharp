@@ -1,6 +1,7 @@
 # Version 0.6
 
 - Add CopyToReversed to MemoryCopyHelper
+- Add ReversibleIndexSpan
 - Merge Rustic.Memory.Common namespace into Rustic.Memory
 - Mark classes as sealed when possible
 

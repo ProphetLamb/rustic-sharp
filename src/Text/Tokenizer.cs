@@ -24,7 +24,7 @@ namespace Rustic.Text;
 /// </remarks>
 public ref struct Tokenizer<T>
 {
-    private ReadOnlySpan<T> _source;
+    private ReversibleIndexedSpan<T> _source;
     private IEqualityComparer<T>? _comparer;
     private int _pos;
     private int _tokenLength;
@@ -34,7 +34,7 @@ public ref struct Tokenizer<T>
     /// </summary>
     /// <param name="input">The input sequence.</param>
     /// <param name="comparer">The comparer used to determine whether two objects are equal.</param>
-    public Tokenizer(ReadOnlySpan<T> input, IEqualityComparer<T>? comparer)
+    public Tokenizer(ReversibleIndexedSpan<T> input, IEqualityComparer<T>? comparer)
     {
         _source = input;
         _comparer = comparer;
@@ -43,7 +43,7 @@ public ref struct Tokenizer<T>
     }
 
     /// <summary>The reference to the source buffer.</summary>
-    public ReadOnlySpan<T> Raw => _source;
+    public ReadOnlySpan<T> Raw => _source.Span;
 
     /// <summary>The comparer used to determine whether two elements are equal.</summary>
     public IEqualityComparer<T>? Comparer => _comparer;
@@ -105,7 +105,7 @@ public ref struct Tokenizer<T>
     public int Length => _source.Length;
 
     /// <summary>Represents the token currently being built.</summary>
-    public ReadOnlySpan<T> Token => _source.Slice(_pos, _tokenLength);
+    public ReversibleIndexedSpan<T> Token => _source.Slice(_pos, _tokenLength);
 
     /// <summary>The reference to the current element.</summary>
     public ref readonly T Current => ref _source[_pos];
@@ -204,7 +204,7 @@ public ref struct Tokenizer<T>
     /// </summary>
     /// <returns>The span representing the token.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ReadOnlySpan<T> FinalizeToken()
+    public ReversibleIndexedSpan<T> FinalizeToken()
     {
         var token = Token;
         _pos += _tokenLength;
@@ -851,4 +851,17 @@ public ref struct Tokenizer<T>
     }
 
     #endregion Any Span
+}
+
+
+/// <summary>Tokenizer specific <see cref="StrBuilder"/> extension methods</summary>
+public static class StrBuilderExtensions {
+    /// <inheritdoc cref="StrBuilder.Append(ReadOnlySpan{char})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Append(ref this StrBuilder builder, ReversibleIndexedSpan<char> span) {
+        if (!span.IsEmpty) {
+            Span<char> dst = builder.AppendSpan(span.Length);
+            span.TryCopyTo(dst);
+        }
+    }
 }
