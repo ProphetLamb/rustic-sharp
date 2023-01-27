@@ -1,3 +1,3 @@
-& choco install dotnet-sdk --version 6.0.101
+& choco install dotnet-sdk --version 7.0.102
 & dotnet tool install --global coveralls.net
 & dotnet tool install -g XMLDoc2Markdown
