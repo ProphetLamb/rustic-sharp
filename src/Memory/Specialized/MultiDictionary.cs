@@ -28,7 +28,7 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
     private int _valueCount;
 
     /// <summary>Initializes a new instance of <see cref="MultiDictionary{K,V}"/>.</summary>
-    public MultiDictionary() : this(0, null) {}
+    public MultiDictionary() : this(0, null) { }
 
     /// <summary>Initializes a new instance of <see cref="MultiDictionary{K,V}"/>.</summary>
     /// <param name="capacity">The initial key capacity of the dictionary.</param>
@@ -86,7 +86,7 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
             ref TinyVec<V> entry = ref CollectionsMarshal.GetValueRefOrAddDefault(_backing, key, out bool exists);
             return exists ? entry.AsSpan() : default;
 #else
-            return _backing.TryGetValue(key, out Vec<V> entry) ? entry.AsSpan() : default;
+            return _backing.TryGetValue(key, out Vec<V>? entry) ? entry.AsSpan() : default;
 #endif
         }
     }
@@ -111,7 +111,7 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
             _keyCount++;
         }
 #else
-        if (!_backing.TryGetValue(key, out Vec<V> entry)) {
+        if (!_backing.TryGetValue(key, out Vec<V>? entry)) {
             entry = new();
             _backing.Add(key, entry);
         }
@@ -140,7 +140,7 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
             _keyCount++;
         }
 #else
-        if (!_backing.TryGetValue(key, out Vec<V> entry)) {
+        if (!_backing.TryGetValue(key, out Vec<V>? entry)) {
             entry = new(values.Length);
             _backing.Add(key, entry);
         }
@@ -161,7 +161,7 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
             return false;
         }
 #else
-        if (!_backing.TryGetValue(key, out Vec<V> entry)) {
+        if (!_backing.TryGetValue(key, out Vec<V>? entry)) {
             return false;
         }
 #endif
@@ -187,7 +187,7 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
             return false;
         }
 #else
-        if (!_backing.TryGetValue(key, out Vec<V> entry)) {
+        if (!_backing.TryGetValue(key, out Vec<V>? entry)) {
             return false;
         }
 #endif
@@ -198,8 +198,7 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
 
         entry.SwapRemove(removeAt);
 
-        if (entry.IsEmpty)
-        {
+        if (entry.IsEmpty) {
             _keyCount--;
         }
         _valueCount--;
@@ -210,8 +209,7 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
     /// <summary>
     /// Empty the collection
     /// </summary>
-    public void Clear()
-    {
+    public void Clear() {
         _backing.Clear();
         _valueCount = 0;
     }
@@ -269,7 +267,7 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-#region Readonly hidden members
+        #region Readonly hidden members
         bool ICollection<K>.IsReadOnly => true;
 
         /// <inheritdoc />
@@ -280,7 +278,7 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
 
         /// <inheritdoc />
         bool ICollection<K>.Remove(K item) => ((ICollection<K>)_dict.Keys).Remove(item);
-#endregion
+        #endregion
 
         /// <inheritdoc cref="Dictionary{K, V}.KeyCollection.Enumerator"/>
         public struct Enumerator : IEnumerator<K> {
@@ -419,7 +417,7 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
             _keys = _dict.Keys.GetEnumerator();
             _current = default;
         }
-   }
+    }
 
     /// <inheritdoc cref="KeyValuePair{K,ReadOnlySpan}"/>
     public readonly ref struct KeyValuesPair {

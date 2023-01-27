@@ -1,5 +1,4 @@
 using System;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -12,7 +11,7 @@ public static class MemoryCopyHelper {
     /// <param name="dst">The destination buffer</param>
     /// <param name="len">The number of elements to copy. Must be less or equal then the minimum of both buffer lengths.</param>
     /// <typeparam name="T">The type of the element to copy.</typeparam>
-    [MethodImpl(MethodImplOptions.NoInlining)]
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.NoInlining)]
     public static void CopyToReversed<T>(ref T src, ref T dst, nuint len) {
         ref T cur = ref Unsafe.Add(ref src, len);
         while (!Unsafe.AreSame(ref src, ref cur)) {
