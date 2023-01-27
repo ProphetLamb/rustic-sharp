@@ -99,7 +99,7 @@ public ref struct Tokenizer<T> {
     /// <summary>The reference to the current element at <see cref="Position"/>.</summary>
     public ref readonly T Current => ref _source[_pos];
 
-    /// <summary>The reference to the current element at <see cref="CursorPosition"/>.</summary>
+    /// <summary>The reference to the next element after the cursor at index <see cref="CursorPosition"/>.</summary>
     public ref readonly T Cursor => ref _source[CursorPosition];
 
     /// <summary>Allows access to an arbitrary element inside the source buffer.</summary>
