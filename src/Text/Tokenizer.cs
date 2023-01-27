@@ -146,7 +146,7 @@ public ref struct Tokenizer<T>
     {
         ThrowHelper.ArgumentInRange(amount, amount >= -_tokenLength, "Cannot move the cursor to before the start of the current token. The token length cannot be negative.");
 
-        if (_pos < Length - _tokenLength - amount)
+        if (_pos <= Length - _tokenLength - amount)
         {
             _tokenLength += amount;
             return true;
