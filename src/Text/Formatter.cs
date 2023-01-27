@@ -28,7 +28,6 @@ public class Fmt
         Tokenizer<char> tokenizer = new(format, comparer);
 
         while (true) {
-            tokenizer.FinalizeToken();
             if (!definition.NextTextEnd(ref tokenizer))
             {
                 break;
@@ -53,6 +52,8 @@ public class Fmt
             if (!definition.NextTextStart(ref tokenizer)) {
                 break;
             }
+
+            tokenizer.FinalizeToken();
         }
         // The definition must guarantee that we are always end of file when breaking
         if (!tokenizer.IsCursorEnd) {
