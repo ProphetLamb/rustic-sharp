@@ -39,7 +39,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Text", "tests\Text\Text.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Memory", "src\Memory\Memory\Memory.csproj", "{EA246A79-10ED-45BF-AB0F-7DE2F32257EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dict", "src\Memory\Dict\Dict.csproj", "{001C0709-42D4-4E29-B147-218A3A08546B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Specialized", "src\Memory\Specialized\Specialized.csproj", "{001C0709-42D4-4E29-B147-218A3A08546B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
