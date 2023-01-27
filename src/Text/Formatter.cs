@@ -7,7 +7,7 @@ using Rustic.Memory;
 namespace Rustic.Text;
 
 /// <summary>Allows dynamic string formatting according the templates.</summary>
-public class Fmt {
+public sealed class Fmt {
     private static readonly Lazy<Fmt> s_fmtInstance = new(() => new Fmt());
 
     /// <summary>The global instance containing definitions.</summary>

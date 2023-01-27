@@ -71,7 +71,7 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
 
     IReadOnlyCollection<V> IReadOnlyDictionary<K, IReadOnlyCollection<V>>.this[K key] {
         get {
-            Vec<V> list = _backing[key];
+            var list = _backing[key];
             if (list.IsEmpty) {
                 ThrowHelper.ThrowKeyNotFoundException();
             }
