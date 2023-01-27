@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -95,5 +96,14 @@ public static class ThrowHelper
     }
 
 #endregion Validations
+
+#region KeyNotFoundException
+
+    [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
+    public static void ThrowKeyNotFoundException(string? message = null, Exception? ex = null) {
+        throw new KeyNotFoundException(message, ex);
+    }
+
+#endregion
 }
 #pragma warning disable RCS1138,CS1591
