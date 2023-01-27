@@ -411,7 +411,7 @@ public ref struct Tokenizer<T> {
                     }
                 }
 
-                return true;
+                return head - CursorPosition == matched;
             }
 
             // Object type: Shared Generic, EqualityComparer<TValue>.Default won't devirtualize (https://github.com/dotnet/runtime/issues/10050),
@@ -431,7 +431,7 @@ public ref struct Tokenizer<T> {
             }
         }
 
-        return true;
+        return head - CursorPosition == matched;
     }
 
     #endregion Sequence
@@ -551,8 +551,8 @@ public ref struct Tokenizer<T> {
             return false;
         }
 
-        var matched = 0;
-        var comparer = _comparer;
+        int matched = 0; // the number of elements in the sequence matched by the toke
+        IEqualityComparer<T>? comparer = _comparer;
 
         if (comparer is null) {
             if (typeof(T).IsValueType) {
