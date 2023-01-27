@@ -52,8 +52,13 @@ public static class ThrowHelper
 #region Format
 
     [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
-    public static void ThrowFormatExceptions(string? message = null, Exception? ex = null) {
+    public static void ThrowFormatException(string? message = null, Exception? ex = null) {
         throw new FormatException(message, ex);
+    }
+
+    [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
+    public static void ThrowFormatException(int start, int end, string? message = null, Exception? ex = null){
+        throw new FormatException($"Formatter failed at {start}..{end}. {message}", ex);
     }
 
 #endregion
