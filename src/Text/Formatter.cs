@@ -56,10 +56,6 @@ public sealed class Fmt {
             ThrowHelper.ThrowFormatException(tokenizer.Position, tokenizer.CursorPosition, "The format string was not fully processed.");
         }
 
-        // Add remainder of format string in which no holes exist to the builder
-        ReadOnlySpan<char> tailingFormat = tokenizer.Token.ToSpan();
-        tailingFormat.CopyTo(builder.AppendSpan(tailingFormat.Length));
-
         return builder.ToString();
     }
 
