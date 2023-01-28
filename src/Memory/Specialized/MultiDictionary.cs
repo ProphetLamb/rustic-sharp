@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
@@ -58,15 +59,18 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
     /// <inheritdoc />
     public bool ContainsKey(K key) => _backing.TryGetValue(key, out var value) && !value.IsEmpty;
 
-    bool IReadOnlyDictionary<K, IReadOnlyCollection<V>>.TryGetValue(K key, out IReadOnlyCollection<V> value) {
-        bool flag = false;
-        if (_backing.TryGetValue(key, out var list) && !list.IsEmpty) {
-            value = new ReadOnlyCollection<V>(list);
-            flag = true;
+    /// <summary>Span over values that have the specified key, empty if the key is not present.</summary>
+    /// <remarks>Do not use this handle throught mutations of any specific key.</remarks>
+    /// <remarks>Does not necessarily track changes or remain vaid after mutations to the key.</remarks>
+    public ReadOnlySpan<V> this[K key] {
+        get {
+#if NET6_0_OR_GREATER
+            ref TinyVec<V> entry = ref CollectionsMarshal.GetValueRefOrAddDefault(_backing, key, out bool exists);
+            return exists ? entry.AsSpan() : default;
+#else
+            return _backing.TryGetValue(key, out Vec<V>? entry) ? entry.AsSpan() : default;
+#endif
         }
-
-        value = default!;
-        return flag;
     }
 
     IReadOnlyCollection<V> IReadOnlyDictionary<K, IReadOnlyCollection<V>>.this[K key] {
@@ -79,17 +83,42 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
         }
     }
 
-    /// <summary>Span over values that have the specified key, empty if the key is not present.</summary>
-    public ReadOnlySpan<V> this[K key] {
-        get {
-#if NET6_0_OR_GREATER
-            ref TinyVec<V> entry = ref CollectionsMarshal.GetValueRefOrAddDefault(_backing, key, out bool exists);
-            return exists ? entry.AsSpan() : default;
-#else
-            return _backing.TryGetValue(key, out Vec<V>? entry) ? entry.AsSpan() : default;
-#endif
+    /// <summary>Returns the collection of elements at the key specified.</summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    /// <remarks>May require boxing allocation of a valuetype. Use the indexer whenever possible.</remarks>
+    /// <remarks>Do not use this handle throught mutations of any specific key.</remarks>
+    /// <remarks>Does not necessarily track changes or remain vaid after mutations to the key.</remarks>
+    public IReadOnlyCollection<V> GetValues(K key) {
+        if (_backing.TryGetValue(key, out var list) && !list.IsEmpty) {
+            return list;
         }
+        return Array.Empty<V>();
     }
+
+    /// <inheritdoc cref="IReadOnlyDictionary{K,V}.TryGetValue"/>
+    bool TryGetValue(K key, out ReadOnlySpan<V> values) {
+        bool flag = false;
+        if (_backing.TryGetValue(key, out var list) && !list.IsEmpty) {
+            values = list.AsSpan();
+            flag = true;
+        }
+
+        values = default;
+        return flag;
+    }
+
+    bool IReadOnlyDictionary<K, IReadOnlyCollection<V>>.TryGetValue(K key, out IReadOnlyCollection<V> value) {
+        bool flag = false;
+        if (_backing.TryGetValue(key, out var list) && !list.IsEmpty) {
+            value = new ReadOnlyCollection<V>(list);
+            flag = true;
+        }
+
+        value = default!;
+        return flag;
+    }
+
 
     /// <summary>
     /// Add a single value under the specified key.
