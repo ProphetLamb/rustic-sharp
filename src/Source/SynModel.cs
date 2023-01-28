@@ -13,19 +13,19 @@ namespace Rustic.Source;
 [CLSCompliant(false)]
 public static class SemCtxExtensions {
     /// <summary>Casts the <see cref="SynModel"/> to <see cref="GeneratorSyntaxContext"/>.</summary>
-    public static GeneratorSyntaxContext ToGenCtx(this SynModel ctx) {
+    public static GeneratorSyntaxContext ToGenCtx(ref this SynModel ctx) {
         return Unsafe.As<SynModel, GeneratorSyntaxContext>(ref ctx);
     }
 
     /// <summary>Returns the type name of the node inside the model.</summary>
     /// <param name="model">The model</param>
-    public static string? GetTypeName(this SynModel model) {
+    public static string? GetTypeName(in this SynModel model) {
         return model.Model.GetTypeName(model.Node);
     }
 
     /// <summary>Returns the type name of the node inside the model.</summary>
     /// <param name="model">The model</param>
-    public static string? GetTypeName<N>(this SynModel<N> model)
+    public static string? GetTypeName<N>(in this SynModel<N> model)
         where N : SyntaxNode {
         return model.Model.GetTypeName(model.Node);
     }
@@ -49,6 +49,7 @@ public static class SemCtxExtensions {
 /// <summary>Weak-typed <see cref="SyntaxNode"/> and the associated <see cref="SemanticModel"/>.</summary>
 [CLSCompliant(false)]
 public readonly struct SynModel {
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal SynModel(SyntaxNode node, SemanticModel model) {
         Node = node;
         Model = model;

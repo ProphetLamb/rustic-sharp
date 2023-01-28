@@ -17,7 +17,7 @@ public static class SyntaxExtensions {
     /// <param name="predicate">The function determining whether an attribute matches, or not.</param>
     /// <typeparam name="M">The type of the <see cref="MemberDeclarationSyntax"/>.</typeparam>
     /// <returns>The first <see cref="AttributeSyntax"/> found, if any.</returns>
-    public static AttributeSyntax? FindMemAttr<M>(this SynModel<M> member, Func<SynModel<M>, AttributeSyntax, bool> predicate)
+    public static AttributeSyntax? FindMemAttr<M>(in this SynModel<M> member, Func<SynModel<M>, AttributeSyntax, bool> predicate)
         where M : MemberDeclarationSyntax {
         foreach (var attrListSyntax in member.Node.AttributeLists) {
             foreach (var attrSyntax in attrListSyntax.Attributes) {
@@ -35,7 +35,7 @@ public static class SyntaxExtensions {
     /// <param name="predicate">The function determining whether an attribute matches, or not.</param>
     /// <typeparam name="T">The type of the <see cref="BaseTypeDeclarationSyntax"/>.</typeparam>
     /// <returns>The first <see cref="AttributeSyntax"/> found, if any.</returns>
-    public static AttributeSyntax? FindTypeAttr<T>(this SynModel<T> type, Func<SynModel<T>, AttributeSyntax, bool> predicate)
+    public static AttributeSyntax? FindTypeAttr<T>(in this SynModel<T> type, Func<SynModel<T>, AttributeSyntax, bool> predicate)
         where T : BaseTypeDeclarationSyntax {
         foreach (var attrListSyntax in type.Node.AttributeLists) {
             foreach (var attrSyntax in attrListSyntax.Attributes) {

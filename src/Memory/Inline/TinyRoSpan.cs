@@ -178,7 +178,7 @@ public static class TinyRoSpan {
     ///     Determines whether two sequences are equal by comparing the elements.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public static bool SequenceEquals<T>(this TinyRoSpan<T> span, in TinyRoSpan<T> other)
+    public static bool SequenceEquals<T>(in this TinyRoSpan<T> span, in TinyRoSpan<T> other)
         where T : IEquatable<T> {
         // If we have 4 or less elements the == operator performs a sequence equals.
         // If we have more then 4 elements we compare the pointers of the internal span.

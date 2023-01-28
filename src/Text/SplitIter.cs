@@ -29,7 +29,7 @@ public static class SplitIterExtensions {
     /// <summary>Enumerates the remaining elements in the <see cref="SplitIter{T}"/> into a array.</summary>
     /// <remarks>Does consume from the iterator.</remarks>
     [Pure]
-    public static string[] ToArray(this SplitIter<char> self) {
+    public static string[] ToArray(in this SplitIter<char> self) {
         using PoolBufWriter<string> buf = new();
         while (self.MoveNext()) {
             buf.Add(self.Current.ToString());
@@ -42,7 +42,7 @@ public static class SplitIterExtensions {
     /// <typeparam name="O">The type of the aggregation of elements.</typeparam>
     /// <param name="self">The iterator to aggregate.</param>
     /// <param name="aggregate">The function used to aggregate the items in each iterator element.</param>
-    public static O[] ToArray<T, O>(this SplitIter<T> self, Func<O, T, O> aggregate)
+    public static O[] ToArray<T, O>(in this SplitIter<T> self, Func<O, T, O> aggregate)
         where O : new() {
         using PoolBufWriter<O> buf = new();
         foreach (var seg in self) {
@@ -60,7 +60,7 @@ public static class SplitIterExtensions {
     /// <param name="self">The iterator to aggregate.</param>
     /// <param name="aggregate">The function used to aggregate the items in each iterator element.</param>
     /// <param name="seed">The initial value used for aggregating each element.</param>
-    public static O[] ToArray<T, O>(this SplitIter<T> self, Func<O, T, O> aggregate, Func<O> seed) {
+    public static O[] ToArray<T, O>(in this SplitIter<T> self, Func<O, T, O> aggregate, Func<O> seed) {
         using PoolBufWriter<O> buf = new();
         foreach (var seg in self) {
             var cur = seed();
