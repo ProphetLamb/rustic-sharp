@@ -212,6 +212,7 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
     public void Clear() {
         _backing.Clear();
         _valueCount = 0;
+        _keyCount = 0;
     }
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
