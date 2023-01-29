@@ -71,6 +71,17 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
             return _backing.TryGetValue(key, out Vec<V>? entry) ? entry.AsSpan() : default;
 #endif
         }
+        set {
+#if NET6_0_OR_GREATER
+            ref var entry = ref CollectionsMarshal.GetValueRefOrAddDefault(_backing, key, out bool exists);
+#else
+            if (!_backing.TryGetValue(key, out var entry)) {
+                _backing.Add(key, new Vec<V>());
+            }
+#endif
+            entry.Clear();
+            entry.AddRange(value);
+        }
     }
 
     IReadOnlyCollection<V> IReadOnlyDictionary<K, IReadOnlyCollection<V>>.this[K key] {
