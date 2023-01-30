@@ -93,11 +93,21 @@ public static class ThrowHelper {
     }
 
     #endregion
-    #region UnreachableException
+    #region Special Exceptions
 
     [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
     public static void ThrowUnreachableException(string? message = null, Exception? ex = null) {
         throw new UnreachableException(message, ex);
+    }
+
+    [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void ObjectDisposedException<T>(string? message = null) {
+        ObjectDisposedException(typeof(T).FullName, message);
+    }
+
+    [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
+    public static void ObjectDisposedException(string typeName, string? message = null) {
+        throw new ObjectDisposedException(typeName, message);
     }
     #endregion
 }
