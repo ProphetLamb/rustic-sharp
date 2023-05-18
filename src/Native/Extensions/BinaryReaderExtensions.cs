@@ -2,7 +2,8 @@ using System.IO;
 
 namespace Rustic.Native;
 
-public static class StreamExtensions {
+/// <summary>Extensions for <see cref="BinaryReader"/>.</summary>
+public static class BinaryReaderExtensions {
     ///<inheritdoc cref="Types.FromStreamStruct{T}"/>
     public static T ReadStruct<T>(this BinaryReader reader)
         where T : struct {

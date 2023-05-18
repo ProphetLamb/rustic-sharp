@@ -13,15 +13,15 @@
         <PackageId>$(Product)</PackageId>
         <Title>$(Product)</Title>
         <Description>Functionallity to interact with native, OS specific functionallity.</Description>
-        <PackageTags>Native,PE</PackageTags>
+        <PackageTags>Native;PE</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="System.Collections.Immutable" Version="5.0.0"/>
+        <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Common\Common.csproj"/>
+        <ProjectReference Include="..\Common\Common.csproj" />
     </ItemGroup>
 
 </Project>
