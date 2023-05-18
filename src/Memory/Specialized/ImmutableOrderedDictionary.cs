@@ -108,6 +108,7 @@ public sealed class ImmutableOrderedDictionary<K, V> : IReadOnlyDictionary<K, V>
         return ref entry;
     }
 
+    /// <inheritdoc />
     public V this[K key] {
         get {
             ref KeyValuePair<K, V> entry = ref TryGetEntry(key, out int indexIfExists);
@@ -119,22 +120,23 @@ public sealed class ImmutableOrderedDictionary<K, V> : IReadOnlyDictionary<K, V>
         }
     }
 
+    /// <summary>Gets an <see cref="OrderedIndexer"/> that can be used to access the dictionary by insertion index.</summary>
     public OrderedIndexer Indexer => new(this);
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="IReadOnlyDictionary{TKey, TValue}.Keys"/>
     public KeyCollection Keys => new(this);
 
     IEnumerable<K> IReadOnlyDictionary<K, V>.Keys => _keyCollectionBoxed ??= Keys;
     ICollection<K> IDictionary<K, V>.Keys => _keyCollectionBoxed ??= Keys;
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="IReadOnlyDictionary{TKey, TValue}.Values"/>
     public ValueCollection Values => new(this);
 
     IEnumerable<V> IReadOnlyDictionary<K, V>.Values => _valueCollectionBoxed ??= Values;
 
     ICollection<V> IDictionary<K, V>.Values => _valueCollectionBoxed ??= Values;
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="ICollection{T}.Count"/>
     public int Count => _count;
 
     bool ICollection<KeyValuePair<K, V>>.IsReadOnly => true;
@@ -144,11 +146,13 @@ public sealed class ImmutableOrderedDictionary<K, V> : IReadOnlyDictionary<K, V>
         set => throw new NotSupportedException();
     }
 
+    /// <inheritdoc cref="IReadOnlyDictionary{TKey,TValue}.ContainsKey" />
     public bool ContainsKey(K key) {
         TryGetEntry(key, out int indexIfExists);
         return indexIfExists != -1;
     }
 
+    /// <inheritdoc cref="IReadOnlyDictionary{TKey,TValue}.TryGetValue" />
     public bool TryGetValue(K key, out V value) {
         ref KeyValuePair<K, V> entry = ref TryGetEntry(key, out int indexIfExists);
         if (indexIfExists == -1) {
@@ -225,17 +229,21 @@ public sealed class ImmutableOrderedDictionary<K, V> : IReadOnlyDictionary<K, V>
             _index = -1;
         }
 
+        /// <inheritdoc />
         public KeyValuePair<K, V> Current => _dictionary._entries![_index];
 
         object? IEnumerator.Current => Current;
 
+        /// <inheritdoc />
         public void Dispose() {
         }
 
+        /// <inheritdoc />
         public bool MoveNext() {
             return ++_index < _dictionary._count;
         }
 
+        /// <inheritdoc />
         public void Reset() {
             _index = -1;
         }
@@ -249,12 +257,12 @@ public sealed class ImmutableOrderedDictionary<K, V> : IReadOnlyDictionary<K, V>
             _dictionary = dictionary;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="IReadOnlyCollection{T}.Count" />
         public int Count => _dictionary.Count;
 
         bool ICollection<K>.IsReadOnly => true;
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
         public Enumerator GetEnumerator() {
             return new Enumerator(_dictionary);
         }
@@ -336,12 +344,12 @@ public sealed class ImmutableOrderedDictionary<K, V> : IReadOnlyDictionary<K, V>
             _dictionary = dictionary;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="IReadOnlyCollection{T}.Count" />
         public int Count => _dictionary.Count;
 
         bool ICollection<V>.IsReadOnly => true;
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
         public Enumerator GetEnumerator() {
             return new Enumerator(_dictionary);
         }
@@ -524,18 +532,18 @@ public sealed class ImmutableOrderedDictionary<K, V> : IReadOnlyDictionary<K, V>
             return Empty;
         }
 
-        // <inheritdoc />
+        /// <inheritdoc />
         public void Dispose() {
             _dictionary = default;
         }
 
-        // <inheritdoc cref="IDictionary<K, V>.Keys"/>
+        /// <inheritdoc cref="IReadOnlyDictionary{TKey,TValue}.Values" />
         public KeyCollection Keys => _dictionary?.Keys ?? default;
 
-        // <inheritdoc cref="IDictionary<K, V>.Keys"/>
+        /// <inheritdoc cref="IReadOnlyDictionary{TKey,TValue}.Values" />
         public ValueCollection Values => _dictionary?.Values ?? default;
 
-        // <inheritdoc />
+        /// <inheritdoc cref="IReadOnlyCollection{T}.Count" />
         public int Count => _dictionary?.Count ?? 0;
 
         IEnumerable<K> IReadOnlyDictionary<K, V>.Keys => Keys;
@@ -548,7 +556,7 @@ public sealed class ImmutableOrderedDictionary<K, V> : IReadOnlyDictionary<K, V>
 
         bool ICollection<KeyValuePair<K, V>>.IsReadOnly => throw new NotImplementedException();
 
-        // <inheritdoc />
+        /// <inheritdoc cref="IReadOnlyDictionary{TKey,TValue}.this" />
         public V this[K key] {
             get => _dictionary is not null ? _dictionary[key] : throw new KeyNotFoundException();
             set {
@@ -557,12 +565,12 @@ public sealed class ImmutableOrderedDictionary<K, V> : IReadOnlyDictionary<K, V>
             }
         }
 
-        // <inheritdoc />
+        /// <inheritdoc cref="IReadOnlyDictionary{TKey,TValue}.ContainsKey" />
         public bool ContainsKey(K key) {
             return _dictionary?.ContainsKey(key) ?? false;
         }
 
-        // <inheritdoc />
+        /// <inheritdoc cref="IReadOnlyDictionary{TKey,TValue}.TryGetValue" />
         public bool TryGetValue(K key, out V value) {
             bool res = false;
             if (_dictionary is not null && _dictionary.TryGetValue(key, out value)) {
@@ -574,11 +582,14 @@ public sealed class ImmutableOrderedDictionary<K, V> : IReadOnlyDictionary<K, V>
             return res;
         }
 
-        // <inheritdoc />
+        /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
         public Enumerator GetEnumerator() {
             return _dictionary?.GetEnumerator() ?? default;
         }
 
+        /// <summary>Removes the entry at the specified <paramref name="index"/>.</summary>
+        /// <param name="index">The index of the entry to remove.</param>
+        /// <exception cref="IndexOutOfRangeException">The specified <paramref name="index"/> is out of range.</exception>
         public void RemoveAt(int index) {
             if (_dictionary is not null && (uint) index < (uint) _dictionary._count) {
                 Span<KeyValuePair<K, V>> span = _dictionary.Entries;
@@ -590,12 +601,12 @@ public sealed class ImmutableOrderedDictionary<K, V> : IReadOnlyDictionary<K, V>
             throw new IndexOutOfRangeException();
         }
 
-        // <inheritdoc />
+        /// <inheritdoc />
         public void Add(KeyValuePair<K, V> item) {
             (_dictionary ??= new()).Add(item);
         }
 
-        // <inheritdoc />
+        /// <inheritdoc />
         public bool Remove(K key) {
             bool res = false;
             if (_dictionary is not null) {
@@ -609,7 +620,7 @@ public sealed class ImmutableOrderedDictionary<K, V> : IReadOnlyDictionary<K, V>
             return res;
         }
 
-        // <inheritdoc />
+        /// <inheritdoc />
         public bool Remove(KeyValuePair<K, V> item) {
             bool res = false;
             if (_dictionary is not null) {
@@ -623,7 +634,7 @@ public sealed class ImmutableOrderedDictionary<K, V> : IReadOnlyDictionary<K, V>
             return res;
         }
 
-        // <inheritdoc />
+        /// <inheritdoc />
         public void Clear() {
             if (_dictionary is not null) {
                 _dictionary.Entries.Clear();
@@ -631,7 +642,7 @@ public sealed class ImmutableOrderedDictionary<K, V> : IReadOnlyDictionary<K, V>
             }
         }
 
-        // <inheritdoc />
+        /// <inheritdoc />
         public bool Contains(KeyValuePair<K, V> item) {
             bool res = false;
             if (_dictionary is not null) {
@@ -641,23 +652,30 @@ public sealed class ImmutableOrderedDictionary<K, V> : IReadOnlyDictionary<K, V>
             return res;
         }
 
-        // <inheritdoc />
+        /// <inheritdoc />
         public void CopyTo(KeyValuePair<K, V>[] array, int arrayIndex) {
             _dictionary?.Entries.CopyTo(array.AsSpan(arrayIndex));
         }
 
+        /// <summary>Copies the entries to the specified <paramref name="span"/>.</summary>
+        /// <param name="span">The span to copy the entries to.</param>
         public void CopyTo(Span<KeyValuePair<K, V>> span) {
             _dictionary?.Entries.CopyTo(span);
         }
 
+        /// <summary>Sorts the entries in the <see cref="ImmutableOrderedDictionary{TKey, TValue}.Builder"/> using the default</summary>
         public void Sort() {
             _dictionary?.Entries.Sort();
         }
 
+        /// <summary>Sorts the entries in the <see cref="ImmutableOrderedDictionary{TKey, TValue}.Builder"/> using the specified <paramref name="comparer"/>.</summary>
+        /// <param name="comparer">The comparer to use for sorting.</param>
         public void Sort(IComparer<KeyValuePair<K, V>> comparer) {
             _dictionary?.Entries.Sort(comparer);
         }
 
+        /// <summary>Sorts the entries in the <see cref="ImmutableOrderedDictionary{TKey, TValue}.Builder"/> using the specified <paramref name="comparison"/>.</summary>
+        /// <param name="comparison">The comparison to use for sorting.</param>
         public void Sort(Comparison<KeyValuePair<K, V>> comparison) {
             _dictionary?.Entries.Sort(comparison);
         }

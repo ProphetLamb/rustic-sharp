@@ -33,7 +33,7 @@ public readonly partial struct PeHeader {
     }
 
     /// <summary>
-    /// Computes the IMAGHELP compatible checksum of a PE image <see cref="data"/>.
+    /// Computes the IMAGHELP compatible checksum of a PE image <paramref name="data"/>.
     /// </summary>
     /// <param name="data">The data of the PE image.</param>
     /// <param name="checksumPos">The byte offset at which the checksum should be, the WORD at this position is skipped.</param>
