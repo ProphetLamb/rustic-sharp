@@ -496,7 +496,7 @@ public static class ILReflect {
         for (int i = 0; i < prams.Length; i++) {
             Type? paramType = prams[i].ParameterType;
             if (paramType.IsByRef) {
-                Type? byRefType = paramType.GetElementType();
+                Type byRefType = paramType.GetElementType() ?? throw new NullReferenceException();
                 Debug.Assert(byRefType is not null);
 
                 Emit.ldarg1()
@@ -527,39 +527,39 @@ public static class ILReflect {
             }
 
             static void I1(ILEmitter e, MemberInfo f) {
-                e.ldc_i4_s((sbyte) ((FieldInfo) f).GetRawConstantValue());
+                e.ldc_i4_s((sbyte) ((FieldInfo) f).GetRawConstantValue()!);
             }
 
             static void U1(ILEmitter e, MemberInfo f) {
-                e.ldc_i4_s((byte) ((FieldInfo) f).GetRawConstantValue());
+                e.ldc_i4_s((byte) ((FieldInfo) f).GetRawConstantValue()!);
             }
 
             static void I4(ILEmitter e, MemberInfo f) {
-                e.ldc_i4((int) ((FieldInfo) f).GetRawConstantValue());
+                e.ldc_i4((int) ((FieldInfo) f).GetRawConstantValue()!);
             }
 
             static void U4(ILEmitter e, MemberInfo f) {
-                e.ldc_i4((uint) ((FieldInfo) f).GetRawConstantValue());
+                e.ldc_i4((uint) ((FieldInfo) f).GetRawConstantValue()!);
             }
 
             static void I8(ILEmitter e, MemberInfo f) {
-                e.ldc_i8((long) ((FieldInfo) f).GetRawConstantValue());
+                e.ldc_i8((long) ((FieldInfo) f).GetRawConstantValue()!);
             }
 
             static void U8(ILEmitter e, MemberInfo f) {
-                e.ldc_i8((ulong) ((FieldInfo) f).GetRawConstantValue());
+                e.ldc_i8((ulong) ((FieldInfo) f).GetRawConstantValue()!);
             }
 
             static void F4(ILEmitter e, MemberInfo f) {
-                e.ldc_r4((float) ((FieldInfo) f).GetRawConstantValue());
+                e.ldc_r4((float) ((FieldInfo) f).GetRawConstantValue()!);
             }
 
             static void F8(ILEmitter e, MemberInfo f) {
-                e.ldc_r8((double) ((FieldInfo) f).GetRawConstantValue());
+                e.ldc_r8((double) ((FieldInfo) f).GetRawConstantValue()!);
             }
 
             static void Str(ILEmitter e, MemberInfo f) {
-                e.ldstr((string) ((FieldInfo) f).GetRawConstantValue());
+                e.ldstr((string) ((FieldInfo) f).GetRawConstantValue()!);
             }
 
             static void Fld(ILEmitter e, MemberInfo f) {
