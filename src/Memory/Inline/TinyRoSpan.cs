@@ -473,7 +473,7 @@ public readonly ref struct TinyRoSpan<T> {
         /// <summary>Initialize the enumerator.</summary>
         /// <param name="TinyRoSpan">The span to enumerate.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal Enumerator(in TinyRoSpan<T> TinyRoSpan) {
+        internal Enumerator(TinyRoSpan<T> TinyRoSpan) {
             _span = TinyRoSpan;
             _index = -1;
         }
