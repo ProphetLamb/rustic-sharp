@@ -7,7 +7,7 @@ init:
 environment:
   COVERALLS_SERVICE_NAME: appveyor
   COVERALLS_REPO_TOKEN:
-    secure: B2tyK7WtC8k3+G6dfBIB9vm5JRj4Fdz0xUsNP58UzSwWcHWcYLjZcfWokDRG76LD
+    secure: Wj5J/gPeINyEl0XwacU3FaHNs/87+S2TNbpQ0QOEeobxLs3qz6k+p7P5iHAk6ZQd
 
 cache:
   - '%LocalAppData%\NuGet\Cache -> **\Rustic*.csproj'
@@ -52,7 +52,7 @@ artifacts:
 deploy:
   - provider: NuGet # Nuget.org
     api_key:
-      secure: wB/TicV9Qsuqfs1X3excsY/wt/pBfqQDb/9kKFWQcCHTL0rQZNHaVqDiEWQ39U6L
+      secure: PQanzTjpLthIVcjr4EbM7mW1n2Cee7r6xUuHaybcBo+qmJbGABkFS181grvVMscS
     artifact: /.*(\.|\.s)nupkg/
     on:
       branch: /release/
