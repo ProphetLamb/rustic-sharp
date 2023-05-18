@@ -12,6 +12,7 @@ namespace Rustic.Native;
 /// Reads in the header information of the Portable Executable format.
 /// Provides information such as the date the assembly was compiled.
 /// </summary>
+[CLSCompliant(false)]
 public readonly partial struct PeHeader
 {
     /// <summary>
