@@ -18,9 +18,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Memory\Memory\Memory.csproj"/>
-        <ProjectReference Include="..\Common\Common.csproj"/>
-        <ProjectReference Include="..\Memory\Specialized\Specialized.csproj"/>
+        <ProjectReference Include="..\Memory\Memory\Memory.csproj" />
+        <ProjectReference Include="..\Common\Common.csproj" />
+        <ProjectReference Include="..\Memory\Specialized\Specialized.csproj" />
     </ItemGroup>
 
 </Project>
