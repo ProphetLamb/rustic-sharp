@@ -11,11 +11,11 @@
 	<PropertyGroup Label="Nuget Package Info">
 		<Authors>ProphetLamb</Authors>
 		<Owners>ProhetLamb</Owners>
-		<AssemblyVersion>0.6.1</AssemblyVersion>
-		<Version>0.6.1</Version>
+		<Version>0.6.2</Version>
+		<AssemblyVersion>$(Version)</AssemblyVersion>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-		<Copyright>Copyright (c) ProphetLamb 2022</Copyright>
+		<Copyright>Copyright (c) ProphetLamb 2023</Copyright>
 		<PackageProjectUrl>https://github.com/ProphetLamb/rustic-sharp</PackageProjectUrl>
 		<RepositoryType>git</RepositoryType>
 		<RepositoryUrl>https://github.com/ProphetLamb/rustic-sharp.git</RepositoryUrl>
