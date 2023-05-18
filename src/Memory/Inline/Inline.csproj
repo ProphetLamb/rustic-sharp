@@ -13,7 +13,7 @@
 		<PackageId>$(Product)</PackageId>
 		<Title>$(Product)</Title>
 		<Description>Immutable inline array-like implementations for passing tiny lists without heap
-			allocations.</Description>
+			allocations. TinyRoSpan, TinyRoVec, TinyVec</Description>
 		<PackageTags>ArrayPool;Ref;Span;Collections</PackageTags>
 	</PropertyGroup>
 

@@ -12,7 +12,7 @@
 		<AssemblyTitle>$(Product)</AssemblyTitle>
 		<PackageId>$(Product)</PackageId>
 		<Title>$(Product)</Title>
-		<Description>IBufferWriter implementing IVector interface.</Description>
+		<Description>IBufferWriter implementing IVector interface. BufWriter, RentArray</Description>
 		<PackageTags>ArrayPool;Ref;Span;Collections</PackageTags>
 	</PropertyGroup>
 

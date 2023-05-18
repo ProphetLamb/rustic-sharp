@@ -11,7 +11,8 @@
 		<AssemblyTitle>$(Product)</AssemblyTitle>
 		<PackageId>$(Product)</PackageId>
 		<Title>$(Product)</Title>
-		<Description>Types and extensions improving string access and formatting functionality.</Description>
+		<Description>Types and extensions improving string access and formatting functionality.
+			Formatter, SeqSplitIter, SplitIter, Tokenizer</Description>
 		<PackageTags>String,Span,Formatting,Text</PackageTags>
 	</PropertyGroup>
 

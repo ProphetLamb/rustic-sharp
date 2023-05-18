@@ -12,7 +12,8 @@
 		<AssemblyTitle>$(Product)</AssemblyTitle>
 		<PackageId>$(Product)</PackageId>
 		<Title>$(Product)</Title>
-		<Description>Commonly used collection implementation allowing by-ref access to the storage.</Description>
+		<Description>Commonly used collection implementation allowing by-ref access to the storage. Vec,
+			RefVec, PoolVec</Description>
 		<PackageTags>ArrayPool;Ref;Span;Collections</PackageTags>
 	</PropertyGroup>
 

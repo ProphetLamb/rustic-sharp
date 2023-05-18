@@ -12,7 +12,8 @@
 		<AssemblyTitle>$(Product)</AssemblyTitle>
 		<PackageId>$(Product)</PackageId>
 		<Title>$(Product)</Title>
-		<Description>Specialized collection implementations and extensions.</Description>
+		<Description>Specialized collection implementations and extensions. ImmutableOrderedDictionary,
+			MultiDictionary, ReversibleIndexSpan</Description>
 		<PackageTags>Dictionary;Span;Collections</PackageTags>
 	</PropertyGroup>
 

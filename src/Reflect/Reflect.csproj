@@ -10,7 +10,8 @@
 		<Title>Rustic.Reflect</Title>
 		<AssemblyName>Rustic.Reflect</AssemblyName>
 		<AssemblyTitle>Rustic.Reflect</AssemblyTitle>
-		<Description>Il based delegate emitter and commonly used reflection utility.</Description>
+		<Description>Il based delegate emitter and commonly used reflection utility. ILEmitter,
+			ILReflect</Description>
 		<PackageTags>Reflection,IL</PackageTags>
 	</PropertyGroup>
 

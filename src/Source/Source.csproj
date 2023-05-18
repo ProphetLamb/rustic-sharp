@@ -11,7 +11,8 @@
 		<AssemblyTitle>$(Product)</AssemblyTitle>
 		<PackageId>$(Product)</PackageId>
 		<Title>$(Product)</Title>
-		<Description>Packages types and functionality related to extending source generators.</Description>
+		<Description>Packages types and functionality related to extending source generators.
+			SrcBuilder, SynModel</Description>
 		<PackageTags>SourceGenerator,Extensions</PackageTags>
 	</PropertyGroup>
 
