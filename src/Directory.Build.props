@@ -21,7 +21,7 @@
         <RepositoryUrl>https://github.com/ProphetLamb/rustic-sharp.git</RepositoryUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageReleaseNotes>
-            $([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)/RELEASENOTES.md"))
+					$([System.IO.File]::ReadAllText("$(SolutionDir)/RELEASENOTES.md"))
         </PackageReleaseNotes>
     </PropertyGroup>
 
