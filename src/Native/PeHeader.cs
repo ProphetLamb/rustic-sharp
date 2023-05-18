@@ -152,6 +152,7 @@ public readonly partial struct PeHeader {
         return FromFile(filePath);
     }
 
+    /// <summary>Whether the magicbytes are "PE\0\0" or not</summary>
     public bool IsSignatureValid => Signature == 0x50450000; // == "PE\0\0"
 
     /// <summary>

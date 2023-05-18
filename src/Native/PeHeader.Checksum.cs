@@ -9,10 +9,12 @@ public readonly partial struct PeHeader {
     private const ulong U16Max = ushort.MaxValue;
     private const ulong U32Top = U32Max + 1; // == (1 << 32)
 
+    /// <summary>Computes the IMAGHELP compatible checksum of a PE image at <paramref name="filePath"/>.</summary>
     public static (PeHeader, uint) FromFileComputeChecksum(string filePath) {
         return FromFileComputeChecksum(new FileInfo(filePath));
     }
 
+    /// <summary>Computes the IMAGHELP compatible checksum of a PE image at <paramref name="info"/>.</summary>
     public static (PeHeader, uint) FromFileComputeChecksum(FileInfo info) {
         using FileStream fs = info.OpenRead();
         // Read the header
@@ -74,7 +76,7 @@ public readonly partial struct PeHeader {
             }
 
             // the value may actually never exceed 2^32-1, but to reduce the number of casts we consume 64bit.
-            ulong value = Types.ReadStruct<ulong>(temp);
+            ulong value = TypeMarshal.ReadStruct<ulong>(temp);
             PermuteChecksum(ref checksum, in value);
         }
 
