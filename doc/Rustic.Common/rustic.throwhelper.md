@@ -167,3 +167,41 @@ public static void ThrowKeyNotFoundException(string message, Exception ex)
 `message` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
 
 `ex` [Exception](https://docs.microsoft.com/en-us/dotnet/api/system.exception)<br>
+
+### **ThrowUnreachableException(String, Exception)**
+
+```csharp
+public static void ThrowUnreachableException(string message, Exception ex)
+```
+
+#### Parameters
+
+`message` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+
+`ex` [Exception](https://docs.microsoft.com/en-us/dotnet/api/system.exception)<br>
+
+### **ObjectDisposedException&lt;T&gt;(String)**
+
+```csharp
+public static void ObjectDisposedException<T>(string message)
+```
+
+#### Type Parameters
+
+`T`<br>
+
+#### Parameters
+
+`message` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+
+### **ObjectDisposedException(String, String)**
+
+```csharp
+public static void ObjectDisposedException(string typeName, string message)
+```
+
+#### Parameters
+
+`typeName` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+
+`message` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>

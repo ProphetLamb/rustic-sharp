@@ -4,19 +4,19 @@
 
 [Fmt](./rustic.text.fmt.md)
 
-[IFmtDef](./rustic.text.ifmtdef.md)
-
 [IdxDef&lt;T&gt;](./rustic.text.idxdef-1.md)
+
+[IFmtDef](./rustic.text.ifmtdef.md)
 
 [NamedDef&lt;T&gt;](./rustic.text.nameddef-1.md)
 
-[SeqSplitIterExtensions](./rustic.text.seqsplititerextensions.md)
-
 [SeqSplitIter&lt;T, S&gt;](./rustic.text.seqsplititer-2.md)
 
-[SplitIterExtensions](./rustic.text.splititerextensions.md)
+[SeqSplitIterExtensions](./rustic.text.seqsplititerextensions.md)
 
 [SplitIter&lt;T&gt;](./rustic.text.splititer-1.md)
+
+[SplitIterExtensions](./rustic.text.splititerextensions.md)
 
 [SplitOptions](./rustic.text.splitoptions.md)
 

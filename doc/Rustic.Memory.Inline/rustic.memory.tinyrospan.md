@@ -360,12 +360,12 @@ The sequence of values.
 
 TinyRoSpan&lt;T&gt;<br>
 
-### **SequenceEquals&lt;T&gt;(TinyRoSpan&lt;T&gt;, TinyRoSpan`1&)**
+### **SequenceEquals&lt;T&gt;(TinyRoSpan`1&, TinyRoSpan`1&)**
 
 Determines whether two sequences are equal by comparing the elements.
 
 ```csharp
-public static bool SequenceEquals<T>(TinyRoSpan<T> span, TinyRoSpan`1& other)
+public static bool SequenceEquals<T>(TinyRoSpan`1& span, TinyRoSpan`1& other)
 ```
 
 #### Type Parameters
@@ -374,7 +374,7 @@ public static bool SequenceEquals<T>(TinyRoSpan<T> span, TinyRoSpan`1& other)
 
 #### Parameters
 
-`span` TinyRoSpan&lt;T&gt;<br>
+`span` TinyRoSpan`1&<br>
 
 `other` TinyRoSpan`1&<br>
 

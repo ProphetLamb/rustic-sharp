@@ -134,31 +134,3 @@ The error message that explains the reason for the exception.
 
 `innerException` [Exception](https://docs.microsoft.com/en-us/dotnet/api/system.exception)<br>
 The exception that is the cause of the current exception.
-
-## Methods
-
-### **Throw()**
-
-Throws a new instance of [UnreachableException](./system.diagnostics.unreachableexception.md).
-
-```csharp
-public static void Throw()
-```
-
-#### Exceptions
-
-[UnreachableException](./system.diagnostics.unreachableexception.md)<br>
-
-### **Throw&lt;T&gt;()**
-
-```csharp
-public static T Throw<T>()
-```
-
-#### Type Parameters
-
-`T`<br>
-
-#### Returns
-
-T<br>
