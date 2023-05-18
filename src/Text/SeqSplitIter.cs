@@ -13,7 +13,7 @@ public static class SeqSplitIterExtensions {
     /// <remarks>Does consume from the iterator.</remarks>
     /// <typeparam name="S">The type of a sequence of chars.</typeparam>
     [Pure]
-    public static string[] ToArray<S>(in this SeqSplitIter<char, S> self)
+    public static string[] ToArray<S>(this SeqSplitIter<char, S> self)
         where S : IEnumerable<char> {
         using PoolBufWriter<string> buf = new();
         while (self.MoveNext()) {
@@ -28,11 +28,12 @@ public static class SeqSplitIterExtensions {
     /// <typeparam name="S">The type of a sequence of elements.</typeparam>
     /// <param name="self">The iterator to aggregate.</param>
     /// <param name="aggregate">The function used to aggregate the items in each iterator element.</param>
-    public static O[] ToArray<T, O, S>(in this SeqSplitIter<T, S> self, Func<O, T, O> aggregate)
+    public static O[] ToArray<T, O, S>(this SeqSplitIter<T, S> self, Func<O, T, O> aggregate)
         where O : new()
         where S : IEnumerable<T> {
         using PoolBufWriter<O> buf = new();
-        foreach (var seg in self) {
+        while (self.MoveNext()) {
+            ReadOnlySpan<T> seg = self.Current;
             O cur = new();
             foreach (var itm in seg) {
                 cur = aggregate(cur, itm);
@@ -48,10 +49,11 @@ public static class SeqSplitIterExtensions {
     /// <param name="self">The iterator to aggregate.</param>
     /// <param name="aggregate">The function used to aggregate the items in each iterator element.</param>
     /// <param name="seed">The initial value used for aggregating each element.</param>
-    public static O[] ToArray<T, O, S>(in this SeqSplitIter<T, S> self, Func<O, T, O> aggregate, Func<O> seed)
+    public static O[] ToArray<T, O, S>(this SeqSplitIter<T, S> self, Func<O, T, O> aggregate, Func<O> seed)
         where S : IEnumerable<T> {
         using PoolBufWriter<O> buf = new();
-        foreach (var seg in self) {
+        while (self.MoveNext()) {
+            ReadOnlySpan<T> seg = self.Current;
             var cur = seed();
             foreach (var itm in seg) {
                 cur = aggregate(cur, itm);

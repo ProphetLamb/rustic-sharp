@@ -601,7 +601,7 @@ public static class RefVecExtensions {
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int SequenceCompareTo<T>(in this RefVec<T> list, RefVec<T> other)
+    public static int SequenceCompareTo<T>(this RefVec<T> list, RefVec<T> other)
         where T : IComparable<T> {
         return list.AsSpan().SequenceCompareTo(other.AsSpan());
     }
