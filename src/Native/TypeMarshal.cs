@@ -6,7 +6,8 @@ using System.Runtime.InteropServices;
 
 namespace Rustic.Native;
 
-public static class Types {
+/// <summary>Provides methods to instantiate types from memory.</summary>
+public static class TypeMarshal {
     /// <summary>
     /// Reads a structure of type <typeparamref name="T"/> from the specified <see cref="Stream"/>.
     /// Consumes size of the structure bytes from the stream.

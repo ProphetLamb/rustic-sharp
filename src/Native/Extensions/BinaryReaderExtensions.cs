@@ -4,15 +4,15 @@ namespace Rustic.Native;
 
 /// <summary>Extensions for <see cref="BinaryReader"/>.</summary>
 public static class BinaryReaderExtensions {
-    ///<inheritdoc cref="Types.FromStreamStruct{T}"/>
+    ///<inheritdoc cref="TypeMarshal.FromStreamStruct{T}"/>
     public static T ReadStruct<T>(this BinaryReader reader)
         where T : struct {
-        return Types.FromStreamStruct<T>(reader.BaseStream);
+        return TypeMarshal.FromStreamStruct<T>(reader.BaseStream);
     }
 
-    ///<inheritdoc cref="Types.FromStreamBlittable{T}"/>
+    ///<inheritdoc cref="TypeMarshal.FromStreamBlittable{T}"/>
     public static T ReadBlittable<T>(this BinaryReader reader)
         where T : class, new() {
-        return Types.FromStreamBlittable<T>(reader.BaseStream);
+        return TypeMarshal.FromStreamBlittable<T>(reader.BaseStream);
     }
 }
