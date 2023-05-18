@@ -6,20 +6,17 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 
-using Rustic.Memory;
-
 namespace Rustic.Memory;
 
 /// <summary>
 ///     Reusable <see cref="IBufferWriter{T}"/> intended for use as a thread-static singleton.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-[DebuggerDisplay("Length: {Count}")]
-[DebuggerTypeProxy(typeof(PoolBufWriterDebuggerView<>))]
-public class BufWriter<T> :
-    IBufferWriter<T>,
-    IVector<T>,
-    IDisposable {
+[DebuggerDisplay("Length: {Count}"), DebuggerTypeProxy(typeof(PoolBufWriterDebuggerView<>)),]
+public class BufWriter<T>
+    : IBufferWriter<T>,
+        IVector<T>,
+        IDisposable {
     /// <summary>
     /// The internal storage.
     /// </summary>
@@ -43,6 +40,7 @@ public class BufWriter<T> :
         if (initialCapacity != 0) {
             Buffer = new T[initialCapacity];
         }
+
         _index = 0;
     }
 
@@ -53,8 +51,7 @@ public class BufWriter<T> :
 
     /// <inheritdoc cref="List{T}.Count" />
     public int Length {
-        [Pure]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
         get => _index;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal set {
@@ -74,10 +71,10 @@ public class BufWriter<T> :
     bool ICollection<T>.IsReadOnly => false;
 
     /// <inheritdoc />
-    public int Capacity => (Buffer?.Length) ?? 0;
+    public int Capacity => Buffer?.Length ?? 0;
 
     /// <inheritdoc />
-    public bool IsEmpty => 0u >= (uint)Length;
+    public bool IsEmpty => 0u >= (uint) Length;
 
     /// <inheritdoc />
     public bool IsDefault => Buffer is null;
@@ -88,8 +85,7 @@ public class BufWriter<T> :
 
     /// <inheritdoc />
     public ref T this[int index] {
-        [Pure]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
         get {
             ThrowHelper.ArgumentInRange(index, index >= 0 && index < Length);
             ThrowHelper.ArgumentIs(this, Buffer is not null);
@@ -110,7 +106,10 @@ public class BufWriter<T> :
 #endif
 
     /// <inheritdoc />
-    T IList<T>.this[int index] { get => this[index]; set => this[index] = value; }
+    T IList<T>.this[int index] {
+        get => this[index];
+        set => this[index] = value;
+    }
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -142,7 +141,7 @@ public class BufWriter<T> :
 
     /// <inheritdoc />
     public void Add(T item) {
-        var pos = _index;
+        int pos = _index;
         if (pos > Capacity - 1) {
             Grow(1);
         }
@@ -161,22 +160,27 @@ public class BufWriter<T> :
     }
 
     /// <inheritdoc />
-    bool ICollection<T>.Contains(T item) => this.IndexOf(in item) >= 0;
+    bool ICollection<T>.Contains(T item) {
+        return this.IndexOf(in item) >= 0;
+    }
 
-    int IList<T>.IndexOf(T item) => this.IndexOf(in item);
+    int IList<T>.IndexOf(T item) {
+        return this.IndexOf(in item);
+    }
 
     /// <inheritdoc />
     [CLSCompliant(false)]
     public void Insert(int index, in T item) {
         ThrowHelper.ArgumentInRange(index, index >= 0 && index <= Count);
 
-        var pos = _index;
+        int pos = _index;
         if (pos > Capacity - 1) {
             Grow(1);
         }
+
         Debug.Assert(Buffer is not null);
 
-        var remaining = pos - index;
+        int remaining = pos - index;
 
         if (remaining != 0) {
             Array.Copy(Buffer, index, Buffer!, index + 1, remaining);
@@ -187,15 +191,17 @@ public class BufWriter<T> :
         _index = pos + 1;
     }
 
-    void IList<T>.Insert(int index, T item) => Insert(index, in item);
+    void IList<T>.Insert(int index, T item) {
+        Insert(index, in item);
+    }
 
     /// <inheritdoc />
     public void RemoveAt(int index) {
         ThrowHelper.ArgumentInRange(index, index >= 0 && index < Count);
         Debug.Assert(Buffer is not null);
 
-        var pos = _index - 1;
-        var remaining = pos - index;
+        int pos = _index - 1;
+        int remaining = pos - index;
 
         if (remaining != 0) {
             Array.Copy(Buffer!, index + 1, Buffer!, index, remaining);
@@ -206,7 +212,9 @@ public class BufWriter<T> :
     }
 
     /// <inheritdoc />
-    bool ICollection<T>.Remove(T item) => this.Remove(in item);
+    bool ICollection<T>.Remove(T item) {
+        return this.Remove(in item);
+    }
 
     /// <inheritdoc />
     public void CopyTo(T[] array, int arrayIndex) {
@@ -214,7 +222,9 @@ public class BufWriter<T> :
     }
 
     /// <inheritdoc />
-    void ICollection.CopyTo(Array array, int index) => CopyTo((T[])array, index);
+    void ICollection.CopyTo(Array array, int index) {
+        CopyTo((T[]) array, index);
+    }
 
     /// <summary>
     /// Returns the <see cref="Span{T}"/> representing the written / requested portion of the buffer.
@@ -281,7 +291,9 @@ public class BufWriter<T> :
     ///     Resets the object.
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public T[] ToArray() => ToArray(false);
+    public T[] ToArray() {
+        return ToArray(false);
+    }
 
     /// <summary>
     /// Returns a array containing a shallow-copy of the written / requested portion of the buffer.
@@ -296,7 +308,7 @@ public class BufWriter<T> :
             return Array.Empty<T>();
         }
 
-        var array = new T[_index];
+        T[]? array = new T[_index];
         Buffer.AsSpan(0, _index).CopyTo(array);
 
         if (dispose) {
@@ -325,18 +337,25 @@ public class BufWriter<T> :
         if (disposing) {
             Reset();
         }
+
         _index = -1;
     }
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
     [Pure]
-    public VecIter<T> GetEnumerator() => new(Buffer, 0, _index);
+    public VecIter<T> GetEnumerator() {
+        return new(Buffer, 0, _index);
+    }
 
     /// <inheritdoc />
-    IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+    IEnumerator<T> IEnumerable<T>.GetEnumerator() {
+        return GetEnumerator();
+    }
 
     /// <inheritdoc />
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() {
+        return GetEnumerator();
+    }
 
     /// <summary>Grows the buffer so that it can contain at least <paramref name="additionalCapacityBeyondPos"/>.</summary>
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -344,8 +363,12 @@ public class BufWriter<T> :
         Debug.Assert(additionalCapacityBeyondPos > 0);
 
         if (Buffer is not null) {
-            Debug.Assert(_index > Buffer.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
-            var temp = new T[(_index + additionalCapacityBeyondPos).Max(Buffer.Length * 2)];
+            Debug.Assert(
+                _index > Buffer.Length - additionalCapacityBeyondPos,
+                "Grow called incorrectly, no resize is needed."
+            );
+
+            T[]? temp = new T[(_index + additionalCapacityBeyondPos).Max(Buffer.Length * 2)];
             Buffer.AsSpan(0, _index).CopyTo(temp);
             Buffer = temp;
         } else {
@@ -359,6 +382,7 @@ public class BufWriter<T> :
         if (Length >= Capacity - additionalCapacity) {
             Grow(additionalCapacity);
         }
+
         return Capacity;
     }
 
@@ -367,7 +391,7 @@ public class BufWriter<T> :
         ThrowHelper.ArgumentInRange(index, index >= 0);
         ThrowHelper.ArgumentInRange(index, index <= Length);
 
-        var count = values.Length;
+        int count = values.Length;
         if (count == 0) {
             return;
         }
@@ -377,7 +401,7 @@ public class BufWriter<T> :
         }
 
         Debug.Assert(Buffer is not null);
-        var storage = Buffer;
+        T[]? storage = Buffer;
         Array.Copy(storage, index, storage, index + count, Length - index);
         values.CopyTo(storage.AsSpan(index));
         Length += count;
@@ -390,8 +414,8 @@ public class BufWriter<T> :
         if (count != 0) {
             Debug.Assert(Buffer is not null);
 
-            var end = Length - count;
-            var remaining = end - start;
+            int end = Length - count;
+            int remaining = end - start;
             Array.Copy(Buffer, start + count, Buffer, start, remaining);
             Array.Clear(Buffer, end, count);
             Length = end;
@@ -450,8 +474,8 @@ public class BufWriter<T> :
             return -1;
         }
 
-        var end = start + count;
-        for (var i = start; i < end; i++) {
+        int end = start + count;
+        for (int i = start; i < end; i++) {
             if (!comparer.Equals(item, Buffer[i])) {
                 continue;
             }
@@ -471,8 +495,8 @@ public class BufWriter<T> :
             return -1;
         }
 
-        var end = start + count;
-        for (var i = end - 1; i >= start; i--) {
+        int end = start + count;
+        for (int i = end - 1; i >= start; i--) {
             if (!comparer.Equals(item, Buffer[i])) {
                 continue;
             }
@@ -512,9 +536,9 @@ public class BufWriter<T> :
             return -1;
         }
 
-        var end = start + count;
+        int end = start + count;
         if (typeof(T).IsValueType) {
-            for (var i = start; i < end; i++) {
+            for (int i = start; i < end; i++) {
                 if (!EqualityComparer<T>.Default.Equals(item, Buffer[i])) {
                     continue;
                 }
@@ -525,8 +549,8 @@ public class BufWriter<T> :
             return -1;
         }
 
-        var defaultCmp = EqualityComparer<T>.Default;
-        for (var i = start; i < end; i++) {
+        EqualityComparer<T>? defaultCmp = EqualityComparer<T>.Default;
+        for (int i = start; i < end; i++) {
             if (!defaultCmp.Equals(item, Buffer[i])) {
                 continue;
             }
@@ -545,9 +569,9 @@ public class BufWriter<T> :
             return -1;
         }
 
-        var end = start + count;
+        int end = start + count;
         if (typeof(T).IsValueType) {
-            for (var i = end - 1; i >= start; i--) {
+            for (int i = end - 1; i >= start; i--) {
                 if (!EqualityComparer<T>.Default.Equals(item, Buffer[i])) {
                     continue;
                 }
@@ -558,9 +582,9 @@ public class BufWriter<T> :
             return -1;
         }
 
-        var defaultCmp = EqualityComparer<T>.Default;
+        EqualityComparer<T>? defaultCmp = EqualityComparer<T>.Default;
 
-        for (var i = end - 1; i >= start; i--) {
+        for (int i = end - 1; i >= start; i--) {
             if (!defaultCmp.Equals(item, Buffer[i])) {
                 continue;
             }

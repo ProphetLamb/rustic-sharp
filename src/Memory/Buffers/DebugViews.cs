@@ -13,10 +13,11 @@ internal sealed class PoolBufWriterDebuggerView<T> {
     [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
     public T[] Items {
         get {
-            if (_ref.TryGetTarget(out var writer) && !writer.RawStorage.IsEmpty) {
-                var span = writer.AsSpan();
+            if (_ref.TryGetTarget(out BufWriter<T>? writer) && !writer.RawStorage.IsEmpty) {
+                ReadOnlySpan<T> span = writer.AsSpan();
                 return span.ToArray();
             }
+
             return Array.Empty<T>();
         }
     }

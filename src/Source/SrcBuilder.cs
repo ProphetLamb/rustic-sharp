@@ -25,7 +25,7 @@ public class SrcBuilder {
     /// <param name="indentSize">The number of `space` characters used to indent a level.</param>
     public SrcBuilder(int initialCap, int indentSize = 4) {
         Builder = new StringBuilder(initialCap);
-        _indent = String.Empty;
+        _indent = string.Empty;
         SetIndent(indentSize, 0);
     }
 
@@ -56,7 +56,7 @@ public class SrcBuilder {
         _indent = new string(' ', IndentLevel * IndentSize);
     }
 
-    #region StringBuilder
+#region StringBuilder
 
     /// <inheritdoc cref="AppendIndent(string)"/>
     public SrcBuilder AppendIndent() {
@@ -82,9 +82,10 @@ public class SrcBuilder {
     /// <summary>Appends the value to the builder, with no indentation, equivalent to <see cref="StringBuilder.Append(string)"/></summary>
     /// <param name="text">The text to append</param>
     public SrcBuilder Append(string? text) {
-        if (!String.IsNullOrEmpty(text)) {
+        if (!string.IsNullOrEmpty(text)) {
             Builder.Append(text);
         }
+
         return this;
     }
 
@@ -98,8 +99,8 @@ public class SrcBuilder {
             Builder.Append(text.ToString());
 #pragma warning restore CS1503,CA1830
 #endif
-
         }
+
         return this;
     }
 
@@ -113,11 +114,12 @@ public class SrcBuilder {
     /// <param name="text">The text to append.</param>
     public SrcBuilder AppendLine(string? text) {
         AppendIndent();
-        if (!String.IsNullOrEmpty(text)) {
+        if (!string.IsNullOrEmpty(text)) {
             Builder.AppendLine(text);
         } else {
             NL();
         }
+
         return this;
     }
 
@@ -125,7 +127,8 @@ public class SrcBuilder {
     public SrcBuilder AppendLine(char text) {
         AppendIndent();
         Builder.Append(text)
-            .AppendLine();
+           .AppendLine();
+
         return this;
     }
 
@@ -139,18 +142,20 @@ public class SrcBuilder {
     /// <summary>Appends the the specified text if any, and a linebreak sequence. Does not append any indentation contrary to <see cref="AppendLine(string?)"/></summary>
     /// <param name="text">The text to append.</param>
     public SrcBuilder NoIndentLine(string? text) {
-        if (!String.IsNullOrEmpty(text)) {
+        if (!string.IsNullOrEmpty(text)) {
             Builder.AppendLine(text);
         } else {
             Builder.AppendLine();
         }
+
         return this;
     }
 
     /// <inheritdoc cref="NoIndentLine(string)"/>
     public SrcBuilder NoIndentLine(char text) {
         Builder.Append(text)
-            .AppendLine();
+           .AppendLine();
+
         return this;
     }
 
@@ -160,9 +165,10 @@ public class SrcBuilder {
     public SrcBuilder AppendDoubleLine(string? text) {
         Builder.AppendLine();
         AppendIndent();
-        if (!String.IsNullOrEmpty(text)) {
+        if (!string.IsNullOrEmpty(text)) {
             Builder.AppendLine(text);
         }
+
         return this;
     }
 
@@ -171,7 +177,8 @@ public class SrcBuilder {
         Builder.AppendLine();
         AppendIndent();
         Builder.Append(text)
-            .AppendLine();
+           .AppendLine();
+
         return this;
     }
 
@@ -189,9 +196,9 @@ public class SrcBuilder {
         return Builder.ToString();
     }
 
-    #endregion StringBuilder
+#endregion StringBuilder
 
-    #region Source file
+#region Source file
 
     /// <summary>Increments the <see cref="IndentLevel"/> by one</summary>
     public SrcBuilder Indent() {
@@ -201,10 +208,11 @@ public class SrcBuilder {
 
     /// <summary>Decrements the <see cref="IndentLevel"/> by one, if possible; otherwise does nothing.</summary>
     public SrcBuilder Outdent() {
-        var level = IndentLevel;
+        int level = IndentLevel;
         if (level > 0) {
             IndentLevel = level - 1;
         }
+
         return this;
     }
 
@@ -238,9 +246,9 @@ public class SrcBuilder {
         return this;
     }
 
-    #endregion Source file
+#endregion Source file
 
-    #region Csharp
+#region Csharp
 
     /// <summary>Appends indented `if (<paramref name="condition"/>)` followed by <see cref="BlockStart"/>.</summary>
     /// <param name="condition">The if condition.</param>
@@ -273,6 +281,7 @@ public class SrcBuilder {
         } else {
             Builder.Append("case ").Append(constant).Append(':');
         }
+
         Indent();
         NL();
         return this;
@@ -321,6 +330,7 @@ public class SrcBuilder {
 
     /// <summary>Parameter formatting callback.</summary>
     public delegate void ParamsAction(ref SrcColl p);
+
     /// <summary>Parameter formatting callback with a given context object.</summary>
     public delegate void ParamsAction<C>(in C ctx, ref SrcColl p);
 
@@ -329,7 +339,7 @@ public class SrcBuilder {
     /// <param name="parameters">The callback used to create the arguments for the call.</param>
     public SrcBlock Decl(string definition, ParamsAction parameters) {
         AppendIndent(definition);
-        var p = Params();
+        SrcColl p = Params();
         parameters(ref p);
         p.Dispose();
         return Block();
@@ -341,7 +351,7 @@ public class SrcBuilder {
     /// <param name="parameters">The callback used to create the arguments for the call.</param>
     public SrcBlock Decl<C>(string definition, in C ctx, ParamsAction<C> parameters) {
         AppendIndent(definition);
-        var p = Params();
+        SrcColl p = Params();
         parameters(in ctx, ref p);
         p.Dispose();
         NL();
@@ -358,8 +368,9 @@ public class SrcBuilder {
     public SrcBlock Switch(string value) {
         AppendIndent();
         Builder.Append("switch (")
-            .Append(value)
-            .AppendLine(")");
+           .Append(value)
+           .AppendLine(")");
+
         return Block();
     }
 
@@ -371,22 +382,28 @@ public class SrcBuilder {
     /// <param name="defaultBlock">Determines the content of the default block.</param>
     /// <typeparam name="S">The type of the sequence used as a source for the case branches.</typeparam>
     /// <typeparam name="T">The type of elements the the source sequence.</typeparam>
-    public void Switch<S, T>(string value, in S source, Func<T, string?> caseConstant, Func<SrcBuilder, T, CaseStyle> caseBlock, Func<SrcBuilder, S, CaseStyle>? defaultBlock = null)
+    public void Switch<S, T>(
+        string value,
+        in S source,
+        Func<T, string?> caseConstant,
+        Func<SrcBuilder, T, CaseStyle> caseBlock,
+        Func<SrcBuilder, S, CaseStyle>? defaultBlock = null)
         where S : IEnumerable<T> {
         using (Switch(value)) {
-            foreach (var b in source) {
+            foreach (T? b in source) {
                 string? constant = caseConstant(b);
                 if (constant is not null) {
-                    using var c = Case(constant);
-                    var returned = caseBlock(this, b);
+                    using SrcCase c = Case(constant);
+                    CaseStyle returned = caseBlock(this, b);
                     if ((returned & CaseStyle.NoBreak) != 0) {
                         c.Returned();
                     }
                 }
             }
+
             if (defaultBlock is not null) {
-                using var c = Case(default);
-                var returned = defaultBlock(this, source);
+                using SrcCase c = Case(default);
+                CaseStyle returned = defaultBlock(this, source);
                 if ((returned & CaseStyle.NoBreak) != 0) {
                     c.Returned();
                 }
@@ -402,10 +419,15 @@ public class SrcBuilder {
     /// <param name="defaultBlock">Determines the content of the default block.</param>
     /// <typeparam name="S">The type of the sequence used as a source for the case branches.</typeparam>
     /// <typeparam name="T">The type of elements the the source sequence.</typeparam>
-    public void Switch<S, T>(string value, in S source, Func<T, string?> caseConstant, Action<SrcBuilder, T> caseBlock, Action<SrcBuilder, S>? defaultBlock = null)
+    public void Switch<S, T>(
+        string value,
+        in S source,
+        Func<T, string?> caseConstant,
+        Action<SrcBuilder, T> caseBlock,
+        Action<SrcBuilder, S>? defaultBlock = null)
         where S : IEnumerable<T> {
         using (Switch(value)) {
-            foreach (var b in source) {
+            foreach (T? b in source) {
                 string? constant = caseConstant(b);
                 if (constant is not null) {
                     using (Case(constant)) {
@@ -413,6 +435,7 @@ public class SrcBuilder {
                     }
                 }
             }
+
             if (defaultBlock is not null) {
                 using (Case(default)) {
                     defaultBlock(this, source);
@@ -432,32 +455,38 @@ public class SrcBuilder {
     /// <example>collection {<br/>  one,<br/>  two,<br/>  three<br/>};<br/></example>
     public SrcColl Coll(string collection) {
         AppendIndent(collection);
-        return new SrcColl(this,
+        return new SrcColl(
+            this,
             static (b) => b.NL().AppendLine('{').Indent(),
             static (c, s) => c.Builder.AppendIndent().Append(s),
             static (b) => b.Append(',').NL(),
-            static (b) => b.Append(',').NL().Outdent().AppendLine("};"));
+            static (b) => b.Append(',').NL().Outdent().AppendLine("};")
+        );
     }
 
     /// <summary>Returns a fluent builder which can be used to create function parameters or arguments.</summary>
     /// <example>(one, two, three)</example>
     public SrcColl Params() {
-        return new SrcColl(this,
+        return new SrcColl(
+            this,
             static (b) => b.Append('('),
             static (c, s) => c.Builder.Append(s),
             static (b) => b.Append(", "),
-            static (b) => b.Append(")"));
+            static (b) => b.Append(")")
+        );
     }
 
     /// <summary>Adds an invocation, then returns a fluent builder which can be used to create function parameters or arguments.</summary>
     /// <param name="invocation">The invocation to add</param>
     public SrcColl Call(string invocation) {
         AppendIndent(invocation);
-        return new SrcColl(this,
+        return new SrcColl(
+            this,
             static (b) => b.Append('('),
             static (c, s) => c.Builder.Append(s),
             static (b) => b.Append(", "),
-            static (b) => b.Append(");").NL());
+            static (b) => b.Append(");").NL()
+        );
     }
 
     /// <summary>Adds a region block. Returns a fluent builder which can be used to write into that region.</summary>
@@ -490,6 +519,7 @@ public class SrcBuilder {
             if (!_disposed) {
                 Builder.BlockEnd();
             }
+
             _disposed = true;
         }
     }
@@ -513,6 +543,7 @@ public class SrcBuilder {
             if (!_disposed) {
                 Builder.Outdent();
             }
+
             _disposed = true;
         }
     }
@@ -548,6 +579,7 @@ public class SrcBuilder {
                     Builder.CaseEnd();
                 }
             }
+
             _disposed = true;
         }
     }
@@ -574,7 +606,12 @@ public class SrcBuilder {
         /// <param name="infix">The action called when building a single element.</param>
         /// <param name="separator">The separator called between building two elements.</param>
         /// <param name="suffix">The action called after the last element is built.</param>
-        public SrcColl(SrcBuilder builder, Action<SrcBuilder> prefix, Action<SrcColl, string> infix, Action<SrcBuilder> separator, Action<SrcBuilder> suffix) {
+        public SrcColl(
+            SrcBuilder builder,
+            Action<SrcBuilder> prefix,
+            Action<SrcColl, string> infix,
+            Action<SrcBuilder> separator,
+            Action<SrcBuilder> suffix) {
             _disposed = false;
             Builder = builder;
             Prefix = prefix;
@@ -602,6 +639,7 @@ public class SrcBuilder {
             if (!_disposed) {
                 Suffix(Builder);
             }
+
             _disposed = true;
         }
 
@@ -644,13 +682,14 @@ public class SrcBuilder {
             if (!_disposed) {
                 Builder.AppendDoubleLine(End);
             }
+
             _disposed = true;
         }
     }
 
-    #endregion Csharp
+#endregion Csharp
 
-    #region XML
+#region XML
 
     /// <inheritdoc cref="AppendDoc(string)"/>
     public SrcBuilder AppendDoc() {
@@ -665,7 +704,7 @@ public class SrcBuilder {
     /// <summary>Appends an indented documentation comment line `///`</summary>
     /// <param name="text">The comment line content</param>
     public SrcBuilder AppendDoc(string? text) {
-        if (String.IsNullOrEmpty(text)) {
+        if (string.IsNullOrEmpty(text)) {
             return AppendDoc();
         }
 
@@ -676,7 +715,7 @@ public class SrcBuilder {
     /// <param name="elementName">The name of the XML-tag.</param>
     /// <param name="attributes">The string representation of the attributes.</param>
     public SrcBuilder DocStart(string elementName, string? attributes) {
-        if (String.IsNullOrEmpty(attributes)) {
+        if (string.IsNullOrEmpty(attributes)) {
             return AppendDoc($"<{elementName}>");
         }
 
@@ -695,15 +734,16 @@ public class SrcBuilder {
     /// <param name="content">The content.</param>
     /// <returns></returns>
     public SrcBuilder DocInline(string elementName, string? attributes = null, string? content = null) {
-        if (String.IsNullOrEmpty(attributes)) {
+        if (string.IsNullOrEmpty(attributes)) {
             Append('<').Append(elementName);
         } else {
             Append('<').Append(elementName).Append(' ').Append(attributes);
         }
 
-        if (!String.IsNullOrEmpty(content)) {
+        if (!string.IsNullOrEmpty(content)) {
             Append('>').Append(content).Append('<').Append(elementName);
         }
+
         return Append("/>");
     }
 
@@ -744,9 +784,10 @@ public class SrcBuilder {
             if (!_disposed) {
                 Builder.DocEnd(ElementName).NL();
             }
+
             _disposed = true;
         }
     }
 
-    #endregion XML
+#endregion XML
 }

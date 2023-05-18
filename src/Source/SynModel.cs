@@ -1,5 +1,3 @@
-
-
 using System;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
@@ -66,7 +64,6 @@ public readonly struct SynModel {
     public bool Is<N>(out SynModel<N> model)
         where N : SyntaxNode {
         if (Node is N n) {
-
             model = new SynModel<N>(n, Model);
             return true;
         }
@@ -110,7 +107,9 @@ public readonly struct SynModel {
     }
 
     /// <summary>Casts the <see cref="GeneratorSyntaxContext"/> to <see cref="SynModel"/>.</summary>
-    public static implicit operator SynModel(GeneratorSyntaxContext ctx) => Unsafe.As<GeneratorSyntaxContext, SynModel>(ref ctx);
+    public static implicit operator SynModel(GeneratorSyntaxContext ctx) {
+        return Unsafe.As<GeneratorSyntaxContext, SynModel>(ref ctx);
+    }
 }
 
 /// <summary>Strong-typed <see cref="SyntaxNode"/> and the associated <see cref="SemanticModel"/>.</summary>
@@ -140,7 +139,7 @@ public readonly struct SynModel<N>
     /// <summary>Indicates whether two models are equivalent.</summary>
     /// <param name="other">The model to compare to.</param>
     public bool Eq(in SynModel other) {
-        return other.Is<N>(out var model) && Eq(in model);
+        return other.Is<N>(out SynModel<N> model) && Eq(in model);
     }
 
     /// <summary>Indicates whether two models are equivalent.</summary>
@@ -170,5 +169,7 @@ public readonly struct SynModel<N>
     }
 
     /// <summary>Casts the strong-typed <see cref="SynModel"/> to the weak-typed equivalent.</summary>
-    public static implicit operator SynModel(in SynModel<N> model) => new(model.Node, model.Model);
+    public static implicit operator SynModel(in SynModel<N> model) {
+        return new(model.Node, model.Model);
+    }
 }

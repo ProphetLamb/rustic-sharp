@@ -16,11 +16,13 @@ public sealed class AllowNullAttribute : Attribute { }
 public sealed class DisallowNullAttribute : Attribute { }
 
 /// <summary>Specifies that an output may be null even if the corresponding type disallows it.</summary>
-[AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.ReturnValue, Inherited = false)]
+[AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.ReturnValue, Inherited
+ = false)]
 public sealed class MaybeNullAttribute : Attribute { }
 
 /// <summary>Specifies that an output will not be null even if the corresponding type allows it. Specifies that an input argument was not null when the call returns.</summary>
-[AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.ReturnValue, Inherited = false)]
+[AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.ReturnValue, Inherited
+ = false)]
 public sealed class NotNullAttribute : Attribute { }
 
 /// <summary>Specifies that when a method returns <see cref="ReturnValue"/>, the parameter may be null even if the corresponding type disallows it.</summary>
@@ -50,7 +52,8 @@ public sealed class NotNullWhenAttribute : Attribute {
 }
 
 /// <summary>Specifies that the output will be non-null if the named parameter is non-null.</summary>
-[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.ReturnValue, AllowMultiple = true, Inherited = false)]
+[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.ReturnValue, AllowMultiple =
+ true, Inherited = false)]
 public sealed class NotNullIfNotNullAttribute : Attribute {
     /// <summary>Initializes the attribute with the associated parameter name.</summary>
     /// <param name="parameterName">
@@ -89,13 +92,17 @@ public sealed class MemberNotNullAttribute : Attribute {
     /// <param name="member">
     /// The field or property member that is promised to be not-null.
     /// </param>
-    public MemberNotNullAttribute(string member) => Members = new[] { member };
+    public MemberNotNullAttribute(string member) {
+        Members = new[] {member,};
+    }
 
     /// <summary>Initializes the attribute with the list of field and property members.</summary>
     /// <param name="members">
     /// The list of field and property members that are promised to be not-null.
     /// </param>
-    public MemberNotNullAttribute(params string[] members) => Members = members;
+    public MemberNotNullAttribute(params string[] members) {
+        Members = members;
+    }
 
     /// <summary>Gets field or property member names.</summary>
     public string[] Members { get; }
@@ -113,7 +120,7 @@ public sealed class MemberNotNullWhenAttribute : Attribute {
     /// </param>
     public MemberNotNullWhenAttribute(bool returnValue, string member) {
         ReturnValue = returnValue;
-        Members = new[] { member };
+        Members = new[] {member,};
     }
 
     /// <summary>Initializes the attribute with the specified return value condition and list of field and property members.</summary>

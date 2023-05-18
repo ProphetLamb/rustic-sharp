@@ -19,6 +19,7 @@ public static class SeqSplitIterExtensions {
         while (self.MoveNext()) {
             buf.Add(self.Current.ToString());
         }
+
         return buf.ToArray();
     }
 
@@ -35,10 +36,11 @@ public static class SeqSplitIterExtensions {
         while (self.MoveNext()) {
             ReadOnlySpan<T> seg = self.Current;
             O cur = new();
-            foreach (var itm in seg) {
+            foreach (T? itm in seg) {
                 cur = aggregate(cur, itm);
             }
         }
+
         return buf.ToArray();
     }
 
@@ -54,11 +56,12 @@ public static class SeqSplitIterExtensions {
         using PoolBufWriter<O> buf = new();
         while (self.MoveNext()) {
             ReadOnlySpan<T> seg = self.Current;
-            var cur = seed();
-            foreach (var itm in seg) {
+            O? cur = seed();
+            foreach (T? itm in seg) {
                 cur = aggregate(cur, itm);
             }
         }
+
         return buf.ToArray();
     }
 
@@ -70,7 +73,11 @@ public static class SeqSplitIterExtensions {
     /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
     /// <typeparam name="S">The type of a sequence of elements.</typeparam>
     /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
-    public static SeqSplitIter<T, S> Split<T, S>(this ReadOnlySpan<T> span, in S separator, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
+    public static SeqSplitIter<T, S> Split<T, S>(
+        this ReadOnlySpan<T> span,
+        in S separator,
+        SplitOptions options = SplitOptions.None,
+        IEqualityComparer<T>? comparer = default)
         where S : IEnumerable<T> {
         return new(span, TinyRoSpan.From(separator), options, comparer);
     }
@@ -84,7 +91,12 @@ public static class SeqSplitIterExtensions {
     /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
     /// <typeparam name="S">The type of a sequence of elements.</typeparam>
     /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
-    public static SeqSplitIter<T, S> Split<T, S>(this ReadOnlySpan<T> span, in S separator0, in S separator1, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
+    public static SeqSplitIter<T, S> Split<T, S>(
+        this ReadOnlySpan<T> span,
+        in S separator0,
+        in S separator1,
+        SplitOptions options = SplitOptions.None,
+        IEqualityComparer<T>? comparer = default)
         where S : IEnumerable<T> {
         return new(span, TinyRoSpan.From(separator0, separator1), options, comparer);
     }
@@ -99,7 +111,13 @@ public static class SeqSplitIterExtensions {
     /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
     /// <typeparam name="S">The type of a sequence of elements.</typeparam>
     /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
-    public static SeqSplitIter<T, S> Split<T, S>(this ReadOnlySpan<T> span, in S separator0, in S separator1, in S separator2, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
+    public static SeqSplitIter<T, S> Split<T, S>(
+        this ReadOnlySpan<T> span,
+        in S separator0,
+        in S separator1,
+        in S separator2,
+        SplitOptions options = SplitOptions.None,
+        IEqualityComparer<T>? comparer = default)
         where S : IEnumerable<T> {
         return new(span, TinyRoSpan.From(separator0, separator1, separator2), options, comparer);
     }
@@ -115,7 +133,14 @@ public static class SeqSplitIterExtensions {
     /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
     /// <typeparam name="S">The type of a sequence of elements.</typeparam>
     /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
-    public static SeqSplitIter<T, S> Split<T, S>(this ReadOnlySpan<T> span, in S separator0, in S separator1, in S separator2, in S separator3, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
+    public static SeqSplitIter<T, S> Split<T, S>(
+        this ReadOnlySpan<T> span,
+        in S separator0,
+        in S separator1,
+        in S separator2,
+        in S separator3,
+        SplitOptions options = SplitOptions.None,
+        IEqualityComparer<T>? comparer = default)
         where S : IEnumerable<T> {
         return new(span, TinyRoSpan.From(separator0, separator1, separator2, separator3), options, comparer);
     }
@@ -128,7 +153,11 @@ public static class SeqSplitIterExtensions {
     /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
     /// <typeparam name="S">The type of a sequence of elements.</typeparam>
     /// <returns>The iterator splitting the <paramref name="span"/> with the specified parameters.</returns>
-    public static SeqSplitIter<T, S> Split<T, S>(this ReadOnlySpan<T> span, TinyRoSpan<S> separators, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
+    public static SeqSplitIter<T, S> Split<T, S>(
+        this ReadOnlySpan<T> span,
+        TinyRoSpan<S> separators,
+        SplitOptions options = SplitOptions.None,
+        IEqualityComparer<T>? comparer = default)
         where S : IEnumerable<T> {
         return new(span, separators, options, comparer);
     }
@@ -141,7 +170,11 @@ public static class SeqSplitIterExtensions {
     /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
     /// <typeparam name="S">The type of a sequence of elements.</typeparam>
     /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
-    public static SeqSplitIter<T, S> Split<T, S>(this Span<T> span, in S separator, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
+    public static SeqSplitIter<T, S> Split<T, S>(
+        this Span<T> span,
+        in S separator,
+        SplitOptions options = SplitOptions.None,
+        IEqualityComparer<T>? comparer = default)
         where S : IEnumerable<T> {
         return new(span, TinyRoSpan.From(separator), options, comparer);
     }
@@ -156,7 +189,12 @@ public static class SeqSplitIterExtensions {
     /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
     /// <typeparam name="S">The type of a sequence of elements.</typeparam>
     /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
-    public static SeqSplitIter<T, S> Split<T, S>(this Span<T> span, in S separator0, in S separator1, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
+    public static SeqSplitIter<T, S> Split<T, S>(
+        this Span<T> span,
+        in S separator0,
+        in S separator1,
+        SplitOptions options = SplitOptions.None,
+        IEqualityComparer<T>? comparer = default)
         where S : IEnumerable<T> {
         return new(span, TinyRoSpan.From(separator0, separator1), options, comparer);
     }
@@ -169,7 +207,11 @@ public static class SeqSplitIterExtensions {
     /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
     /// <typeparam name="S">The type of a sequence of elements.</typeparam>
     /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
-    public static SeqSplitIter<T, S> Split<T, S>(this Span<T> span, TinyRoSpan<S> separators, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
+    public static SeqSplitIter<T, S> Split<T, S>(
+        this Span<T> span,
+        TinyRoSpan<S> separators,
+        SplitOptions options = SplitOptions.None,
+        IEqualityComparer<T>? comparer = default)
         where S : IEnumerable<T> {
         return new(span, separators, options, comparer);
     }
@@ -186,7 +228,11 @@ public ref struct SeqSplitIter<T, S>
     private int _sepLen;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal SeqSplitIter(ReadOnlySpan<T> input, TinyRoSpan<S> separators, SplitOptions options, IEqualityComparer<T>? comparer) {
+    internal SeqSplitIter(
+        ReadOnlySpan<T> input,
+        TinyRoSpan<S> separators,
+        SplitOptions options,
+        IEqualityComparer<T>? comparer) {
         _separators = separators;
         _tokenizer = new Tokenizer<T>(input, comparer);
         _options = options;
@@ -195,7 +241,7 @@ public ref struct SeqSplitIter<T, S>
 
     /// <summary>The segment of the current state of the enumerator.</summary>
     public ReadOnlySpan<T> Current {
-        [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
         get => _tokenizer.Raw.Slice(Position, Width);
     }
 
@@ -219,11 +265,13 @@ public ref struct SeqSplitIter<T, S>
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private int SepOff() {
-        return (_options & SplitOptions.IncludeSeparator) != 0 || _tokenizer.CursorPosition == _tokenizer.Length ? 0 : _sepLen;
+        return (_options & SplitOptions.IncludeSeparator) != 0 || _tokenizer.CursorPosition == _tokenizer.Length
+            ? 0
+            : _sepLen;
     }
 
     /// <summary>Returns a new <see cref="SplitIter{T}"/> enumerator with the same input in the initial state. </summary>
-    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
     public SeqSplitIter<T, S> GetEnumerator() {
         return new SeqSplitIter<T, S>(_tokenizer.Raw, _separators, _options, _tokenizer.Comparer);
     }
@@ -237,9 +285,9 @@ public ref struct SeqSplitIter<T, S>
 
         do {
             _tokenizer.FinalizeToken();
-            var head = _tokenizer.Length;
-            foreach (var sep in _separators) {
-                if (_tokenizer.Peek(sep, out var h, out var l) && head > h) {
+            int head = _tokenizer.Length;
+            foreach (S? sep in _separators) {
+                if (_tokenizer.Peek(sep, out int h, out int l) && head > h) {
                     _sepLen = l;
                     head = h;
                 }

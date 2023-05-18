@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
@@ -15,7 +14,7 @@ namespace Rustic.Memory;
 /// <typeparam name="V">Type of value</typeparam>
 /// <remarks>If only insertions, and no removals are performed the order of values for a key is stable; otherwise the order may change.</remarks>
 /// <remarks>For .NET 6.0 or greater this implementation requires no additional object, or array allocation for 1-1 key-value relations.</remarks>
-[DebuggerDisplay("Keys={KeyCount} Values={ValueCount}"), DebuggerTypeProxy(typeof(MultiDictionaryDebugView<,>))]
+[DebuggerDisplay("Keys={KeyCount} Values={ValueCount}"), DebuggerTypeProxy(typeof(MultiDictionaryDebugView<,>)),]
 public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyCollection<V>>
     where K : notnull {
     /// <summary>Backing dictionary.</summary>
@@ -29,7 +28,8 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
     private int _valueCount;
 
     /// <summary>Initializes a new instance of <see cref="MultiDictionary{K,V}"/>.</summary>
-    public MultiDictionary() : this(0, null) { }
+    public MultiDictionary() : this(0, null) {
+    }
 
     /// <summary>Initializes a new instance of <see cref="MultiDictionary{K,V}"/>.</summary>
     /// <param name="capacity">The initial key capacity of the dictionary.</param>
@@ -57,7 +57,13 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
     IEnumerable<IReadOnlyCollection<V>> IReadOnlyDictionary<K, IReadOnlyCollection<V>>.Values => Values;
 
     /// <inheritdoc />
-    public bool ContainsKey(K key) => _backing.TryGetValue(key, out var value) && !value.IsEmpty;
+    public bool ContainsKey(K key) {
+#if NET6_0_OR_GREATER
+        return _backing.TryGetValue(key, out TinyVec<V> value) && !value.IsEmpty;
+#else
+        return _backing.TryGetValue(key, out Vec<V>? value) && !value.IsEmpty;
+#endif
+    }
 
     /// <summary>Span over values that have the specified key, empty if the key is not present.</summary>
     /// <remarks>Do not use this handle throught mutations of any specific key.</remarks>
@@ -75,7 +81,7 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
 #if NET6_0_OR_GREATER
             ref var entry = ref CollectionsMarshal.GetValueRefOrAddDefault(_backing, key, out bool exists);
 #else
-            if (!_backing.TryGetValue(key, out var entry)) {
+            if (!_backing.TryGetValue(key, out Vec<V>? entry)) {
                 entry = new Vec<V>();
                 _backing.Add(key, entry);
             }
@@ -87,10 +93,15 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
 
     IReadOnlyCollection<V> IReadOnlyDictionary<K, IReadOnlyCollection<V>>.this[K key] {
         get {
-            var list = _backing[key];
+#if NET6_0_OR_GREATER
+            TinyVec<V> list = _backing[key];
+#else
+            Vec<V> list = _backing[key];
+#endif
             if (list.IsEmpty) {
                 ThrowHelper.ThrowKeyNotFoundException();
             }
+
             return new ReadOnlyCollection<V>(list);
         }
     }
@@ -102,16 +113,25 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
     /// <remarks>Do not use this handle throught mutations of any specific key.</remarks>
     /// <remarks>Does not necessarily track changes or remain vaid after mutations to the key.</remarks>
     public IReadOnlyCollection<V> GetValues(K key) {
-        if (_backing.TryGetValue(key, out var list) && !list.IsEmpty) {
+#if NET6_0_OR_GREATER
+        if (_backing.TryGetValue(key, out TinyVec<V> list) && !list.IsEmpty) {
+#else
+        if (_backing.TryGetValue(key, out Vec<V>? list) && !list.IsEmpty) {
+#endif
             return list;
         }
+
         return Array.Empty<V>();
     }
 
     /// <inheritdoc cref="IReadOnlyDictionary{K,V}.TryGetValue"/>
-    bool TryGetValue(K key, out ReadOnlySpan<V> values) {
+    private bool TryGetValue(K key, out ReadOnlySpan<V> values) {
         bool flag = false;
-        if (_backing.TryGetValue(key, out var list) && !list.IsEmpty) {
+#if NET6_0_OR_GREATER
+        if (_backing.TryGetValue(key, out TinyVec<V> list) && !list.IsEmpty) {
+#else
+        if (_backing.TryGetValue(key, out Vec<V>? list) && !list.IsEmpty) {
+#endif
             values = list.AsSpan();
             flag = true;
         }
@@ -122,7 +142,11 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
 
     bool IReadOnlyDictionary<K, IReadOnlyCollection<V>>.TryGetValue(K key, out IReadOnlyCollection<V> value) {
         bool flag = false;
-        if (_backing.TryGetValue(key, out var list) && !list.IsEmpty) {
+#if NET6_0_OR_GREATER
+        if (_backing.TryGetValue(key, out TinyVec<V> list) && !list.IsEmpty) {
+#else
+        if (_backing.TryGetValue(key, out Vec<V>? list) && !list.IsEmpty) {
+#endif
             value = new ReadOnlyCollection<V>(list);
             flag = true;
         }
@@ -156,6 +180,7 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
             entry = new();
             _backing.Add(key, entry);
         }
+
         entry.Add(value);
 #endif
     }
@@ -185,6 +210,7 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
             entry = new(values.Length);
             _backing.Add(key, entry);
         }
+
         entry.AddRange(values);
 #endif
     }
@@ -242,6 +268,7 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
         if (entry.IsEmpty) {
             _keyCount--;
         }
+
         _valueCount--;
 
         return true;
@@ -258,21 +285,30 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Enumerator GetEnumerator() => new(this);
+    public Enumerator GetEnumerator() {
+        return new(this);
+    }
 
-    IEnumerator<KeyValuePair<K, IReadOnlyCollection<V>>> IEnumerable<KeyValuePair<K, IReadOnlyCollection<V>>>.GetEnumerator() {
+    IEnumerator<KeyValuePair<K, IReadOnlyCollection<V>>> IEnumerable<KeyValuePair<K, IReadOnlyCollection<V>>>.
+        GetEnumerator() {
         // use var and do not deconstruct, bc of Value type Vec vs TinyVec.
-        foreach (var kvp in _backing) {
+#if NET6_0_OR_GREATER
+        foreach (KeyValuePair<K, TinyVec<V>> kvp in _backing) {
+#else
+        foreach (KeyValuePair<K, Vec<V>> kvp in _backing) {
+#endif
             if (!kvp.Value.IsEmpty) {
                 yield return new(kvp.Key, kvp.Value);
             }
         }
     }
 
-    IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<KeyValuePair<K, IReadOnlyCollection<V>>>)this).GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() {
+        return ((IEnumerable<KeyValuePair<K, IReadOnlyCollection<V>>>) this).GetEnumerator();
+    }
 
     /// <inheritdoc cref="Dictionary{K, V}.KeyCollection"/>
-    [DebuggerDisplay("Count={Count}"), DebuggerTypeProxy(typeof(DictionaryKeyCollectionDebugView<,>))]
+    [DebuggerDisplay("Count={Count}"), DebuggerTypeProxy(typeof(DictionaryKeyCollectionDebugView<,>)),]
     public readonly struct KeyCollection : IReadOnlyCollection<K>, ICollection<K> {
         private readonly MultiDictionary<K, V> _dict;
 
@@ -299,28 +335,44 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
 
         /// <inheritdoc cref="ICollection{K}.Contains" />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Contains(K item) => !_dict[item].IsEmpty;
+        public bool Contains(K item) {
+            return !_dict[item].IsEmpty;
+        }
 
         /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Enumerator GetEnumerator() => new(_dict);
+        public Enumerator GetEnumerator() {
+            return new(_dict);
+        }
 
-        IEnumerator<K> IEnumerable<K>.GetEnumerator() => GetEnumerator();
+        IEnumerator<K> IEnumerable<K>.GetEnumerator() {
+            return GetEnumerator();
+        }
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() {
+            return GetEnumerator();
+        }
 
-        #region Readonly hidden members
+#region Readonly hidden members
+
         bool ICollection<K>.IsReadOnly => true;
 
         /// <inheritdoc />
-        void ICollection<K>.Add(K item) => ((ICollection<K>)_dict._backing.Keys).Add(item);
+        void ICollection<K>.Add(K item) {
+            ((ICollection<K>) _dict._backing.Keys).Add(item);
+        }
 
         /// <inheritdoc />
-        void ICollection<K>.Clear() => ((ICollection<K>)_dict._backing.Keys).Clear();
+        void ICollection<K>.Clear() {
+            ((ICollection<K>) _dict._backing.Keys).Clear();
+        }
 
         /// <inheritdoc />
-        bool ICollection<K>.Remove(K item) => ((ICollection<K>)_dict.Keys).Remove(item);
-        #endregion
+        bool ICollection<K>.Remove(K item) {
+            return ((ICollection<K>) _dict.Keys).Remove(item);
+        }
+
+#endregion
 
         /// <inheritdoc cref="Dictionary{K, V}.KeyCollection.Enumerator"/>
         public struct Enumerator : IEnumerator<K> {
@@ -341,7 +393,7 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext() {
                 while (_keys.MoveNext()) {
-                    if (!_dict[_keys.Current!].IsEmpty) {
+                    if (!_dict[_keys.Current].IsEmpty) {
                         return true;
                     }
                 }
@@ -350,15 +402,17 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
             }
 
             /// <inheritdoc />
-            public void Reset() => _keys = _dict._backing.Keys.GetEnumerator();
+            public void Reset() {
+                _keys = _dict._backing.Keys.GetEnumerator();
+            }
 
             /// <inheritdoc />
             public readonly K Current {
-                [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
-                get => _keys.Current!;
+                [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
+                get => _keys.Current;
             }
 
-            readonly object IEnumerator.Current => ((IEnumerator)_keys).Current!;
+            readonly object IEnumerator.Current => ((IEnumerator) _keys).Current!;
 
             /// <inheritdoc />
             public void Dispose() {
@@ -367,7 +421,7 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
     }
 
     /// <inheritdoc cref="Dictionary{K, V}.ValueCollection"/>
-    [DebuggerDisplay("Count={Count}"), DebuggerTypeProxy(typeof(DictionaryValueCollectionDebugView<,>))]
+    [DebuggerDisplay("Count={Count}"), DebuggerTypeProxy(typeof(DictionaryValueCollectionDebugView<,>)),]
     public readonly struct ValueCollection : IReadOnlyCollection<IReadOnlyCollection<V>> {
         private readonly MultiDictionary<K, V> _dict;
 
@@ -389,11 +443,17 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
 
         /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Enumerator GetEnumerator() => new(_dict);
+        public Enumerator GetEnumerator() {
+            return new(_dict);
+        }
 
-        IEnumerator<IReadOnlyCollection<V>> IEnumerable<IReadOnlyCollection<V>>.GetEnumerator() => GetEnumerator();
+        IEnumerator<IReadOnlyCollection<V>> IEnumerable<IReadOnlyCollection<V>>.GetEnumerator() {
+            return GetEnumerator();
+        }
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() {
+            return GetEnumerator();
+        }
 
         /// <inheritdoc cref="Dictionary{K, V}.ValueCollection.Enumerator"/>
         public struct Enumerator : IEnumerator<IReadOnlyCollection<V>> {
@@ -408,10 +468,14 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
 
             /// <inheritdoc />
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public bool MoveNext() => _keys.MoveNext();
+            public bool MoveNext() {
+                return _keys.MoveNext();
+            }
 
             /// <inheritdoc />
-            public void Reset() => _keys = _dict.Keys.GetEnumerator();
+            public void Reset() {
+                _keys = _dict.Keys.GetEnumerator();
+            }
 
             /// <inheritdoc cref="IEnumerator{T}.Current" />
             public ReadOnlySpan<V> Current {
@@ -419,12 +483,14 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
                 get => _dict[_keys.Current];
             }
 
-            IReadOnlyCollection<V> IEnumerator<IReadOnlyCollection<V>>.Current => new ReadOnlyCollection<V>(_dict._backing[_keys.Current]);
+            IReadOnlyCollection<V> IEnumerator<IReadOnlyCollection<V>>.Current =>
+                new ReadOnlyCollection<V>(_dict._backing[_keys.Current]);
 
-            object IEnumerator.Current => ((IEnumerator<IReadOnlyCollection<V>>)this).Current!;
+            object IEnumerator.Current => ((IEnumerator<IReadOnlyCollection<V>>) this).Current;
 
             /// <inheritdoc />
-            public void Dispose() { }
+            public void Dispose() {
+            }
         }
     }
 
@@ -442,8 +508,8 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
 
         /// <summary>Advances the enumerator the the next element</summary>
         public bool MoveNext() {
-            if (_keys.MoveNext() && !_dict[_keys.Current!].IsEmpty) {
-                _current = new(_keys.Current!, _dict[_keys.Current!]);
+            if (_keys.MoveNext() && !_dict[_keys.Current].IsEmpty) {
+                _current = new(_keys.Current, _dict[_keys.Current]);
                 return true;
             }
 

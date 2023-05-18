@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace Rustic.Memory.Specialized;
 
@@ -10,7 +9,7 @@ namespace Rustic.Memory.Specialized;
 /// <typeparam name="K">The type of the keys.</typeparam>
 /// <typeparam name="V">The type of the values.</typeparam>
 public sealed class ImmutableOrderedDictionary<K, V> : IReadOnlyDictionary<K, V>, IDictionary<K, V>
-where K : notnull {
+    where K : notnull {
     internal readonly IEqualityComparer<K>? _keyComparer;
     private KeyValuePair<K, V>[]? _entries;
     private int _count;
@@ -27,13 +26,18 @@ where K : notnull {
     }
 
     /// <summary>Initializes a new <see cref="ImmutableOrderedDictionary{TKey, TValue}"/> from the specified <paramref name="entries"/>.</summary>
-    public ImmutableOrderedDictionary(IEnumerable<KeyValuePair<K, V>> entries, IEqualityComparer<K>? keyComparer = null) : this(keyComparer) {
+    public ImmutableOrderedDictionary(
+        IEnumerable<KeyValuePair<K, V>> entries,
+        IEqualityComparer<K>? keyComparer = null) : this(keyComparer) {
         foreach (KeyValuePair<K, V> entry in entries) {
             Add(entry);
         }
     }
 
-    internal ImmutableOrderedDictionary(KeyValuePair<K, V>[] entries, int count, IEqualityComparer<K>? keyComparer = null) : this(keyComparer) {
+    internal ImmutableOrderedDictionary(
+        KeyValuePair<K, V>[] entries,
+        int count,
+        IEqualityComparer<K>? keyComparer = null) : this(keyComparer) {
         _entries = entries;
         _count = count;
     }
@@ -100,6 +104,7 @@ where K : notnull {
             entry = ref _entries![_count];
             _count = nextCount;
         }
+
         return ref entry;
     }
 
@@ -109,6 +114,7 @@ where K : notnull {
             if (indexIfExists == -1) {
                 throw new KeyNotFoundException();
             }
+
             return entry.Value;
         }
     }
@@ -133,7 +139,10 @@ where K : notnull {
 
     bool ICollection<KeyValuePair<K, V>>.IsReadOnly => true;
 
-    V IDictionary<K, V>.this[K key] { get => this[key]; set => throw new NotSupportedException(); }
+    V IDictionary<K, V>.this[K key] {
+        get => this[key];
+        set => throw new NotSupportedException();
+    }
 
     public bool ContainsKey(K key) {
         TryGetEntry(key, out int indexIfExists);
@@ -146,6 +155,7 @@ where K : notnull {
             value = default!;
             return false;
         }
+
         value = entry.Value;
         return true;
     }
@@ -351,6 +361,7 @@ where K : notnull {
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -419,9 +430,7 @@ where K : notnull {
         }
 
         /// <inheritdoc/>
-        public KeyValuePair<K, V> this[int index] {
-            get => _dictionary._entries![index];
-        }
+        public KeyValuePair<K, V> this[int index] => _dictionary._entries![index];
 
         /// <inheritdoc/>
         public int Count => _dictionary.Count;
@@ -498,7 +507,7 @@ where K : notnull {
         /// <returns>The new <see cref="ImmutableOrderedDictionary{TKey, TValue}"/>.</returns>
         /// <remarks>Usually the data is not copied.</remarks>
         public ImmutableOrderedDictionary<K, V> MoveToImmutable() {
-            ImmutableOrderedDictionary<K, V> dictionary = _dictionary ?? ImmutableOrderedDictionary<K, V>.Empty;
+            ImmutableOrderedDictionary<K, V> dictionary = _dictionary ?? Empty;
             Dispose();
             return dictionary;
         }
@@ -511,7 +520,8 @@ where K : notnull {
             if (_dictionary is not null) {
                 return new(_dictionary, _dictionary._keyComparer);
             }
-            return ImmutableOrderedDictionary<K, V>.Empty;
+
+            return Empty;
         }
 
         // <inheritdoc />
@@ -560,6 +570,7 @@ where K : notnull {
             } else {
                 value = default!;
             }
+
             return res;
         }
 
@@ -569,7 +580,7 @@ where K : notnull {
         }
 
         public void RemoveAt(int index) {
-            if (_dictionary is not null && (uint)index < (uint)_dictionary._count) {
+            if (_dictionary is not null && (uint) index < (uint) _dictionary._count) {
                 Span<KeyValuePair<K, V>> span = _dictionary.Entries;
                 span.Slice(index + 1).CopyTo(span.Slice(index));
                 _dictionary._count--;
@@ -594,6 +605,7 @@ where K : notnull {
                     res = true;
                 }
             }
+
             return res;
         }
 
@@ -607,6 +619,7 @@ where K : notnull {
                     res = true;
                 }
             }
+
             return res;
         }
 
@@ -624,6 +637,7 @@ where K : notnull {
             if (_dictionary is not null) {
                 res = _dictionary.Contains(item);
             }
+
             return res;
         }
 
@@ -662,7 +676,8 @@ where K : notnull {
 public static class ImmutableOrderedDictionary {
     /// <summary>Creates a new <see cref="ImmutableOrderedDictionary{TKey, TValue}"/> with the specified <paramref name="keyComparer"/>.</summary>
     /// <param name="keyComparer">The <see cref="IEqualityComparer{T}"/> to use for comparing keys.</param>
-    public static ImmutableOrderedDictionary<K, V>.Builder CreateBuilder<K, V>(IEqualityComparer<K>? keyComparer = null) where K : notnull {
+    public static ImmutableOrderedDictionary<K, V>.Builder CreateBuilder<K, V>(IEqualityComparer<K>? keyComparer = null)
+        where K : notnull {
         return new ImmutableOrderedDictionary<K, V>.Builder(keyComparer);
     }
 }
@@ -675,8 +690,11 @@ public static class ImmutableOrderedDictionaryMarshal {
     /// <param name="array">The array.</param>
     /// <param name="count">The number of items from 0 to <paramref name="array"/>.Length to use.</param>
     /// <param name="keyComparer">The <see cref="IEqualityComparer{T}"/> to use for comparing keys.</param>
-    public static ImmutableOrderedDictionary<K, V> CreateFromPinnedArray<K, V>(KeyValuePair<K, V>[] array, int count, IEqualityComparer<K>? keyComparer = null)
-    where K : notnull {
+    public static ImmutableOrderedDictionary<K, V> CreateFromPinnedArray<K, V>(
+        KeyValuePair<K, V>[] array,
+        int count,
+        IEqualityComparer<K>? keyComparer = null)
+        where K : notnull {
         return new(array, count, keyComparer);
     }
 
@@ -684,19 +702,25 @@ public static class ImmutableOrderedDictionaryMarshal {
     /// <param name="dict">The dictionary.</param>
     /// <param name="key">The key of the entry to get.</param>
     /// <param name="indexIfExists">The index of the entry if it exists; otherwise -1.</param>
-    public static ref readonly KeyValuePair<K, V> TryGetEntry<K, V>(ImmutableOrderedDictionary<K, V> dict, K key, out int indexIfExists)
-    where K : notnull {
+    public static ref readonly KeyValuePair<K, V> TryGetEntry<K, V>(
+        ImmutableOrderedDictionary<K, V> dict,
+        K key,
+        out int indexIfExists)
+        where K : notnull {
         return ref dict.TryGetEntry(key, out indexIfExists);
     }
 
     /// <summary>Creates a new <see cref="ImmutableOrderedDictionary{TKey, TValue}"/> from the specified <paramref name="entries"/>.</summary>
     /// <param name="entries">The entries to use.</param>
     /// <param name="keyComparer">The <see cref="IEqualityComparer{T}"/> to use for comparing keys.</param>
-    public static ImmutableOrderedDictionary<K, V> ToImmutableOrderedDictionary<K, V>(this IEnumerable<KeyValuePair<K, V>> entries, IEqualityComparer<K>? keyComparer = null)
-    where K : notnull {
+    public static ImmutableOrderedDictionary<K, V> ToImmutableOrderedDictionary<K, V>(
+        this IEnumerable<KeyValuePair<K, V>> entries,
+        IEqualityComparer<K>? keyComparer = null)
+        where K : notnull {
         if (entries is ImmutableOrderedDictionary<K, V> dict && dict._keyComparer == keyComparer) {
             return dict;
         }
+
         return new(entries, keyComparer);
     }
 }

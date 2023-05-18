@@ -20,9 +20,10 @@ public sealed class IReadOnlyCollectionDebugView<T> {
     [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
     public T[] Items {
         get {
-            if (_ref.TryGetTarget(out var col) && col.Count > 0) {
+            if (_ref.TryGetTarget(out IReadOnlyCollection<T>? col) && col.Count > 0) {
                 return col.ToArray();
             }
+
             return Array.Empty<T>();
         }
     }

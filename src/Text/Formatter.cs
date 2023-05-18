@@ -20,10 +20,12 @@ public sealed class Fmt {
     /// <param name="comparer">The comparer determining whether two chars are equal.</param>
     /// <typeparam name="D">The type of the definition.</typeparam>
     /// <returns>The formatted string.</returns>
-    public static string Format<D>(ReadOnlySpan<char> format, scoped ref D definition,
+    public static string Format<D>(
+        ReadOnlySpan<char> format,
+        scoped ref D definition,
         IEqualityComparer<char>? comparer = null)
         where D : IFmtDef {
-        scoped StrBuilder builder = new(stackalloc char[2048.Min(format.Length + (48 * definition.Count))]);
+        scoped StrBuilder builder = new(stackalloc char[2048.Min(format.Length + 48 * definition.Count)]);
         scoped Tokenizer<char> tokenizer = new(format, comparer);
 
         while (true) {
@@ -34,7 +36,12 @@ public sealed class Fmt {
             tokenizer.FinalizeToken();
             int holeStart = builder.Length;
             if (!definition.NextTextStart(ref tokenizer, ref builder)) {
-                ThrowHelper.ThrowFormatException(tokenizer.Position, tokenizer.CursorPosition, "The hole is never closed.");
+                ThrowHelper.ThrowFormatException(
+                    tokenizer.Position,
+                    tokenizer.CursorPosition,
+                    "The hole is never closed."
+                );
+
                 break;
             }
 
@@ -46,14 +53,23 @@ public sealed class Fmt {
             if (definition.TryGetValue(hole, out ReadOnlySpan<char> value)) {
                 value.CopyTo(builder.AppendSpan(value.Length));
             } else {
-                ThrowHelper.ThrowFormatException(tokenizer.Position - hole.Length, tokenizer.Position, $"The hole `{hole.ToString()}` in the format does not have a corresponding definition provided.");
+                ThrowHelper.ThrowFormatException(
+                    tokenizer.Position - hole.Length,
+                    tokenizer.Position,
+                    $"The hole `{hole.ToString()}` in the format does not have a corresponding definition provided."
+                );
+
                 break;
             }
         }
 
         definition.FinalTextEnd(ref tokenizer, ref builder);
         if (tokenizer.Width != 0 || !tokenizer.IsCursorEnd) {
-            ThrowHelper.ThrowFormatException(tokenizer.Position, tokenizer.CursorPosition, "The format string was not fully processed.");
+            ThrowHelper.ThrowFormatException(
+                tokenizer.Position,
+                tokenizer.CursorPosition,
+                "The format string was not fully processed."
+            );
         }
 
         return builder.ToString();
@@ -66,13 +82,21 @@ public sealed class Fmt {
     /// <param name="comparer">The comparer determining whether two chars are equal.</param>
     /// <param name="provider">The localizing formatter used.</param>
     /// <returns>The formatted string.</returns>
-    public string Index(ReadOnlySpan<char> format, TinyRoVec<object?> arguments, IEqualityComparer<char>? comparer = null, IFormatProvider? provider = null) {
+    public string Index(
+        ReadOnlySpan<char> format,
+        TinyRoVec<object?> arguments,
+        IEqualityComparer<char>? comparer = null,
+        IFormatProvider? provider = null) {
         IdxDef<object?> def = new(arguments, provider);
         return Format(format, ref def, comparer);
     }
 
     /// <inheritdoc cref="Index"/>
-    public string Index<T>(ReadOnlySpan<char> format, TinyRoVec<T> arguments, IEqualityComparer<char>? comparer = null, IFormatProvider? provider = null) {
+    public string Index<T>(
+        ReadOnlySpan<char> format,
+        TinyRoVec<T> arguments,
+        IEqualityComparer<char>? comparer = null,
+        IFormatProvider? provider = null) {
         IdxDef<T> def = new(arguments, provider);
         return Format(format, ref def, comparer);
     }
@@ -83,15 +107,21 @@ public sealed class Fmt {
     /// <param name="comparer">The comparer determining whether two chars are equal.</param>
     /// <param name="provider">The localizing formatter used.</param>
     /// <returns>The formatted string.</returns>
-    public string Named(ReadOnlySpan<char> format, IReadOnlyDictionary<string, object?> arguments,
-        IEqualityComparer<char>? comparer = null, IFormatProvider? provider = null) {
+    public string Named(
+        ReadOnlySpan<char> format,
+        IReadOnlyDictionary<string, object?> arguments,
+        IEqualityComparer<char>? comparer = null,
+        IFormatProvider? provider = null) {
         NamedDef<object?> def = new(arguments, provider);
         return Format(format, ref def, comparer);
     }
 
     /// <inheritdoc cref="Named"/>
-    public string Named<T>(ReadOnlySpan<char> format, IReadOnlyDictionary<string, T> arguments,
-        IEqualityComparer<char>? comparer = null, IFormatProvider? provider = null) {
+    public string Named<T>(
+        ReadOnlySpan<char> format,
+        IReadOnlyDictionary<string, T> arguments,
+        IEqualityComparer<char>? comparer = null,
+        IFormatProvider? provider = null) {
         NamedDef<T> def = new(arguments, provider);
         return Format(format, ref def, comparer);
     }
@@ -110,6 +140,7 @@ public interface IFmtDef {
     /// <param name="builder">The builder used to collect text.</param>
     /// <returns><c>true</c> if successful; otherwise <c>false</c>.</returns>
     bool NextTextEnd(scoped ref Tokenizer<char> tokenizer, scoped ref StrBuilder builder);
+
     /// <summary>Moves the tokenizer to the char at which the next text portion begins. Consumes the hole terminating characters. Adds the relevant hole definition to the builder.</summary>
     /// <param name="tokenizer">The tokenizer used.</param>
     /// <param name="builder">The builder used to collect the hole definition</param>
@@ -138,7 +169,7 @@ public struct IdxDef<T> : IFmtDef {
     /// <param name="arguments">The formatting arguments used to fill holes in the format.</param>
     /// <param name="format">The formatter providing localization.</param>
     public IdxDef(TinyRoVec<T> arguments, IFormatProvider? format = null)
-        : this(String.Empty, arguments, format) {
+        : this(string.Empty, arguments, format) {
     }
 
     /// <summary>Initializes a new instance of <see cref="IdxDef{T}"/>.</summary>
@@ -165,15 +196,19 @@ public struct IdxDef<T> : IFmtDef {
 
     /// <summary>Consumed chars until a non escaped curly bracket is found. Does not append the latest <see cref="Tokenizer{T}.Token"/> to the builder.</summary>
     /// <returns><c>true</c> if a curly bracket was found; otherwise <c>false</c>.</returns>
-    private unsafe bool NextBracket(scoped ref Tokenizer<char> tokenizer, scoped ref StrBuilder builder, delegate*<char, bool> predicate) {
+    private unsafe bool NextBracket(
+        scoped ref Tokenizer<char> tokenizer,
+        scoped ref StrBuilder builder,
+        delegate*<char, bool> predicate) {
         while (tokenizer.TryReadUntilAny(('{', '}'))) {
-            var cursor = tokenizer.GetAtCursor(-1);
+            char cursor = tokenizer.GetAtCursor(-1);
 
             if (cursor == '{' && tokenizer.TryReadNext('{')) {
                 builder.Append(tokenizer.FinalizeToken().SliceEnd(1));
                 _escapedHoleLevel += 1;
                 continue;
             }
+
             if (cursor == '}' && tokenizer.TryReadNext('}')) {
                 builder.Append(tokenizer.FinalizeToken().SliceEnd(1));
                 _escapedHoleLevel -= 1;
@@ -190,7 +225,9 @@ public struct IdxDef<T> : IFmtDef {
 
     /// <inheritdoc />
     public unsafe bool NextTextEnd(scoped ref Tokenizer<char> tokenizer, scoped ref StrBuilder builder) {
-        static bool determineHoleEnd(char c) => c == '{';
+        static bool determineHoleEnd(char c) {
+            return c == '{';
+        }
 
         while (true) {
             if (!NextBracket(ref tokenizer, ref builder, &determineHoleEnd)) {
@@ -217,7 +254,9 @@ public struct IdxDef<T> : IFmtDef {
 
     /// <inheritdoc />
     public unsafe bool NextTextStart(scoped ref Tokenizer<char> tokenizer, scoped ref StrBuilder builder) {
-        static bool determineHoleEnd(char c) => c == '}';
+        static bool determineHoleEnd(char c) {
+            return c == '}';
+        }
 
         if (!NextBracket(ref tokenizer, ref builder, &determineHoleEnd)) {
             return false; // Hole not terminated
@@ -230,11 +269,18 @@ public struct IdxDef<T> : IFmtDef {
 
     /// <inheritdoc />
     public unsafe void FinalTextEnd(scoped ref Tokenizer<char> tokenizer, scoped ref StrBuilder builder) {
-        static bool noop(char _) => true;
+        static bool noop(char _) {
+            return true;
+        }
+
         NextBracket(ref tokenizer, ref builder, &noop);
 
         if (_escapedHoleLevel != 0) {
-            ThrowHelper.ThrowFormatException(tokenizer.Position, tokenizer.CursorPosition, "Escaped brackets are not balanced. The number of opening brackets `{{` must match the number of closing brackets `}}`.");
+            ThrowHelper.ThrowFormatException(
+                tokenizer.Position,
+                tokenizer.CursorPosition,
+                "Escaped brackets are not balanced. The number of opening brackets `{{` must match the number of closing brackets `}}`."
+            );
         }
 
         // Append the remaining formatted string
@@ -245,7 +291,7 @@ public struct IdxDef<T> : IFmtDef {
     /// <inheritdoc />
     public readonly bool TryGetValue(in ReadOnlySpan<char> key, out ReadOnlySpan<char> value) {
 #if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
-        if (!Int32.TryParse(key, NumberStyles.Integer, Format, out var idx))
+        if (!int.TryParse(key, NumberStyles.Integer, Format, out int idx))
 #else
         if (!Int32.TryParse(key.ToString(), NumberStyles.Integer, Format, out var idx))
 #endif
@@ -259,7 +305,7 @@ public struct IdxDef<T> : IFmtDef {
             return false;
         }
 
-        var arg = Arguments[idx];
+        T? arg = Arguments[idx];
         string? s;
         if (Format?.GetFormat(arg?.GetType()) is ICustomFormatter f) {
             s = f.Format("{0}", arg, Format);
@@ -281,7 +327,7 @@ public struct NamedDef<T> : IFmtDef {
     /// <param name="arguments">The formatting arguments used to fill holes in the format.</param>
     /// <param name="format">The formatter providing localization.</param>
     public NamedDef(IReadOnlyDictionary<string, T> arguments, IFormatProvider? format = null)
-        : this(String.Empty, arguments, format) {
+        : this(string.Empty, arguments, format) {
     }
 
     /// <summary>Initializes a new instance of <see cref="IdxDef{T}"/>.</summary>
@@ -308,15 +354,19 @@ public struct NamedDef<T> : IFmtDef {
 
     /// <summary>Consumed chars until a non escaped curly bracket is found. Does not append the latest <see cref="Tokenizer{T}.Token"/> to the builder.</summary>
     /// <returns><c>true</c> if a curly bracket was found; otherwise <c>false</c>.</returns>
-    private unsafe bool NextBracket(scoped ref Tokenizer<char> tokenizer, scoped ref StrBuilder builder, delegate*<char, bool> predicate) {
+    private unsafe bool NextBracket(
+        scoped ref Tokenizer<char> tokenizer,
+        scoped ref StrBuilder builder,
+        delegate*<char, bool> predicate) {
         while (tokenizer.TryReadUntilAny(('{', '}'))) {
-            var cursor = tokenizer.GetAtCursor(-1);
+            char cursor = tokenizer.GetAtCursor(-1);
 
             if (cursor == '{' && tokenizer.TryReadNext('{')) {
                 builder.Append(tokenizer.FinalizeToken().SliceEnd(1));
                 _escapedHoleLevel += 1;
                 continue;
             }
+
             if (cursor == '}' && tokenizer.TryReadNext('}')) {
                 builder.Append(tokenizer.FinalizeToken().SliceEnd(1));
                 _escapedHoleLevel -= 1;
@@ -333,7 +383,9 @@ public struct NamedDef<T> : IFmtDef {
 
     /// <inheritdoc />
     public unsafe bool NextTextEnd(scoped ref Tokenizer<char> tokenizer, scoped ref StrBuilder builder) {
-        static bool determineHoleEnd(char c) => c == '{';
+        static bool determineHoleEnd(char c) {
+            return c == '{';
+        }
 
         while (true) {
             if (!NextBracket(ref tokenizer, ref builder, &determineHoleEnd)) {
@@ -360,7 +412,9 @@ public struct NamedDef<T> : IFmtDef {
 
     /// <inheritdoc />
     public unsafe bool NextTextStart(scoped ref Tokenizer<char> tokenizer, scoped ref StrBuilder builder) {
-        static bool determineHoleEnd(char c) => c == '}';
+        static bool determineHoleEnd(char c) {
+            return c == '}';
+        }
 
         if (!NextBracket(ref tokenizer, ref builder, &determineHoleEnd)) {
             return false; // Hole not terminated
@@ -373,11 +427,18 @@ public struct NamedDef<T> : IFmtDef {
 
     /// <inheritdoc />
     public unsafe void FinalTextEnd(scoped ref Tokenizer<char> tokenizer, scoped ref StrBuilder builder) {
-        static bool noop(char _) => true;
+        static bool noop(char _) {
+            return true;
+        }
+
         NextBracket(ref tokenizer, ref builder, &noop);
 
         if (_escapedHoleLevel != 0) {
-            ThrowHelper.ThrowFormatException(tokenizer.Position, tokenizer.CursorPosition, "Escaped brackets are not balanced. The number of opening brackets `{{` must match the number of closing brackets `}}`.");
+            ThrowHelper.ThrowFormatException(
+                tokenizer.Position,
+                tokenizer.CursorPosition,
+                "Escaped brackets are not balanced. The number of opening brackets `{{` must match the number of closing brackets `}}`."
+            );
         }
 
         // Append the remaining formatted string
@@ -391,6 +452,7 @@ public struct NamedDef<T> : IFmtDef {
             value = default;
             return false;
         }
+
         string? s;
         if (Format?.GetFormat(arg?.GetType()) is ICustomFormatter f) {
             s = f.Format("{0}", arg, Format);

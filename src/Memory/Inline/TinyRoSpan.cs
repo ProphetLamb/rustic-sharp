@@ -14,7 +14,9 @@ public static class TinyRoSpan {
     /// <summary>Returns an empty <see cref="TinyRoSpan{T}"/>.</summary>
     /// <typeparam name="T">The type of the span.</typeparam>
     /// <returns>An empty <see cref="TinyRoSpan{T}"/>.</returns>
-    public static TinyRoSpan<T> Empty<T>() => new(ReadOnlySpan<T>.Empty);
+    public static TinyRoSpan<T> Empty<T>() {
+        return new(ReadOnlySpan<T>.Empty);
+    }
 
     /// <summary>Initializes a new parameter span with one value.</summary>
     /// <typeparam name="T"></typeparam>
@@ -139,38 +141,44 @@ public static class TinyRoSpan {
     /// <param name="values">The sequence of values.</param>
     public static TinyRoSpan<T> Copy<T, E>(E values)
         where E : IEnumerable<T> {
-        using var en = values.GetEnumerator();
+        using IEnumerator<T>? en = values.GetEnumerator();
         if (!en.MoveNext()) {
             return default;
         }
-        var arg0 = en.Current;
+
+        T? arg0 = en.Current;
         if (!en.MoveNext()) {
             return From(arg0);
         }
-        var arg1 = en.Current;
+
+        T? arg1 = en.Current;
         if (!en.MoveNext()) {
             return From(arg0, arg1);
         }
-        var arg2 = en.Current;
+
+        T? arg2 = en.Current;
         if (!en.MoveNext()) {
             return From(arg0, arg1, arg2);
         }
-        var arg3 = en.Current;
+
+        T? arg3 = en.Current;
         if (!en.MoveNext()) {
             return From(arg0, arg1, arg2, arg3);
         }
-        BufWriter<T> args = new(8)
-        {
+
+        BufWriter<T> args = new(8) {
             arg0,
             arg1,
             arg2,
             arg3,
-            en.Current
+            en.Current,
         };
+
         while (en.MoveNext()) {
             args.Add(en.Current);
         }
-        var count = args.Length;
+
+        int count = args.Length;
         return new(args.ToSegment());
     }
 
@@ -198,12 +206,16 @@ public static class TinyRoSpan {
 
 /// <summary>A structure representing a immutable sequence of function parameters.</summary>
 /// <typeparam name="T"></typeparam>
-[StructLayout(LayoutKind.Sequential), DebuggerDisplay("{GetDebuggerDisplay(),nq}")]
+[StructLayout(LayoutKind.Sequential), DebuggerDisplay("{GetDebuggerDisplay(),nq}"),]
 public readonly ref struct TinyRoSpan<T> {
-    [AllowNull] private readonly T _arg0;
-    [AllowNull] private readonly T _arg1;
-    [AllowNull] private readonly T _arg2;
-    [AllowNull] private readonly T _arg3;
+    [AllowNull]
+    private readonly T _arg0;
+    [AllowNull]
+    private readonly T _arg1;
+    [AllowNull]
+    private readonly T _arg2;
+    [AllowNull]
+    private readonly T _arg3;
     private readonly int _length;
     private readonly ReadOnlySpan<T> _values;
 
@@ -243,7 +255,7 @@ public readonly ref struct TinyRoSpan<T> {
     /// <summary>Returns true if Length is 0.</summary>
     public bool IsEmpty {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => 0 >= (uint)_length;
+        get => 0 >= (uint) _length;
     }
 
     /// <inheritdoc cref="IReadOnlyList{T}.this" />
@@ -254,6 +266,7 @@ public readonly ref struct TinyRoSpan<T> {
             if (!_values.IsEmpty) {
                 return _values[index];
             }
+
             return index switch {
                 0 => _arg0!,
                 1 => _arg1!,
@@ -267,14 +280,14 @@ public readonly ref struct TinyRoSpan<T> {
 #pragma warning disable CS0809
 
     /// <inheritdoc cref="Object.Equals(Object)" />
-    [Obsolete("Not applicable to a ref struct."), EditorBrowsable(EditorBrowsableState.Never)]
+    [Obsolete("Not applicable to a ref struct."), EditorBrowsable(EditorBrowsableState.Never),]
     public override bool Equals(object? obj) {
         ThrowHelper.ThrowNotSupportedException();
         return default!; // unreachable.
     }
 
     /// <inheritdoc cref="Object.GetHashCode" />
-    [Obsolete("Not applicable to a ref struct."), EditorBrowsable(EditorBrowsableState.Never)]
+    [Obsolete("Not applicable to a ref struct."), EditorBrowsable(EditorBrowsableState.Never),]
     public override int GetHashCode() {
         ThrowHelper.ThrowNotSupportedException();
         return default!; // unreachable.
@@ -288,7 +301,7 @@ public readonly ref struct TinyRoSpan<T> {
             _values.CopyTo(destination);
         }
 
-        if ((uint)_length <= (uint)destination.Length) {
+        if ((uint) _length <= (uint) destination.Length) {
             SetBlock(destination);
         }
     }
@@ -297,7 +310,7 @@ public readonly ref struct TinyRoSpan<T> {
     public bool TryCopyTo(Span<T> destination) {
         if (!_values.IsEmpty) {
             return _values.TryCopyTo(destination);
-        } else if ((uint)_length <= (uint)destination.Length) {
+        } else if ((uint) _length <= (uint) destination.Length) {
             SetBlock(destination);
             return true;
         }
@@ -307,7 +320,7 @@ public readonly ref struct TinyRoSpan<T> {
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void SetBlock(Span<T> destination) {
-        var index = 0;
+        int index = 0;
         switch (_length) {
         case 4:
             destination[index++] = _arg0!;
@@ -350,21 +363,25 @@ public readonly ref struct TinyRoSpan<T> {
         }
 
         return EqualityComparer<T>.Default.Equals(left._arg0, right._arg0)
-            && EqualityComparer<T>.Default.Equals(left._arg1, right._arg1)
-            && EqualityComparer<T>.Default.Equals(left._arg2, right._arg2)
-            && EqualityComparer<T>.Default.Equals(left._arg3, right._arg3);
+         && EqualityComparer<T>.Default.Equals(left._arg1, right._arg1)
+         && EqualityComparer<T>.Default.Equals(left._arg2, right._arg2)
+         && EqualityComparer<T>.Default.Equals(left._arg3, right._arg3);
     }
 
     /// <summary>
     ///     Returns <see langword="false"/> if left and right point at the same memory and have the same length.  Note that
     ///     this does *not* check to see if the *contents* are equal.
     /// </summary>
-    public static bool operator !=(TinyRoSpan<T> left, TinyRoSpan<T> right) => !(left == right);
+    public static bool operator !=(TinyRoSpan<T> left, TinyRoSpan<T> right) {
+        return !(left == right);
+    }
 
     /// <summary>Retrieves the backing span of the <see cref="TinyRoSpan{T}"/> or allocates a array which is returned as a span.</summary>
     /// <returns>The span containing all items.</returns>
     /// <remarks>When using .NET Standard 2.1 or greater, or .NET Core 2.1 or greater the operation always is cheap and never allocates.</remarks>
-    public ReadOnlySpan<T> ToSpan() => ToSpan(false);
+    public ReadOnlySpan<T> ToSpan() {
+        return ToSpan(false);
+    }
 
     /// <summary>Returns the span representation of the <see cref="TinyRoSpan{T}"/>.</summary>
     /// <param name="onlyIfCheap">Whether return an empty span instead of allocating an array, if no span is backing the <see cref="TinyRoSpan{T}"/>.</param>
@@ -398,37 +415,51 @@ public readonly ref struct TinyRoSpan<T> {
     /// <summary>Initializes a new span from the value.</summary>
     /// <param name="self">The value.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator TinyRoSpan<T>(in T self) => TinyRoSpan.From(self);
+    public static implicit operator TinyRoSpan<T>(in T self) {
+        return TinyRoSpan.From(self);
+    }
 
     /// <summary>Initializes a new span from the sequence.</summary>
     /// <param name="self">The sequence of values.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator TinyRoSpan<T>(in ReadOnlySpan<T> self) => TinyRoSpan.From(self);
+    public static implicit operator TinyRoSpan<T>(in ReadOnlySpan<T> self) {
+        return TinyRoSpan.From(self);
+    }
 
     /// <summary>Initializes a new span from the sequence.</summary>
     /// <param name="self">The sequence of values.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator TinyRoSpan<T>(in Span<T> self) => TinyRoSpan.From(self);
+    public static implicit operator TinyRoSpan<T>(in Span<T> self) {
+        return TinyRoSpan.From(self);
+    }
 
     /// <summary>Initializes a new span from the sequence.</summary>
     /// <param name="self">The sequence of values.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator TinyRoSpan<T>(in T[] self) => TinyRoSpan.From(self);
+    public static implicit operator TinyRoSpan<T>(in T[] self) {
+        return TinyRoSpan.From(self);
+    }
 
     /// <summary>Initializes a new span from the sequence.</summary>
     /// <param name="self">The sequence of values.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator TinyRoSpan<T>(in (T, T) self) => TinyRoSpan.From(self.Item1, self.Item2);
+    public static implicit operator TinyRoSpan<T>(in (T, T) self) {
+        return TinyRoSpan.From(self.Item1, self.Item2);
+    }
 
     /// <summary>Initializes a new span from the sequence.</summary>
     /// <param name="self">The sequence of values.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator TinyRoSpan<T>(in (T, T, T) self) => TinyRoSpan.From(self.Item1, self.Item2, self.Item3);
+    public static implicit operator TinyRoSpan<T>(in (T, T, T) self) {
+        return TinyRoSpan.From(self.Item1, self.Item2, self.Item3);
+    }
 
 #if !NET472
     /// <summary>Initializes a new span from the sequence.</summary>
     /// <param name="self">The sequence of values.</param>
-    public static implicit operator TinyRoSpan<T>(in (T, T, T, T) self) => TinyRoSpan.From(self.Item1, self.Item2, self.Item3, self.Item4);
+    public static implicit operator TinyRoSpan<T>(in (T, T, T, T) self) {
+        return TinyRoSpan.From(self.Item1, self.Item2, self.Item3, self.Item4);
+    }
 #endif
 
     private string GetDebuggerDisplay() {
@@ -437,8 +468,8 @@ public readonly ref struct TinyRoSpan<T> {
         sb.Append(Length.ToString(System.Globalization.CultureInfo.CurrentCulture.NumberFormat));
         sb.Append(", Params = {");
 
-        var last = _length - 1;
-        for (var i = 0; i < last; i++) {
+        int last = _length - 1;
+        for (int i = 0; i < last; i++) {
             sb.Append(this[i]?.ToString());
             sb.Append(", ");
         }
@@ -453,10 +484,12 @@ public readonly ref struct TinyRoSpan<T> {
 
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
-    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Enumerator GetEnumerator() => new(this);
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
+    public Enumerator GetEnumerator() {
+        return new(this);
+    }
 
-    [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
+    [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining),]
     private static T ThrowUnreachable() {
         ThrowHelper.ThrowUnreachableException();
         return default!; // unreachable.
@@ -481,9 +514,9 @@ public readonly ref struct TinyRoSpan<T> {
         /// <summary>Advances the enumerator to the next element of the span.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext() {
-            var index = _index + 1;
+            int index = _index + 1;
 
-            if ((uint)index < (uint)_span.Length) {
+            if ((uint) index < (uint) _span.Length) {
                 _index = index;
                 return true;
             }

@@ -4,7 +4,6 @@ using System.Linq;
 
 using Bogus;
 using Bogus.DataSets;
-using Bogus.Extensions;
 
 namespace Rustic.Memory.Tests;
 
@@ -15,45 +14,45 @@ public static class SampleData {
 
     private static (Faker<User> UserFaker, Faker<Order> OrderFaker) GetFakers() {
         Randomizer.Seed = new Random(3897234);
-        string[] fruit = { "apple", "banana", "orange", "strawberry", "kiwi" };
+        string[] fruit = {"apple", "banana", "orange", "strawberry", "kiwi",};
 
-        var orderIds = 0;
-        var testOrders = new Faker<Order>()
+        int orderIds = 0;
+        Faker<Order> testOrders = new Faker<Order>()
             //Ensure all properties have rules. By default, StrictMode is false
             //Set a global policy by using Faker.DefaultStrictMode if you prefer.
-            .StrictMode(true)
+           .StrictMode(true)
             //OrderId is deterministic
-            .RuleFor(o => o.OrderId, f => orderIds++)
+           .RuleFor(o => o.OrderId, f => orderIds++)
             //Pick some fruit from a basket
-            .RuleFor(o => o.Item, f => f.PickRandom(fruit))
+           .RuleFor(o => o.Item, f => f.PickRandom(fruit))
             //A random quantity from 1 to 10
-            .RuleFor(o => o.Quantity, f => f.Random.Number(1, 10))
+           .RuleFor(o => o.Quantity, f => f.Random.Number(1, 10))
             //A nullable int? with 80% probability of being null.
             //The .OrNull extension is in the Bogus.Extensions namespace.
-            .RuleFor(o => o.LotNumber, f => f.Random.Int(0, 100).OrNull(f, .8f));
+           .RuleFor(o => o.LotNumber, f => f.Random.Int(0, 100).OrNull(f, .8f));
 
-        var userIds = 0;
-        var testUsers = new Faker<User>()
+        int userIds = 0;
+        Faker<User> testUsers = new Faker<User>()
             //Optional: Call for objects that have complex initialization
-            .CustomInstantiator(f => new User(userIds++, f.Random.Replace("###-##-####")))
+           .CustomInstantiator(f => new User(userIds++, f.Random.Replace("###-##-####")))
 
             //Use an enum outside scope.
-            .RuleFor(u => u.Gender, f => f.PickRandom<Name.Gender>())
+           .RuleFor(u => u.Gender, f => f.PickRandom<Name.Gender>())
 
             //Basic rules using built-in generators
-            .RuleFor(u => u.FirstName, (f, u) => f.Name.FirstName(u.Gender))
-            .RuleFor(u => u.LastName, (f, u) => f.Name.LastName(u.Gender))
-            .RuleFor(u => u.Avatar, f => f.Internet.Avatar())
-            .RuleFor(u => u.UserName, (f, u) => f.Internet.UserName(u.FirstName, u.LastName))
-            .RuleFor(u => u.Email, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
-            .RuleFor(u => u.SomethingUnique, f => $"Value {f.UniqueIndex}")
+           .RuleFor(u => u.FirstName, (f, u) => f.Name.FirstName(u.Gender))
+           .RuleFor(u => u.LastName, (f, u) => f.Name.LastName(u.Gender))
+           .RuleFor(u => u.Avatar, f => f.Internet.Avatar())
+           .RuleFor(u => u.UserName, (f, u) => f.Internet.UserName(u.FirstName, u.LastName))
+           .RuleFor(u => u.Email, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
+           .RuleFor(u => u.SomethingUnique, f => $"Value {f.UniqueIndex}")
 
             //Use a method outside scope.
-            .RuleFor(u => u.CartId, f => Guid.NewGuid())
+           .RuleFor(u => u.CartId, f => Guid.NewGuid())
             //Compound property with context, use the first/last name properties
-            .RuleFor(u => u.FullName, (f, u) => u.FirstName + " " + u.LastName)
+           .RuleFor(u => u.FullName, (f, u) => u.FirstName + " " + u.LastName)
             //And composability of a complex collection.
-            .RuleFor(u => u.Orders, f => testOrders.Generate(3).ToList());
+           .RuleFor(u => u.Orders, f => testOrders.Generate(3).ToList());
 
         return (testUsers, testOrders);
     }
@@ -107,12 +106,12 @@ public class UserComparer : IComparer<User>, System.Collections.IComparer {
             return -1;
         }
 
-        var firstNameComparison = String.CompareOrdinal(x.FirstName, y.FirstName);
+        int firstNameComparison = string.CompareOrdinal(x.FirstName, y.FirstName);
         if (firstNameComparison != 0) {
             return firstNameComparison;
         }
 
-        var lastNameComparison = String.CompareOrdinal(x.LastName, y.LastName);
+        int lastNameComparison = string.CompareOrdinal(x.LastName, y.LastName);
         if (lastNameComparison != 0) {
             return lastNameComparison;
         }
@@ -134,7 +133,7 @@ public class UserComparer : IComparer<User>, System.Collections.IComparer {
         }
 
         if (x is User a
-            && y is User b) {
+         && y is User b) {
             return Compare(a, b);
         }
 

@@ -1,19 +1,18 @@
 using System;
 using System.Runtime.InteropServices;
+
 // ReSharper disable UnassignedReadonlyField
 #pragma warning disable CS1591 // Variable never initialized
 
 namespace Rustic.Native;
 
-public readonly partial struct PeHeader
-{
+public readonly partial struct PeHeader {
     // For the following enum definitions see https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-image_optional_header32 and related pages.
     // The definitions may be incomplete!
     // Also see: https://0xrick.github.io/win-internals/pe3/
     // Also see: https://practicalsecurityanalytics.com/pe-checksum/
 
-    public readonly struct ImageDosHeader
-    {
+    public readonly struct ImageDosHeader {
         // DOS .EXE header
         /// <summary>
         /// Magic number, must be ASCII "MZ" = 0x5A4D
@@ -150,15 +149,13 @@ public readonly partial struct PeHeader
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public readonly struct ImageDataDirectory
-    {
+    public readonly struct ImageDataDirectory {
         public readonly uint VirtualAddress;
         public readonly uint Size;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public readonly struct ImageOptionalHeader32
-    {
+    public readonly struct ImageOptionalHeader32 {
         public readonly OptionalMagicValue Magic;
         public readonly byte MajorLinkerVersion;
         public readonly byte MinorLinkerVersion;
@@ -210,7 +207,12 @@ public readonly partial struct PeHeader
         /// <summary>
         /// The version of this image and subsystem.
         /// </summary>
-        public Version ImageVersion =>  new(MajorImageVersion, MinorImageVersion, MajorSubsystemVersion, MinorSubsystemVersion);
+        public Version ImageVersion => new(
+            MajorImageVersion,
+            MinorImageVersion,
+            MajorSubsystemVersion,
+            MinorSubsystemVersion
+        );
 
         /// <summary>
         /// The required minimum operating system version.
@@ -224,8 +226,7 @@ public readonly partial struct PeHeader
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public readonly struct ImageOptionalHeader64
-    {
+    public readonly struct ImageOptionalHeader64 {
         public readonly OptionalMagicValue Magic;
         public readonly byte MajorLinkerVersion;
         public readonly byte MinorLinkerVersion;
@@ -276,7 +277,12 @@ public readonly partial struct PeHeader
         /// <summary>
         /// The version of this image and subsystem.
         /// </summary>
-        public Version ImageVersion =>  new(MajorImageVersion, MinorImageVersion, MajorSubsystemVersion, MinorSubsystemVersion);
+        public Version ImageVersion => new(
+            MajorImageVersion,
+            MinorImageVersion,
+            MajorSubsystemVersion,
+            MinorSubsystemVersion
+        );
 
         /// <summary>
         /// The required minimum operating system version.
@@ -290,8 +296,7 @@ public readonly partial struct PeHeader
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public readonly struct ImageFileHeader
-    {
+    public readonly struct ImageFileHeader {
         public readonly FileMachineValue Machine;
         public readonly ushort NumberOfSections;
         public readonly uint TimeDateStamp;
@@ -302,10 +307,8 @@ public readonly partial struct PeHeader
 
         public bool Is32Bit => (FileCharacteristicFlags.Machine32Bit & Characteristics) != 0;
 
-        public DateTimeOffset TimeStamp
-        {
-            get
-            {
+        public DateTimeOffset TimeStamp {
+            get {
                 // Timestamp is a date offset from 1970 at UTC TZ
                 DateTimeOffset baseTime = new(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
@@ -316,26 +319,33 @@ public readonly partial struct PeHeader
     }
 
     [StructLayout(LayoutKind.Explicit)]
-    public readonly struct ImageSectionHeader
-    {
-        [FieldOffset(0)] [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
+    public readonly struct ImageSectionHeader {
+        [FieldOffset(0), MarshalAs(UnmanagedType.ByValArray, SizeConst = 8),] 
         public readonly char[] Name;
 
-        [FieldOffset(8)] public readonly uint VirtualSize;
-        [FieldOffset(12)] public readonly uint VirtualAddress;
-        [FieldOffset(16)] public readonly uint SizeOfRawData;
-        [FieldOffset(20)] public readonly uint PointerToRawData;
-        [FieldOffset(24)] public readonly uint PointerToRelocations;
-        [FieldOffset(28)] public readonly uint PointerToLinenumbers;
-        [FieldOffset(32)] public readonly ushort NumberOfRelocations;
-        [FieldOffset(34)] public readonly ushort NumberOfLinenumbers;
-        [FieldOffset(36)] public readonly DataSectionFlags Characteristics;
+        [FieldOffset(8)]
+        public readonly uint VirtualSize;
+        [FieldOffset(12)]
+        public readonly uint VirtualAddress;
+        [FieldOffset(16)]
+        public readonly uint SizeOfRawData;
+        [FieldOffset(20)]
+        public readonly uint PointerToRawData;
+        [FieldOffset(24)]
+        public readonly uint PointerToRelocations;
+        [FieldOffset(28)]
+        public readonly uint PointerToLinenumbers;
+        [FieldOffset(32)]
+        public readonly ushort NumberOfRelocations;
+        [FieldOffset(34)]
+        public readonly ushort NumberOfLinenumbers;
+        [FieldOffset(36)]
+        public readonly DataSectionFlags Characteristics;
 
         public string NameString => new(Name);
     }
 
-    public enum OptionalMagicValue : ushort
-    {
+    public enum OptionalMagicValue : ushort {
         /// <summary>
         /// This file is an 32 bit executable image.
         /// </summary>
@@ -353,8 +363,7 @@ public readonly partial struct PeHeader
     }
 
     [Flags]
-    public enum DataSectionFlags : uint
-    {
+    public enum DataSectionFlags : uint {
         /// <summary>
         /// Reserved for future use.
         /// </summary>
@@ -563,11 +572,10 @@ public readonly partial struct PeHeader
         /// <summary>
         /// The section can be written to.
         /// </summary>
-        MemoryWrite = 0x80000000
+        MemoryWrite = 0x80000000,
     }
 
-    public enum SubsystemValue : ushort
-    {
+    public enum SubsystemValue : ushort {
         /// <summary>
         /// Unknown subsystem.
         /// </summary>
@@ -635,8 +643,7 @@ public readonly partial struct PeHeader
     }
 
     [Flags]
-    public enum DllCharacteristicsFlags : ushort
-    {
+    public enum DllCharacteristicsFlags : ushort {
         /// <summary>
         /// Reserved.
         /// </summary>
@@ -705,11 +712,10 @@ public readonly partial struct PeHeader
         /// <summary>
         /// The image is terminal server aware.
         /// </summary>
-        TerminalServerAware = 0x8000
+        TerminalServerAware = 0x8000,
     }
 
-    public enum FileMachineValue: ushort
-    {
+    public enum FileMachineValue : ushort {
         /// <summary>
         /// x86
         /// </summary>
@@ -725,8 +731,7 @@ public readonly partial struct PeHeader
     }
 
     [Flags]
-    public enum FileCharacteristicFlags : ushort
-    {
+    public enum FileCharacteristicFlags : ushort {
         /// <summary>
         /// Relocation information was stripped from the file. The file must be loaded at its preferred base address. If the base address is not available, the loader reports an error.
         /// </summary>

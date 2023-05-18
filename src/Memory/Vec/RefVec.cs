@@ -60,12 +60,12 @@ public ref struct RefVec<T> {
     /// <inheritdoc cref="Span{T}.IsEmpty"/>
     public bool IsEmpty {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => 0 >= (uint)_pos;
+        get => 0 >= (uint) _pos;
     }
 
     /// <inheritdoc cref="List{T}.this"/>
     public ref T this[int index] {
-        [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
         get {
             Debug.Assert(index < _pos);
             return ref _storage[index];
@@ -129,7 +129,7 @@ public ref struct RefVec<T> {
         Debug.Assert(capacity >= 0);
 
         // If the caller has a bug and calls this with negative capacity, make sure to call Grow to throw an exception.
-        if ((uint)capacity > (uint)_storage.Length) {
+        if ((uint) capacity > (uint) _storage.Length) {
             Grow(capacity - _pos);
         }
 
@@ -142,7 +142,7 @@ public ref struct RefVec<T> {
     ///     This overload is pattern matched in the C# 7.3+ compiler so you can omit
     ///     the explicit method call, and write eg "fixed (T* c = list)"
     /// </summary>
-    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
     public ref T GetPinnableReference() {
         return ref MemoryMarshal.GetReference(_storage);
     }
@@ -183,9 +183,9 @@ public ref struct RefVec<T> {
     /// <inheritdoc cref="List{T}.Add"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add(in T value) {
-        var pos = _pos;
+        int pos = _pos;
 
-        if ((uint)pos < (uint)_storage.Length) {
+        if ((uint) pos < (uint) _storage.Length) {
             _storage[pos] = value;
             _pos = pos + 1;
         } else {
@@ -207,7 +207,7 @@ public ref struct RefVec<T> {
     /// <returns>The span appended to the list.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<T> AppendSpan(int length) {
-        var origPos = _pos;
+        int origPos = _pos;
         if (origPos > _storage.Length - length) {
             Grow(length);
         }
@@ -217,19 +217,19 @@ public ref struct RefVec<T> {
     }
 
     /// <inheritdoc cref="List{T}.BinarySearch(T)"/>
-    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
     public int BinarySearch(in T item) {
         return _storage.BinarySearch(item, Comparer<T>.Default);
     }
 
     /// <inheritdoc cref="List{T}.BinarySearch(T, IComparer{T})"/>
-    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
     public int BinarySearch(in T item, IComparer<T> comparer) {
         return _storage.BinarySearch(item, comparer);
     }
 
     /// <inheritdoc cref="List{T}.BinarySearch(Int32, Int32, T, IComparer{T})"/>
-    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
     public int BinarySearch(int index, int count, in T item, IComparer<T> comparer) {
         return _storage.Slice(index, count).BinarySearch(item, comparer);
     }
@@ -246,8 +246,10 @@ public ref struct RefVec<T> {
     }
 
     /// <inheritdoc cref="List{T}.Contains"/>
-    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Contains(in T item) => IndexOf(item, null) >= 0;
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
+    public bool Contains(in T item) {
+        return IndexOf(item, null) >= 0;
+    }
 
     /// <summary>
     ///     Determines whether an element is in the list.
@@ -255,8 +257,10 @@ public ref struct RefVec<T> {
     /// <param name="item">The object to locate in the list. The value can be null for reference types.</param>
     /// <param name="comparer">The comparer used to determine whether two items are equal.</param>
     /// <returns><see langword="true"/> if item is found in the list; otherwise, <see langword="false"/>.</returns>
-    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Contains(in T item, IEqualityComparer<T>? comparer) => IndexOf(item, comparer) >= 0;
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
+    public bool Contains(in T item, IEqualityComparer<T>? comparer) {
+        return IndexOf(item, comparer) >= 0;
+    }
 
     /// <inheritdoc cref="Span{T}.CopyTo"/>
     public void CopyTo(Span<T> destination) {
@@ -264,16 +268,17 @@ public ref struct RefVec<T> {
     }
 
     /// <inheritdoc cref="IList{T}.IndexOf"/>
-    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public int IndexOf(in T item) => IndexOf(item, null);
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
+    public int IndexOf(in T item) {
+        return IndexOf(item, null);
+    }
 
     /// <inheritdoc cref="IList{T}.IndexOf"/>
     [Pure]
     public int IndexOf(in T item, IEqualityComparer<T>? comparer) {
         if (comparer is null) {
             if (typeof(T).IsValueType) {
-
-                for (var i = 0; i < _pos; i++) {
+                for (int i = 0; i < _pos; i++) {
                     if (!EqualityComparer<T>.Default.Equals(item, _storage[i])) {
                         continue;
                     }
@@ -287,7 +292,7 @@ public ref struct RefVec<T> {
             comparer = EqualityComparer<T>.Default;
         }
 
-        for (var i = 0; i < _pos; i++) {
+        for (int i = 0; i < _pos; i++) {
             if (!comparer.Equals(item, _storage[i])) {
                 continue;
             }
@@ -305,7 +310,7 @@ public ref struct RefVec<T> {
             Grow(1);
         }
 
-        var remaining = _pos - index;
+        int remaining = _pos - index;
         _storage.Slice(index, remaining).CopyTo(_storage.Slice(index + 1));
         _storage[index] = value;
         _pos += 1;
@@ -315,29 +320,30 @@ public ref struct RefVec<T> {
     public void InsertRange(int index, ReadOnlySpan<T> span) {
         ThrowHelper.ArgumentInRange(index, index >= 0);
         ThrowHelper.ArgumentInRange(index, index <= Length);
-        var count = span.Length;
+        int count = span.Length;
 
         if (_pos > _storage.Length - count) {
             Grow(count);
         }
 
-        var remaining = _pos - index;
+        int remaining = _pos - index;
         _storage.Slice(index, remaining).CopyTo(_storage.Slice(index + count));
         span.CopyTo(_storage.Slice(index));
         _pos += count;
     }
 
     /// <inheritdoc cref="List{T}.LastIndexOf(T)"/>
-    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public int LastIndexOf(in T item) => LastIndexOf(item, null);
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
+    public int LastIndexOf(in T item) {
+        return LastIndexOf(item, null);
+    }
 
     /// <inheritdoc cref="List{T}.LastIndexOf(T)"/>
     [Pure]
     public int LastIndexOf(in T item, IEqualityComparer<T>? comparer) {
         if (comparer is null) {
             if (typeof(T).IsValueType) {
-
-                for (var i = _pos - 1; i >= 0; i--) {
+                for (int i = _pos - 1; i >= 0; i--) {
                     if (!EqualityComparer<T>.Default.Equals(item, _storage[i])) {
                         continue;
                     }
@@ -351,7 +357,7 @@ public ref struct RefVec<T> {
             comparer = EqualityComparer<T>.Default;
         }
 
-        for (var i = _pos - 1; i >= 0; i--) {
+        for (int i = _pos - 1; i >= 0; i--) {
             if (!comparer.Equals(item, _storage[i])) {
                 continue;
             }
@@ -364,12 +370,14 @@ public ref struct RefVec<T> {
 
     /// <inheritdoc cref="List{T}.Remove"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Remove(in T item) => Remove(item, null);
+    public bool Remove(in T item) {
+        return Remove(item, null);
+    }
 
     /// <inheritdoc cref="List{T}.Remove"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Remove(in T item, IEqualityComparer<T>? comparer) {
-        var index = IndexOf(item, comparer);
+        int index = IndexOf(item, comparer);
         if (index >= 0) {
             RemoveAt(index);
             return true;
@@ -381,7 +389,7 @@ public ref struct RefVec<T> {
     /// <inheritdoc cref="List{T}.RemoveAt"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void RemoveAt(int index) {
-        var remaining = _pos - index - 1;
+        int remaining = _pos - index - 1;
         _storage.Slice(index + 1, remaining).CopyTo(_storage.Slice(index));
         _storage[--_pos] = default!;
     }
@@ -391,8 +399,8 @@ public ref struct RefVec<T> {
     public void RemoveRange(int start, int count) {
         GuardRange(start, count);
 
-        var end = _pos - count;
-        var remaining = end - start;
+        int end = _pos - count;
+        int remaining = end - start;
         _storage.Slice(start + count, remaining).CopyTo(_storage.Slice(start));
 
         if (_arrayToReturnToPool is not null) {
@@ -412,7 +420,9 @@ public ref struct RefVec<T> {
 
     /// <inheritdoc cref="List{T}.Reverse()"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Reverse() => _storage.Slice(0, _pos).Reverse();
+    public void Reverse() {
+        _storage.Slice(0, _pos).Reverse();
+    }
 
     /// <inheritdoc cref="List{T}.Reverse(Int32, Int32)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -448,7 +458,7 @@ public ref struct RefVec<T> {
 
     /// <inheritdoc cref="Span{T}.ToArray"/>
     public T[] ToArray() {
-        var array = new T[_pos];
+        T[]? array = new T[_pos];
         AsSpan().CopyTo(array.AsSpan());
         return array;
     }
@@ -459,7 +469,7 @@ public ref struct RefVec<T> {
     /// <returns>A <see cref="List{T}"/> that contains elements form the input sequence.</returns>
     public List<T> ToList() {
         List<T> list = new(_pos);
-        for (var i = 0; i < _pos; i++) {
+        for (int i = 0; i < _pos; i++) {
             list.Add(_storage[i]);
         }
 
@@ -469,7 +479,7 @@ public ref struct RefVec<T> {
     /// <inheritdoc cref="IDisposable.Dispose"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Dispose() {
-        var toReturn = _arrayToReturnToPool;
+        T[]? toReturn = _arrayToReturnToPool;
         this = default; // for safety, to avoid using pooled array if this instance is erroneously appended to again
         if (toReturn is not null) {
             ArrayPool<T>.Shared.Return(toReturn);
@@ -493,14 +503,17 @@ public ref struct RefVec<T> {
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void Grow(int additionalCapacityBeyondPos) {
         Debug.Assert(additionalCapacityBeyondPos > 0);
-        Debug.Assert(_pos > _storage.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
+        Debug.Assert(
+            _pos > _storage.Length - additionalCapacityBeyondPos,
+            "Grow called incorrectly, no resize is needed."
+        );
 
         // Make sure to let Rent throw an exception if the caller has a bug and the desired capacity is negative
-        var poolArray = ArrayPool<T>.Shared.Rent((_pos + additionalCapacityBeyondPos).Max(_storage.Length * 2));
+        T[]? poolArray = ArrayPool<T>.Shared.Rent((_pos + additionalCapacityBeyondPos).Max(_storage.Length * 2));
 
         AsSpan().CopyTo(poolArray);
 
-        var toReturn = _arrayToReturnToPool;
+        T[]? toReturn = _arrayToReturnToPool;
         _storage = _arrayToReturnToPool = poolArray;
         if (toReturn is not null) {
             ArrayPool<T>.Shared.Return(toReturn);
@@ -516,8 +529,8 @@ public ref struct RefVec<T> {
         sb.Append("Length = ").Append(_pos);
         sb.Append(", Values = [");
         if (Length < 10) {
-            var last = _pos - 1;
-            for (var i = 0; i < last; i++) {
+            int last = _pos - 1;
+            for (int i = 0; i < last; i++) {
                 sb.Append(_storage[i]);
                 sb.Append(", ");
             }
@@ -528,13 +541,16 @@ public ref struct RefVec<T> {
         } else {
             sb.Append("...");
         }
+
         sb.Append(']');
         return sb.ToString();
     }
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Enumerator GetEnumerator() => new(this);
+    public Enumerator GetEnumerator() {
+        return new(this);
+    }
 
     /// <summary>Enumerates the elements of a <see cref="RefVec{T}"/>.</summary>
     public ref struct Enumerator {
@@ -552,8 +568,8 @@ public ref struct RefVec<T> {
         /// <summary>Advances the enumerator to the next element of the span.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext() {
-            var index = _index + 1;
-            if ((uint)index < (uint)_list.Length) {
+            int index = _index + 1;
+            if ((uint) index < (uint) _list.Length) {
                 _index = index;
                 return true;
             }
@@ -585,10 +601,10 @@ public static class RefVecExtensions {
     /// Determines whether two lists are equal by comparing the elements using IEquatable{T}.Equals(T).
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
     public static bool SequenceEqual<T>(this RefVec<T> list, RefVec<T> other)
         where T : IEquatable<T> {
-        var count = list.Length;
+        int count = list.Length;
         if (count != other.Length) {
             return false;
         }
@@ -600,27 +616,33 @@ public static class RefVecExtensions {
     /// Determines the relative order of the lists being compared by comparing the elements using IComparable{T}.CompareTo(T).
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
     public static int SequenceCompareTo<T>(this RefVec<T> list, RefVec<T> other)
         where T : IComparable<T> {
         return list.AsSpan().SequenceCompareTo(other.AsSpan());
     }
 
-    internal static int SequenceCompareHelper<T>(ref T first, int firstLength, ref T second, int secondLength, IComparer<T> comparer) {
+    internal static int SequenceCompareHelper<T>(
+        ref T first,
+        int firstLength,
+        ref T second,
+        int secondLength,
+        IComparer<T> comparer) {
         Debug.Assert(firstLength >= 0);
         Debug.Assert(secondLength >= 0);
 
-        var minLength = firstLength;
+        int minLength = firstLength;
         if (minLength > secondLength) {
             minLength = secondLength;
         }
 
-        for (var i = 0; i < minLength; i++) {
-            var result = comparer.Compare(Unsafe.Add(ref first, i), Unsafe.Add(ref second, i));
+        for (int i = 0; i < minLength; i++) {
+            int result = comparer.Compare(Unsafe.Add(ref first, i), Unsafe.Add(ref second, i));
             if (result != 0) {
                 return result;
             }
         }
+
         return firstLength.CompareTo(secondLength);
     }
 }

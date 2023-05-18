@@ -11,7 +11,7 @@ namespace Rustic.Memory.Tests;
 public class TinyVecTests {
     [Test]
     public void TestConstruct() {
-        var vec = TinyRoVec.From(SampleData.Users[0]);
+        TinyRoVec<User> vec = TinyRoVec.From(SampleData.Users[0]);
         vec.Count().Should().Be(1);
         vec = TinyRoVec.From(SampleData.Users[0], SampleData.Users[1]);
         vec.Count().Should().Be(2);

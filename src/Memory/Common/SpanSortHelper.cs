@@ -5,7 +5,6 @@ using System.Runtime.CompilerServices;
 namespace Rustic.Memory;
 
 #if !NET5_0_OR_GREATER
-
 // Source: https://source.dot.net/#System.Private.CoreLib/ArraySortHelper.cs
 /// <summary>Provides the function <see cref="SpanSortHelper{T}.Sort"/> with which a <see cref="Span{T}"/> can be sorted.</summary>
 /// <typeparam name="T">The type of elements in the collection.</typeparam>
@@ -136,7 +135,8 @@ public static class SpanSortHelper<T> {
 
         var pivot = keys[middle];
         Swap(keys, middle, hi - 1);
-        int left = 0, right = hi - 1;  // We already partitioned lo and hi and put the pivot in hi - 1.  And we pre-increment & decrement below.
+        int left = 0, right =
+ hi - 1;  // We already partitioned lo and hi and put the pivot in hi - 1.  And we pre-increment & decrement below.
 
         while (left < right) {
             while (comparer(keys[++left], pivot) < 0) { }
@@ -207,7 +207,6 @@ public static class SpanSortHelper<T> {
     }
 #nullable restore
 }
-
 #endif
 
 /// <summary>Provides the function <see cref="SpanSortHelper{K, V}.Sort"/> with which a <see cref="Span{T}"/> can be sorted.</summary>
@@ -252,9 +251,9 @@ internal static class SpanSortHelper<K, V> {
     private static void Swap(in Span<K> keys, in Span<V> values, int i, int j) {
         Debug.Assert(i != j);
 
-        var key = keys[i];
+        K key = keys[i];
         keys[i] = keys[j];
-        var value = values[i];
+        V value = values[i];
         values[i] = values[j];
         keys[j] = key;
         values[j] = value;
@@ -265,7 +264,7 @@ internal static class SpanSortHelper<K, V> {
         Debug.Assert(keys.Length == values.Length);
 
         if (keys.Length > 1) {
-            IntroSort(keys, values, 2 * (((uint)keys.Length).Log2() + 1), comparer);
+            IntroSort(keys, values, 2 * (((uint) keys.Length).Log2() + 1), comparer);
         }
     }
 
@@ -274,10 +273,9 @@ internal static class SpanSortHelper<K, V> {
         Debug.Assert(depthLimit >= 0);
         Debug.Assert(comparer is not null);
 
-        var partitionSize = keys.Length;
+        int partitionSize = keys.Length;
         while (partitionSize > 1) {
             if (partitionSize <= IntrosortSizeThreshold) {
-
                 if (partitionSize == 2) {
                     SwapIfGreater(keys, values, comparer, 0, 1);
                     return;
@@ -298,9 +296,10 @@ internal static class SpanSortHelper<K, V> {
                 HeapSort(keys.Slice(0, partitionSize), values.Slice(0, partitionSize), comparer);
                 return;
             }
+
             depthLimit--;
 
-            var p = PickPivotAndPartition(keys.Slice(0, partitionSize), values.Slice(0, partitionSize), comparer);
+            int p = PickPivotAndPartition(keys.Slice(0, partitionSize), values.Slice(0, partitionSize), comparer);
 
             // Note we've already partitioned around the pivot and do not have to move the pivot again.
             IntroSort(keys.Slice(p + 1, partitionSize), values.Slice(p + 1, partitionSize), depthLimit, comparer);
@@ -312,23 +311,27 @@ internal static class SpanSortHelper<K, V> {
         Debug.Assert(keys.Length >= IntrosortSizeThreshold);
         Debug.Assert(comparer is not null);
 
-        var hi = keys.Length - 1;
+        int hi = keys.Length - 1;
 
         // Compute median-of-three.  But also partition them, since we've done the comparer.
-        var middle = hi >> 1;
+        int middle = hi >> 1;
 
         // Sort lo, mid and hi appropriately, then pick mid as the pivot.
-        SwapIfGreater(keys, values, comparer, 0, middle);  // swap the low with the mid point
-        SwapIfGreater(keys, values, comparer, 0, hi);   // swap the low with the high
+        SwapIfGreater(keys, values, comparer, 0, middle); // swap the low with the mid point
+        SwapIfGreater(keys, values, comparer, 0, hi); // swap the low with the high
         SwapIfGreater(keys, values, comparer, middle, hi); // swap the middle with the high
 
-        var pivot = keys[middle];
+        K pivot = keys[middle];
         Swap(keys, values, middle, hi - 1);
-        int left = 0, right = hi - 1;  // We already partitioned lo and hi and put the pivot in hi - 1.  And we pre-increment & decrement below.
+        int left = 0,
+            right = hi - 1; // We already partitioned lo and hi and put the pivot in hi - 1.  And we pre-increment & decrement below.
 
         while (left < right) {
-            while (comparer(keys[++left], pivot) < 0) { }
-            while (comparer(pivot, keys[--right]) < 0) { }
+            while (comparer(keys[++left], pivot) < 0) {
+            }
+
+            while (comparer(pivot, keys[--right]) < 0) {
+            }
 
             if (left >= right) {
                 break;
@@ -341,6 +344,7 @@ internal static class SpanSortHelper<K, V> {
         if (left != hi - 1) {
             Swap(keys, values, left, hi - 1);
         }
+
         return left;
     }
 
@@ -348,12 +352,12 @@ internal static class SpanSortHelper<K, V> {
         Debug.Assert(comparer is not null);
         Debug.Assert(!keys.IsEmpty);
 
-        var n = keys.Length;
-        for (var i = n >> 1; i >= 1; i--) {
+        int n = keys.Length;
+        for (int i = n >> 1; i >= 1; i--) {
             DownHeap(keys, values, i, n, comparer);
         }
 
-        for (var i = n; i > 1; i--) {
+        for (int i = n; i > 1; i--) {
             Swap(keys, values, 0, i - 1);
             DownHeap(keys, values, 1, i - 1, comparer);
         }
@@ -362,10 +366,10 @@ internal static class SpanSortHelper<K, V> {
     private static void DownHeap(in Span<K> keys, in Span<V> values, int i, int n, Comparison<K> comparer) {
         Debug.Assert(comparer is not null);
 
-        var key = keys[i - 1];
-        var value = values[i - 1];
+        K key = keys[i - 1];
+        V value = values[i - 1];
         while (i <= n >> 1) {
-            var child = 2 * i;
+            int child = 2 * i;
             if (child < n && comparer(keys[child - 1], keys[child]) < 0) {
                 child++;
             }
@@ -384,11 +388,11 @@ internal static class SpanSortHelper<K, V> {
     }
 
     private static void InsertionSort(in Span<K> keys, in Span<V> values, Comparison<K> comparer) {
-        for (var i = 0; i < keys.Length - 1; i++) {
-            var key = keys[i + 1];
-            var value = values[i + 1];
+        for (int i = 0; i < keys.Length - 1; i++) {
+            K key = keys[i + 1];
+            V value = values[i + 1];
 
-            var j = i;
+            int j = i;
             while (j >= 0 && comparer(key, keys[j]) < 0) {
                 keys[j + 1] = keys[j];
                 values[j + 1] = values[j];

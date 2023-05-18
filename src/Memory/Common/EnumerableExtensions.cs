@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -34,6 +33,7 @@ public static class EnumerableExtensions {
             if (_source is null) {
                 ThrowHelper.ObjectDisposedException(nameof(IndexIterator<T>));
             }
+
             _enumerator ??= _source.GetEnumerator();
             _index++;
             return _enumerator.MoveNext();
@@ -49,8 +49,12 @@ public static class EnumerableExtensions {
             _index = -1;
         }
 
-        public IEnumerator<(int, T)> GetEnumerator() => this;
+        public IEnumerator<(int, T)> GetEnumerator() {
+            return this;
+        }
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() {
+            return GetEnumerator();
+        }
     }
 }

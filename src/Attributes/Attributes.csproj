@@ -1,18 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFrameworks>netstandard1.1;netstandard2.0;netstandard2.1;netcoreapp3.1;net472;net60;net70</TargetFrameworks>
-		<RootNamespace>Rustic</RootNamespace>
-	</PropertyGroup>
+    <PropertyGroup>
+        <TargetFrameworks>netstandard1.1;netstandard2.0;netstandard2.1;netcoreapp3.1;net472;net60;net70</TargetFrameworks>
+        <RootNamespace>Rustic</RootNamespace>
+    </PropertyGroup>
 
-	<PropertyGroup Label="Assembly Info">
-		<Product>Rustic.Attributes</Product>
-		<AssemblyName>$(Product)</AssemblyName>
-		<AssemblyTitle>$(Product)</AssemblyTitle>
-		<PackageId>$(Product)</PackageId>
-		<Title>$(Product)</Title>
-		<Description>Attributes not delivered with the mscorelib.</Description>
-		<PackageTags>Attribute</PackageTags>
-	</PropertyGroup>
+    <PropertyGroup Label="Assembly Info">
+        <Product>Rustic.Attributes</Product>
+        <AssemblyName>$(Product)</AssemblyName>
+        <AssemblyTitle>$(Product)</AssemblyTitle>
+        <PackageId>$(Product)</PackageId>
+        <Title>$(Product)</Title>
+        <Description>Attributes not delivered with the mscorelib.</Description>
+        <PackageTags>Attribute</PackageTags>
+    </PropertyGroup>
 
 </Project>

@@ -210,15 +210,13 @@ public static class ReadOnlyVectorTraits {
 #endif
 
     /// <inheritdoc cref="IList{T}.IndexOf"/>
-    [Pure]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
     public static int IndexOf<T>(this IReadOnlyVector<T> self, in T item) {
         return self.IndexOf(0, self.Count, item);
     }
 
     /// <inheritdoc cref="IList{T}.IndexOf"/>
-    [Pure]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
     public static int IndexOf<T, E>(this IReadOnlyVector<T> self, in T item, in E comparer)
         where E : IEqualityComparer<T> {
         return self.IndexOf(0, self.Count, item, comparer);
@@ -246,15 +244,13 @@ public static class ReadOnlyVectorTraits {
 #endif
 
     /// <inheritdoc cref="List{T}.LastIndexOf(T)"/>
-    [Pure]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
     public static int LastIndexOf<T>(this IReadOnlyVector<T> self, in T item) {
         return self.LastIndexOf(0, self.Count, item);
     }
 
     /// <inheritdoc cref="List{T}.LastIndexOf(T)"/>
-    [Pure]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
     public static int LastIndexOf<T, E>(this IReadOnlyVector<T> self, in T item, E comparer)
         where E : IEqualityComparer<T> {
         return self.LastIndexOf(0, self.Count, item, comparer);
@@ -282,15 +278,13 @@ public static class ReadOnlyVectorTraits {
 #endif
 
     /// <inheritdoc cref="List{T}.BinarySearch(T, IComparer{T})"/>
-    [Pure]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
     public static int BinarySearch<T>(this IReadOnlyVector<T> self, in T item) {
         return self.BinarySearch(0, self.Count, item);
     }
 
     /// <inheritdoc cref="List{T}.BinarySearch(T, IComparer{T})"/>
-    [Pure]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
     public static int BinarySearch<T, C>(this IReadOnlyVector<T> self, in T item, C comparer)
         where C : IComparer<T> {
         return self.BinarySearch(0, self.Count, item, comparer);
@@ -304,15 +298,14 @@ public static class ReadOnlyVectorTraits {
     }
 
     /// <inheritdoc cref="List{T}.Contains"/>
-    [Pure]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [CLSCompliant(false)]
-    public static bool Contains<T>(this IReadOnlyVector<T> self, in T item) => self.IndexOf(in item) >= 0;
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining), CLSCompliant(false),]
+    public static bool Contains<T>(this IReadOnlyVector<T> self, in T item) {
+        return self.IndexOf(in item) >= 0;
+    }
 }
 
 /// <summary>Collection of extensions and utility functions related to <see cref="IVector{T}"/>.</summary>
 public static class VectorTraits {
-
     /// <inheritdoc cref="List{T}.AddRange"/>
     public static void AddRange<T>(this IVector<T> self, ReadOnlySpan<T> values) {
         self.InsertRange(self.Count, values);
@@ -330,7 +323,7 @@ public static class VectorTraits {
 
     /// <inheritdoc cref="List{T}.Remove"/>
     public static bool Remove<T>(this IVector<T> self, in T item) {
-        var index = self.IndexOf(in item);
+        int index = self.IndexOf(in item);
         if (index >= 0) {
             self.RemoveAt(index);
             return true;
@@ -342,7 +335,7 @@ public static class VectorTraits {
     /// <inheritdoc cref="List{T}.Remove"/>
     public static bool Remove<T, E>(this IVector<T> self, in T item, E comparer)
         where E : IEqualityComparer<T> {
-        var index = self.IndexOf(in item, comparer);
+        int index = self.IndexOf(in item, comparer);
         if (index >= 0) {
             self.RemoveAt(index);
             return true;
@@ -374,7 +367,7 @@ public static class VectorTraits {
     /// <remarks>No block of elements in moved. The order of the vector is disturbed.</remarks>
     public static void SwapRemove<T>(this IVector<T> self, int index) {
         ThrowHelper.ArgumentInRange(index, index >= 0 && index < self.Count);
-        var last = self.Count - 1;
+        int last = self.Count - 1;
         self[index] = self[last];
         self.RemoveAt(last); // Should not copy when removing the last element.
     }
@@ -432,7 +425,7 @@ public static class VectorTraits {
     /// <returns><c>true</c> if a value was removed; otherwise <c>false</c></returns>
     public static bool TryPop<T>(this IVector<T> self, [NotNullWhen(true)] out T? value) {
         if (!self.IsEmpty) {
-            var last = self.Count - 1;
+            int last = self.Count - 1;
             value = self[last]!;
             self.RemoveAt(last);
             return true;

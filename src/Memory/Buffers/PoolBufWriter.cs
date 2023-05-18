@@ -58,8 +58,12 @@ public sealed class PoolBufWriter<T> : BufWriter<T> {
         Debug.Assert(additionalCapacityBeyondPos > 0);
 
         if (Buffer is not null) {
-            Debug.Assert(Length > Buffer.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
-            var temp = _pool.Rent((Length + additionalCapacityBeyondPos).Max(Buffer.Length * 2));
+            Debug.Assert(
+                Length > Buffer.Length - additionalCapacityBeyondPos,
+                "Grow called incorrectly, no resize is needed."
+            );
+
+            T[]? temp = _pool.Rent((Length + additionalCapacityBeyondPos).Max(Buffer.Length * 2));
             Buffer.AsSpan(0, Length).CopyTo(temp);
             Buffer = temp;
         } else {
@@ -70,7 +74,7 @@ public sealed class PoolBufWriter<T> : BufWriter<T> {
 
     /// <summary>Resets the writer.</summary>
     public override void Reset() {
-        var poolArray = Buffer;
+        T[]? poolArray = Buffer;
         base.Reset();
         if (poolArray is not null) {
             _pool.Return(poolArray);

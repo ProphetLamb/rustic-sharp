@@ -113,7 +113,9 @@ public readonly ref struct ReversibleIndexedSpan<T> {
     /// <summary>Creates a new not reversed span.</summary>
     /// <param name="span">The data</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator ReversibleIndexedSpan<T>(ReadOnlySpan<T> span) => new(span, false);
+    public static implicit operator ReversibleIndexedSpan<T>(ReadOnlySpan<T> span) {
+        return new(span, false);
+    }
 
     /// <summary>Returns a span in correct order.</summary>
     /// <remarks>If reversed allocates a array and returns a span over the array.</remarks>
@@ -144,7 +146,9 @@ public readonly ref struct ReversibleIndexedSpan<T> {
     }
 
     /// <summary>Returns a new <see cref="ReversibleIndexedSpan{T}"/> over the data in opposite direction.</summary>
-    public ReversibleIndexedSpan<T> Reverse() => new(Span, !_reverse);
+    public ReversibleIndexedSpan<T> Reverse() {
+        return new(Span, !_reverse);
+    }
 
     /// <inheritdoc />
     public override string ToString() {
@@ -157,11 +161,14 @@ public readonly ref struct ReversibleIndexedSpan<T> {
         if (typeof(T) == typeof(char)) {
             // char spans are common and we can alleviate pressure on the heap by using stackalloc for the temporary buffer at this point.
             poolArray = Length <= 1024 ? null : ArrayPool<T>.Shared.Rent(Length);
-            Span<char> span = poolArray is null ? stackalloc char[Length] : Unsafe.As<T[], char[]>(ref poolArray).AsSpan(0, Length);
+            Span<char> span = poolArray is null
+                ? stackalloc char[Length]
+                : Unsafe.As<T[], char[]>(ref poolArray).AsSpan(0, Length);
+
             MemoryCopyHelper.CopyToReversed(
                 ref Unsafe.As<T, char>(ref MemoryMarshal.GetReference(Span)),
                 ref MemoryMarshal.GetReference(span),
-                (nuint)Length
+                (nuint) Length
             );
 
             result = span.ToString();
@@ -175,22 +182,21 @@ public readonly ref struct ReversibleIndexedSpan<T> {
         if (poolArray is not null) {
             ArrayPool<T>.Shared.Return(poolArray);
         }
+
         return result;
     }
 
 #pragma warning disable CS0809
 
     /// <inheritdoc cref="Object.Equals(Object)" />
-    [Obsolete("Not applicable to a ref struct.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    [Obsolete("Not applicable to a ref struct."), EditorBrowsable(EditorBrowsableState.Never),]
     public override bool Equals(object? obj) {
         ThrowHelper.ThrowNotSupportedException();
         return default!; // unreachable.
     }
 
     /// <inheritdoc cref="Object.GetHashCode" />
-    [Obsolete("Not applicable to a ref struct.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    [Obsolete("Not applicable to a ref struct."), EditorBrowsable(EditorBrowsableState.Never),]
     public override int GetHashCode() {
         ThrowHelper.ThrowNotSupportedException();
         return default!; // unreachable.

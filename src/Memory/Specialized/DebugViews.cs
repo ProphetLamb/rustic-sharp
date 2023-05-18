@@ -1,11 +1,11 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace Rustic.Memory;
 
-internal sealed class MultiDictionaryDebugView<K, V> where K : notnull {
+internal sealed class MultiDictionaryDebugView<K, V>
+    where K : notnull {
     private readonly WeakReference<MultiDictionary<K, V>> _dict;
 
     public MultiDictionaryDebugView(MultiDictionary<K, V> dictionary) {
@@ -15,7 +15,7 @@ internal sealed class MultiDictionaryDebugView<K, V> where K : notnull {
     [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
     public KeyValuePair<K, V[]>[] Items {
         get {
-            if (!_dict.TryGetTarget(out var dict)) {
+            if (!_dict.TryGetTarget(out MultiDictionary<K, V>? dict)) {
                 return Array.Empty<KeyValuePair<K, V[]>>();
             }
 
@@ -25,6 +25,7 @@ internal sealed class MultiDictionaryDebugView<K, V> where K : notnull {
                 if (i >= items.Length) {
                     return items;
                 }
+
                 items[i] = new(key, values.ToArray());
                 i++;
             }
@@ -33,7 +34,6 @@ internal sealed class MultiDictionaryDebugView<K, V> where K : notnull {
         }
     }
 }
-
 
 internal sealed class DictionaryKeyCollectionDebugView<K, V> {
     private readonly WeakReference<IReadOnlyCollection<K>> _collection;
@@ -59,6 +59,7 @@ internal sealed class DictionaryKeyCollectionDebugView<K, V> {
                 items[i] = key;
                 i++;
             }
+
             return items;
         }
     }
@@ -88,6 +89,7 @@ internal sealed class DictionaryValueCollectionDebugView<K, V> {
                 items[i] = value;
                 i++;
             }
+
             return items;
         }
     }

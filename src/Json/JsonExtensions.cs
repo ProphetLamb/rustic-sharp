@@ -8,13 +8,16 @@ namespace Rustic.Json;
 /// <summary>Extensions methods for <see cref="JsonElement"/>, <see cref="Utf8JsonReader"/> and similar types.</summary>
 public static class JsonExtensions {
     /// <summary>Attempts to enumerate the objects in the <see cref="JsonElement"/>.</summary>
-    public static bool TryEnumerateObject(in this JsonElement self, [NotNullWhen(true)] out JsonElement.ObjectEnumerator enumerator) {
+    public static bool TryEnumerateObject(
+        in this JsonElement self,
+        [NotNullWhen(true)] out JsonElement.ObjectEnumerator enumerator) {
         try {
             enumerator = self.EnumerateObject();
         } catch (InvalidOperationException) {
             enumerator = default;
             return false;
         }
+
         return true;
     }
 
@@ -25,10 +28,11 @@ public static class JsonExtensions {
         } catch (InvalidOperationException) {
             value = null;
         }
+
         return value is not null;
     }
 
-    #region JsonReader & Writer
+#region JsonReader & Writer
 
     /// <summary>Attempts to read from the reader; otherwise, throws a <see cref="JsonException"/>.</summary>
     public static void ReadOrThrow(ref this Utf8JsonReader self) {
@@ -46,43 +50,57 @@ public static class JsonExtensions {
     /// <summary>Returns the converter for the type.</summary>
     /// <typeparam name="T">The type of the Option value.</typeparam>
     public static JsonConverter<T> GetConverter<T>(this JsonSerializerOptions self) {
-        return (JsonConverter<T>)self.GetConverter(typeof(T));
+        return (JsonConverter<T>) self.GetConverter(typeof(T));
     }
 
     /// <summary>Returns the string from the reader, throws if the string is null or empty.</summary>
     public static string GetKeyString(ref this Utf8JsonReader reader) {
-        var value = reader.GetString();
+        string? value = reader.GetString();
         if (value.IsWhiteSpace()) {
-            ThrowHelper.ThrowJsonException($"Unable to obtain the string key value. The value '{value}' is null or whitespace.");
+            ThrowHelper.ThrowJsonException(
+                $"Unable to obtain the string key value. The value '{value}' is null or whitespace."
+            );
         }
+
         return value!;
     }
 
     /// <summary>Attempts to read from the reader using the converter.</summary>
     /// <typeparam name="T">The type of the Option value.</typeparam>
-    public static bool TryRead<T>(ref this Utf8JsonReader self, JsonConverter<T> converter, JsonSerializerOptions options, [NotNullWhen(true)] out T value) {
+    public static bool TryRead<T>(
+        ref this Utf8JsonReader self,
+        JsonConverter<T> converter,
+        JsonSerializerOptions options,
+        [NotNullWhen(true)] out T value) {
         if (!converter.CanConvert(typeof(T))) {
             value = default!;
             return false;
         }
+
         try {
-            var temp = converter.Read(ref self, typeof(T), options);
+            T? temp = converter.Read(ref self, typeof(T), options);
             if (temp is not null) {
                 value = temp;
                 return true;
             }
         } catch (JsonException) {
         }
+
         value = default!;
         return false;
     }
 
     /// <summary>Attempts to write to the value to the writer using the converter.</summary>
     /// <typeparam name="T">The type of the Option value.</typeparam>
-    public static bool TryWrite<T>(this Utf8JsonWriter self, T value, JsonConverter<T> converter, JsonSerializerOptions options) {
+    public static bool TryWrite<T>(
+        this Utf8JsonWriter self,
+        T value,
+        JsonConverter<T> converter,
+        JsonSerializerOptions options) {
         if (!converter.CanConvert(typeof(T))) {
             return false;
         }
+
         try {
             converter.Write(self, value, options);
             return true;
@@ -91,10 +109,9 @@ public static class JsonExtensions {
         }
     }
 
+#endregion JsonReader & Writer
 
-    #endregion JsonReader & Writer
-
-    #region JsonTokenType
+#region JsonTokenType
 
     /// <summary>Throws if the <see cref="JsonTokenType"/> is not the <paramref name="expected"/>.</summary>
     public static void ThrowIfNot(this JsonTokenType self, JsonTokenType expected) {
@@ -120,7 +137,8 @@ public static class JsonExtensions {
     /// <summary>Returns <c>false</c> if the <see cref="JsonTokenType"/> is StartObject, EndObject, StartArray, EndArray or PropertyName; otherwise, return <c>true</c>.</summary>
     public static bool IsLeaf(this JsonTokenType self) {
         return self switch {
-            JsonTokenType.StartObject or JsonTokenType.EndObject or JsonTokenType.StartArray or JsonTokenType.EndArray or JsonTokenType.PropertyName => false,
+            JsonTokenType.StartObject or JsonTokenType.EndObject or JsonTokenType.StartArray or JsonTokenType.EndArray
+             or JsonTokenType.PropertyName => false,
             _ => true,
         };
     }
@@ -130,5 +148,5 @@ public static class JsonExtensions {
         return self is JsonTokenType.Null or JsonTokenType.None;
     }
 
-    #endregion JsonTokenType
+#endregion JsonTokenType
 }

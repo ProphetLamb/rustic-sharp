@@ -1,27 +1,27 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0;netstandard2.1;netcoreapp3.1;net472;net60;net70</TargetFrameworks>
-		<DeterministicSourcePaths Condition="'$(EnableSourceLink)' == ''">false</DeterministicSourcePaths>
-		<RootNamespace>Rustic.Memory</RootNamespace>
-	</PropertyGroup>
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.0;netstandard2.1;netcoreapp3.1;net472;net60;net70</TargetFrameworks>
+        <DeterministicSourcePaths Condition="'$(EnableSourceLink)' == ''">false</DeterministicSourcePaths>
+        <RootNamespace>Rustic.Memory</RootNamespace>
+    </PropertyGroup>
 
-	<PropertyGroup Label="Assembly Info">
-		<Product>Rustic.Memory.Common</Product>
-		<AssemblyName>$(Product)</AssemblyName>
-		<AssemblyTitle>$(Product)</AssemblyTitle>
-		<PackageId>$(Product)</PackageId>
-		<Title>$(Product)</Title>
-		<Description>Packages types and functionality used for many `Rustic.Memory` projects.</Description>
-		<PackageTags>ArrayPool;Ref;Span;Collections</PackageTags>
-	</PropertyGroup>
+    <PropertyGroup Label="Assembly Info">
+        <Product>Rustic.Memory.Common</Product>
+        <AssemblyName>$(Product)</AssemblyName>
+        <AssemblyTitle>$(Product)</AssemblyTitle>
+        <PackageId>$(Product)</PackageId>
+        <Title>$(Product)</Title>
+        <Description>Packages types and functionality used for many `Rustic.Memory` projects.</Description>
+        <PackageTags>ArrayPool;Ref;Span;Collections</PackageTags>
+    </PropertyGroup>
 
-	<ItemGroup Condition="!$(DefineConstants.Contains('NET5_0_OR_GREATER'))">
-		<PackageReference Include="System.Memory" Version="4.5.5" />
-	</ItemGroup>
+    <ItemGroup Condition="!$(DefineConstants.Contains('NET5_0_OR_GREATER'))">
+        <PackageReference Include="System.Memory" Version="4.5.5"/>
+    </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\..\Common\Common.csproj" />
-	</ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\Common\Common.csproj"/>
+    </ItemGroup>
 
 </Project>

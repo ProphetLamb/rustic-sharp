@@ -66,7 +66,7 @@ public ref struct StrBuilder {
         Debug.Assert(capacity >= 0);
 
         // If the caller has a bug and calls this with negative capacity, make sure to call Grow to throw an exception.
-        if ((uint)capacity > (uint)_chars.Length) {
+        if ((uint) capacity > (uint) _chars.Length) {
             Grow(capacity - _pos);
         }
     }
@@ -77,7 +77,7 @@ public ref struct StrBuilder {
     ///     This overload is pattern matched in the C# 7.3+ compiler so you can omit
     ///     the explicit method call, and write eg "fixed (char* c = builder)"
     /// </summary>
-    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
     public ref char GetPinnableReference() {
         return ref MemoryMarshal.GetReference(_chars);
     }
@@ -86,7 +86,7 @@ public ref struct StrBuilder {
     ///     Get a pinnable reference to the builder.
     /// </summary>
     /// <param name="terminate">Ensures that the builder has a null char after <see cref="Length" /></param>
-    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
     public ref char GetPinnableReference(bool terminate) {
         if (terminate) {
             EnsureCapacity(Length + 1);
@@ -101,7 +101,7 @@ public ref struct StrBuilder {
     /// </summary>
     /// <param name="index">The zero-based index of the element.</param>
     public ref char this[int index] {
-        [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
         get {
             Debug.Assert(index >= 0 && index < Length);
             return ref _chars[index];
@@ -114,7 +114,7 @@ public ref struct StrBuilder {
     /// <returns>The string represented by the builder.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override string ToString() {
-        var s = _chars.Slice(0, _pos).ToString();
+        string? s = _chars.Slice(0, _pos).ToString();
         Dispose();
         return s;
     }
@@ -126,11 +126,11 @@ public ref struct StrBuilder {
 
         StringBuilder sb = new(256);
         return sb
-            .Append("Capacity = ").Append(_pos)
-            .Append(", Values = [")
-            .Append(_chars.Slice(0, _pos).ToString())
-            .Append(']')
-            .ToString();
+           .Append("Capacity = ").Append(_pos)
+           .Append(", Values = [")
+           .Append(_chars.Slice(0, _pos).ToString())
+           .Append(']')
+           .ToString();
     }
 
     /// <summary>Returns the underlying storage of the builder.</summary>
@@ -201,7 +201,7 @@ public ref struct StrBuilder {
             Grow(count);
         }
 
-        var remaining = _pos - index;
+        int remaining = _pos - index;
         _chars.Slice(index, remaining).CopyTo(_chars.Slice(index + count));
         _chars.Slice(index, count).Fill(value);
         _pos += count;
@@ -217,7 +217,7 @@ public ref struct StrBuilder {
             Grow(1);
         }
 
-        var remaining = _pos - index;
+        int remaining = _pos - index;
         _chars.Slice(index, remaining).CopyTo(_chars.Slice(index + 1));
         _chars[index] = value;
         _pos += 1;
@@ -233,19 +233,20 @@ public ref struct StrBuilder {
             return;
         }
 
-        var count = value!.Length;
+        int count = value!.Length;
 
         if (_pos > _chars.Length - count) {
             Grow(count);
         }
 
-        var remaining = _pos - index;
+        int remaining = _pos - index;
         _chars.Slice(index, remaining).CopyTo(_chars.Slice(index + count));
         value
 #if !NET6_0_OR_GREATER
-                .AsSpan()
+           .AsSpan()
 #endif
-                .CopyTo(_chars.Slice(index));
+           .CopyTo(_chars.Slice(index));
+
         _pos += count;
     }
 
@@ -255,8 +256,8 @@ public ref struct StrBuilder {
     /// <param name="value">The character.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Append(char value) {
-        var pos = _pos;
-        if ((uint)pos < (uint)_chars.Length) {
+        int pos = _pos;
+        if ((uint) pos < (uint) _chars.Length) {
             _chars[pos] = value;
             _pos = pos + 1;
         } else {
@@ -274,8 +275,11 @@ public ref struct StrBuilder {
             return;
         }
 
-        var pos = _pos;
-        if (value!.Length == 1 && (uint)pos < (uint)_chars.Length) // very common case, e.g. appending strings from NumberFormatInfo like separators, percent symbols, etc.
+        int pos = _pos;
+        if (value!.Length == 1
+         && (uint) pos
+          < (uint) _chars
+               .Length) // very common case, e.g. appending strings from NumberFormatInfo like separators, percent symbols, etc.
         {
             _chars[pos] = value[0];
             _pos = pos + 1;
@@ -285,16 +289,17 @@ public ref struct StrBuilder {
     }
 
     private void AppendSlow(string s) {
-        var pos = _pos;
+        int pos = _pos;
         if (pos > _chars.Length - s.Length) {
             Grow(s.Length);
         }
 
         s
 #if !NET6_0_OR_GREATER
-                .AsSpan()
+           .AsSpan()
 #endif
-                .CopyTo(_chars.Slice(pos));
+           .CopyTo(_chars.Slice(pos));
+
         _pos += s.Length;
     }
 
@@ -308,8 +313,8 @@ public ref struct StrBuilder {
             Grow(count);
         }
 
-        var dst = _chars.Slice(_pos, count);
-        for (var i = 0; i < dst.Length; i++) {
+        Span<char> dst = _chars.Slice(_pos, count);
+        for (int i = 0; i < dst.Length; i++) {
             dst[i] = value;
         }
 
@@ -323,17 +328,17 @@ public ref struct StrBuilder {
     /// <param name="length">The number of characters after the <paramref name="value"/> pointer.</param>
     [CLSCompliant(false)]
     public unsafe void Append(char* value, int length) {
-        if (value == (char*)0 || length == 0) {
+        if (value == (char*) 0 || length == 0) {
             return;
         }
 
-        var pos = _pos;
+        int pos = _pos;
         if (pos > _chars.Length - length) {
             Grow(length);
         }
 
-        var dst = _chars.Slice(_pos, length);
-        for (var i = 0; i < dst.Length; i++) {
+        Span<char> dst = _chars.Slice(_pos, length);
+        for (int i = 0; i < dst.Length; i++) {
             dst[i] = *value++;
         }
 
@@ -345,7 +350,7 @@ public ref struct StrBuilder {
     /// </summary>
     /// <param name="value">The span to append.</param>
     public void Append(ReadOnlySpan<char> value) {
-        var pos = _pos;
+        int pos = _pos;
         if (pos > _chars.Length - value.Length) {
             Grow(value.Length);
         }
@@ -361,7 +366,7 @@ public ref struct StrBuilder {
     /// <returns>The span at the end of the builder.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<char> AppendSpan(int length) {
-        var origPos = _pos;
+        int origPos = _pos;
         if (origPos > _chars.Length - length) {
             Grow(length);
         }
@@ -387,14 +392,17 @@ public ref struct StrBuilder {
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void Grow(int additionalCapacityBeyondPos) {
         Debug.Assert(additionalCapacityBeyondPos > 0);
-        Debug.Assert(_pos > _chars.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
+        Debug.Assert(
+            _pos > _chars.Length - additionalCapacityBeyondPos,
+            "Grow called incorrectly, no resize is needed."
+        );
 
         // Make sure to let Rent throw an exception if the caller has a bug and the desired capacity is negative
-        var poolArray = ArrayPool<char>.Shared.Rent((_pos + additionalCapacityBeyondPos).Max(_chars.Length * 2));
+        char[]? poolArray = ArrayPool<char>.Shared.Rent((_pos + additionalCapacityBeyondPos).Max(_chars.Length * 2));
 
         _chars.Slice(0, _pos).CopyTo(poolArray);
 
-        var toReturn = _arrayToReturnToPool;
+        char[]? toReturn = _arrayToReturnToPool;
         _chars = _arrayToReturnToPool = poolArray;
         if (toReturn is not null) {
             ArrayPool<char>.Shared.Return(toReturn);
@@ -404,7 +412,7 @@ public ref struct StrBuilder {
     /// <inheritdoc cref="IDisposable.Dispose"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Dispose() {
-        var toReturn = _arrayToReturnToPool;
+        char[]? toReturn = _arrayToReturnToPool;
         this = default; // for safety, to avoid using pooled array if this instance is erroneously appended to again
         if (toReturn is not null) {
             ArrayPool<char>.Shared.Return(toReturn);

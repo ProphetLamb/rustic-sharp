@@ -11,7 +11,7 @@ namespace Rustic.Memory.Tests;
 public class TinySpanTests {
     [Test]
     public void TestConstruct() {
-        var vec = TinyRoSpan.From(SampleData.Users[0]);
+        TinyRoSpan<User> vec = TinyRoSpan.From(SampleData.Users[0]);
         vec.Count().Should().Be(1);
         vec = TinyRoSpan.From(SampleData.Users[0], SampleData.Users[1]);
         vec.Count().Should().Be(2);
@@ -28,13 +28,13 @@ public class TinySpanTests {
 
 internal static class TinySpanExtensions {
     public static int Count<T>(in this TinyRoSpan<T> self) {
-        var count = 0;
-        var en = self.GetEnumerator();
+        int count = 0;
+        TinyRoSpan<T>.Enumerator en = self.GetEnumerator();
         while (en.MoveNext()) {
-            var item = en.Current;
+            T item = en.Current;
             count += 1;
         }
+
         return count;
     }
-
 }

@@ -12,7 +12,8 @@ namespace Rustic.Memory;
 /// <remarks>Use with care, because <see cref="TinyVec{T}"/> is a struct, and thus requires a reference to mutate.</remarks>
 /// <example>A usage example is usage as <see cref="Dictionary{TKey,TValue}"/> values when interacting via the CollectionsMarshal methods.</example>
 public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
-    [AllowNull] private T _singleValue;
+    [AllowNull]
+    private T _singleValue;
     private Vec<T>? _values;
 
     /// Always empty list indicating that the TinyVec has exactly one element in _singleValue.
@@ -58,10 +59,12 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
                 ThrowHelper.ArgumentInRange(index, index == 0);
                 return _singleValue;
             }
+
             if (_values is not null) {
                 // this will throw since the list is EmptyListGuard
                 return _values[index];
             }
+
             ThrowHelper.ArgumentInRange(index, index >= 0 && index < Count);
             Debug.Fail("Unreachable, expected to throw above.");
             return default!;
@@ -71,6 +74,7 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
                 ThrowHelper.ArgumentInRange(index, index == 0);
                 _singleValue = value;
             }
+
             if (_values is not null) {
                 // this will throw since the list is EmptyListGuard
                 _values[index] = value;
@@ -83,20 +87,27 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
     }
 
     /// <inheritdoc cref="Vec{T}.GetEnumerator" />
-    public ReadOnlySpan<T>.Enumerator GetEnumerator() => AsSpan().GetEnumerator();
+    public ReadOnlySpan<T>.Enumerator GetEnumerator() {
+        return AsSpan().GetEnumerator();
+    }
 
-    IEnumerator<T> IEnumerable<T>.GetEnumerator() => new Enumerator(this);
+    IEnumerator<T> IEnumerable<T>.GetEnumerator() {
+        return new Enumerator(this);
+    }
 
-    IEnumerator IEnumerable.GetEnumerator() => new Enumerator(this);
+    IEnumerator IEnumerable.GetEnumerator() {
+        return new Enumerator(this);
+    }
 
     /// <inheritdoc />
     public void Add(T value) {
         if (ReferenceEquals(_values, SingleValueGuard)) {
             // convert to a list boxing _singleValue and _values
-            _values = new() { _singleValue, value };
+            _values = new() {_singleValue, value,};
             _singleValue = default; // set to default so that the GC may collect if T is a reference type.
             return;
         }
+
         if (_values is not null) {
             _values.Add(value);
             return;
@@ -107,7 +118,9 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
     }
 
     /// <inheritdoc cref="List{T}.AddRange"/>
-    public void AddRange(ReadOnlySpan<T> values) => InsertRange(Count, values);
+    public void AddRange(ReadOnlySpan<T> values) {
+        InsertRange(Count, values);
+    }
 
     /// <inheritdoc />
     public bool Remove(T value) {
@@ -115,6 +128,7 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
         if (index == -1) {
             return false;
         }
+
         RemoveAt(index);
         return true;
     }
@@ -136,7 +150,7 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
     public void Insert(int index, T item) {
         if (ReferenceEquals(_values, SingleValueGuard)) {
             ThrowHelper.ArgumentInRange(index, index is >= 0 and <= 1);
-            _values = index == 0 ? new() { item, _singleValue } : new() { _singleValue, item };
+            _values = index == 0 ? new() {item, _singleValue,} : new() {_singleValue, item,};
             _singleValue = default;
             return;
         }
@@ -156,10 +170,12 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
         if (values.IsEmpty) {
             return;
         }
+
         if (values.Length == 1) {
             Insert(index, values[0]);
             return;
         }
+
         // we will always need to construct a list, bc we will have at least two elements.
         // other conditions are handled above
         if (ReferenceEquals(_values, SingleValueGuard)) {
@@ -168,6 +184,7 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
             if (index == 0) {
                 _values.Add(_singleValue);
             }
+
             _values.AddRange(values);
             if (index != 0) {
                 _values.Add(_singleValue);
@@ -234,7 +251,9 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
     }
 
     /// <inheritdoc />
-    public bool Contains(T item) => IndexOf(item) != -1;
+    public bool Contains(T item) {
+        return IndexOf(item) != -1;
+    }
 
     /// <inheritdoc />
     public void CopyTo(T[] array, int arrayIndex) {
@@ -248,6 +267,7 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
         if (span.Length < Count) {
             return false;
         }
+
         switch (_values) {
         case null:
             return true;
@@ -271,6 +291,7 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
         if (_values is null) {
             return default;
         }
+
         if (_values is T existing) {
 #if NETSTANDARD2_1_OR_GREATER ||NET5_0_OR_GREATER
             return MemoryMarshal.CreateReadOnlySpan(ref existing, 1);
@@ -288,10 +309,14 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
     }
 
     /// <inhertidoc cref="AsSpan(int, int)"/>
-    public ReadOnlySpan<T> AsSpan(int start) => AsSpan(start, Count - start);
+    public ReadOnlySpan<T> AsSpan(int start) {
+        return AsSpan(start, Count - start);
+    }
 
     /// <inhertidoc cref="AsSpan(int, int)"/>
-    public ReadOnlySpan<T> AsSpan() => AsSpan(0, Count);
+    public ReadOnlySpan<T> AsSpan() {
+        return AsSpan(0, Count);
+    }
 
     private sealed class Enumerator : IEnumerator<T> {
         private readonly TinyVec<T> _source;
@@ -308,7 +333,7 @@ public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
         public bool MoveNext() {
             int index = _index + 1;
 
-            if ((nuint)index >= (nuint)_source.Count) {
+            if ((nuint) index >= (nuint) _source.Count) {
                 _index = -1;
                 return false;
             }

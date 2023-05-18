@@ -84,11 +84,17 @@ public struct RentArray<T> : IEnumerable<T>, IDisposable {
 
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator()" />
-    public Span<T>.Enumerator GetEnumerator() => Array.AsSpan().GetEnumerator();
+    public Span<T>.Enumerator GetEnumerator() {
+        return Array.AsSpan().GetEnumerator();
+    }
 
-    IEnumerator<T> IEnumerable<T>.GetEnumerator() => ((IEnumerable<T>)Array).GetEnumerator();
+    IEnumerator<T> IEnumerable<T>.GetEnumerator() {
+        return ((IEnumerable<T>) Array).GetEnumerator();
+    }
 
-    IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<T>)Array).GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() {
+        return ((IEnumerable<T>) Array).GetEnumerator();
+    }
 
     /// <summary>Rents an array with the exact number of elements.</summary>
     /// <param name="length">The number of elements.</param>
@@ -100,6 +106,7 @@ public struct RentArray<T> : IEnumerable<T>, IDisposable {
         if (rent is null) {
             return new T[length];
         }
+
         pool[length] = null;
         return rent;
     }
@@ -129,5 +136,7 @@ public struct RentArray<T> : IEnumerable<T>, IDisposable {
 
     /// <inheritdoc cref="Array"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator T[](in RentArray<T> arr) => arr.Array;
+    public static implicit operator T[](in RentArray<T> arr) {
+        return arr.Array;
+    }
 }

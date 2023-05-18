@@ -25,18 +25,18 @@ public readonly ref struct BitSet {
     /// <summary>Sets the bit at the index to one.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Mark(int bitIndex) {
-        var bitArrayIndex = bitIndex >> IntShift;
-        if ((uint)bitArrayIndex < (uint)_span.Length) {
-            _span[bitArrayIndex] |= 1 << (int)((uint)bitIndex).FastMod2(IntSize);
+        int bitArrayIndex = bitIndex >> IntShift;
+        if ((uint) bitArrayIndex < (uint) _span.Length) {
+            _span[bitArrayIndex] |= 1 << (int) ((uint) bitIndex).FastMod2(IntSize);
         }
     }
 
     /// <summary>Sets the bit at the index to zero.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Unmark(int bitIndex) {
-        var bitArrayIndex = bitIndex >> IntShift;
-        if ((uint)bitArrayIndex < (uint)_span.Length) {
-            _span[bitArrayIndex] &= ~(1 << (int)((uint)bitIndex).FastMod2(IntSize));
+        int bitArrayIndex = bitIndex >> IntShift;
+        if ((uint) bitArrayIndex < (uint) _span.Length) {
+            _span[bitArrayIndex] &= ~(1 << (int) ((uint) bitIndex).FastMod2(IntSize));
         }
     }
 
@@ -44,9 +44,9 @@ public readonly ref struct BitSet {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set(int bitIndex, int value) {
         Debug.Assert((value & 1) == value, "Value must be a boolean.");
-        var bitArrayIndex = bitIndex >> IntShift;
-        if ((uint)bitArrayIndex < (uint)_span.Length) {
-            var mask = ~(1 << (bitIndex % IntSize));
+        int bitArrayIndex = bitIndex >> IntShift;
+        if ((uint) bitArrayIndex < (uint) _span.Length) {
+            int mask = ~(1 << (bitIndex % IntSize));
             _span[bitArrayIndex] = (_span[bitArrayIndex] & mask) | (value * ~mask);
         }
     }
@@ -54,11 +54,12 @@ public readonly ref struct BitSet {
     /// <summary>Gets the value indicating wether the bit at the index is marked.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsMarked(int bitIndex) {
-        var bitArrayIndex = bitIndex >> IntShift;
-        if ((uint)bitArrayIndex < (uint)_span.Length) {
-            var mask = 1 << (bitIndex % IntSize);
+        int bitArrayIndex = bitIndex >> IntShift;
+        if ((uint) bitArrayIndex < (uint) _span.Length) {
+            int mask = 1 << (bitIndex % IntSize);
             return (_span[bitArrayIndex] & mask) != 0;
         }
+
         Debug.Fail("Bit index out of range");
         return false;
     }

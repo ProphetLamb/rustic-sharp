@@ -43,7 +43,10 @@ public sealed class PoolVec<T>
         Debug.Assert(additionalCapacityBeyondPos > 0);
 
         if (Capacity != 0) {
-            Debug.Assert(Count > Capacity - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
+            Debug.Assert(
+                Count > Capacity - additionalCapacityBeyondPos,
+                "Grow called incorrectly, no resize is needed."
+            );
 
             T[]? returnToPool = Data.Array;
             T[] temp = _pool.Rent((Count + additionalCapacityBeyondPos).Max(Capacity * 2));

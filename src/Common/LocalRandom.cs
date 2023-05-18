@@ -30,7 +30,8 @@ public static class LocalRandom {
     }
 
     /// <summary>Posix portable file name characters.</summary>
-    public static ReadOnlySpan<char> PosixPortable => "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz_-.".AsSpan();
+    public static ReadOnlySpan<char> PosixPortable =>
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz_-.".AsSpan();
 
     /// <summary>Returns a random string of a specific length, with characters exclusively from an alphabet.</summary>
     public static string GetString(this Random random, ReadOnlySpan<char> alphabet, int length) {

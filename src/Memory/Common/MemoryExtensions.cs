@@ -12,7 +12,6 @@ namespace System;
 /// </summary>
 public static class MemoryExtensions {
 #if !NET5_0_OR_GREATER
-
     /// <summary>
     ///     Sorts the elements in the entire <see cref="Span{T}" /> using the <see cref="IComparable{T}" /> implementation of each element of the <see cref="Span{T}"/>.
     /// </summary>
@@ -45,7 +44,7 @@ public static class MemoryExtensions {
     public static void Sort<T>(this Span<T> span, Comparison<T> comparison) {
         ThrowHelper.ArgumentNotNull(comparison);
         if (span.Length > 1) {
-            SpanSortHelper<T>.Sort(span, comparison!);
+            SpanSortHelper<T>.Sort(span, comparison);
         }
     }
 
@@ -62,8 +61,8 @@ public static class MemoryExtensions {
         where T : IComparable<T> {
         int outI = 0, leftI = 0, rightI = 0;
         while ((leftI < set.Length) & (rightI < other.Length)) {
-            var v1 = set[leftI];
-            var v2 = other[rightI];
+            T? v1 = set[leftI];
+            T? v2 = other[rightI];
             output[outI++] = v1.CompareTo(v2) <= 0 ? v1 : v2;
             leftI = v1.CompareTo(v2) <= 0 ? leftI + 1 : leftI;
             rightI = v1.CompareTo(v2) >= 0 ? rightI + 1 : rightI;
@@ -79,12 +78,16 @@ public static class MemoryExtensions {
     /// <param name="comparer">The comparer used to compare two elements.</param>
     /// <typeparam name="T">The type of the elements of the sets.</typeparam>
     /// <typeparam name="C">The type of the comparer.</typeparam>
-    public static void Union<T, C>(in this ReadOnlySpan<T> set, in ReadOnlySpan<T> other, in Span<T> output, in C comparer)
+    public static void Union<T, C>(
+        in this ReadOnlySpan<T> set,
+        in ReadOnlySpan<T> other,
+        in Span<T> output,
+        in C comparer)
         where C : IComparer<T> {
         int outI = 0, leftI = 0, rightI = 0;
         while ((leftI < set.Length) & (rightI < other.Length)) {
-            var v1 = set[leftI];
-            var v2 = other[rightI];
+            T? v1 = set[leftI];
+            T? v2 = other[rightI];
             output[outI++] = comparer.Compare(v1, v2) <= 0 ? v1 : v2;
             leftI = comparer.Compare(v1, v2) <= 0 ? leftI + 1 : leftI;
             rightI = comparer.Compare(v1, v2) >= 0 ? rightI + 1 : rightI;

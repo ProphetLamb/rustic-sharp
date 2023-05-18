@@ -1,23 +1,24 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFrameworks>netstandard2.1;netcoreapp3.1;net472;net60;net70</TargetFrameworks>
-		<RootNamespace>Rustic.Reflect</RootNamespace>
-	</PropertyGroup>
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.1;netcoreapp3.1;net472;net60;net70</TargetFrameworks>
+        <RootNamespace>Rustic.Reflect</RootNamespace>
+    </PropertyGroup>
 
-	<PropertyGroup Label="Assembly Info">
-		<PackageId>Rustic.Reflect</PackageId>
-		<Title>Rustic.Reflect</Title>
-		<AssemblyName>Rustic.Reflect</AssemblyName>
-		<AssemblyTitle>Rustic.Reflect</AssemblyTitle>
-		<Description>Il based delegate emitter and commonly used reflection utility. ILEmitter,
-			ILReflect</Description>
-		<PackageTags>Reflection,IL</PackageTags>
-	</PropertyGroup>
+    <PropertyGroup Label="Assembly Info">
+        <PackageId>Rustic.Reflect</PackageId>
+        <Title>Rustic.Reflect</Title>
+        <AssemblyName>Rustic.Reflect</AssemblyName>
+        <AssemblyTitle>Rustic.Reflect</AssemblyTitle>
+        <Description>Il based delegate emitter and commonly used reflection utility. ILEmitter,
+            ILReflect
+        </Description>
+        <PackageTags>Reflection,IL</PackageTags>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\Memory\Memory\Memory.csproj" />
-		<ProjectReference Include="..\Common\Common.csproj" />
-	</ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Memory\Memory\Memory.csproj"/>
+        <ProjectReference Include="..\Common\Common.csproj"/>
+    </ItemGroup>
 
 </Project>

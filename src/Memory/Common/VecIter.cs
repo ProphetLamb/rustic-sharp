@@ -26,7 +26,7 @@ public struct VecIter<T>
     public VecIter(T[]? array, int offset, int count) {
         ThrowHelper.ArgumentInRange(offset, offset >= 0);
         ThrowHelper.ArgumentInRange(count, count >= 0);
-        var arrayLength = (array?.Length) ?? 0;
+        int arrayLength = array?.Length ?? 0;
         ThrowHelper.ArgumentInRange(count, count <= arrayLength - offset);
 
         _array = array;
@@ -60,7 +60,7 @@ public struct VecIter<T>
     /// <summary>
     ///     Returns a value that indicates whether the current segment is empty.
     /// </summary>
-    public bool IsEmpty => 0 >= (uint)_count;
+    public bool IsEmpty => 0 >= (uint) _count;
 
     /// <inheritdoc cref="ArraySegment{T}.Offset"/>
     public int Offset => _offset;
@@ -90,13 +90,13 @@ public struct VecIter<T>
     ///     Returns the segment represented by the <see cref="VecIter{T}"/> as a span.
     /// </summary>
     /// <returns>The span representing the segment.</returns>
-    [Pure]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ReadOnlySpan<T> AsSpan() => new(_array, _offset, _count);
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
+    public ReadOnlySpan<T> AsSpan() {
+        return new(_array, _offset, _count);
+    }
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
-    [Pure]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
     public VecIter<T> GetEnumerator() {
         if (_pos == -1) {
             return this;
@@ -111,16 +111,20 @@ public struct VecIter<T>
     }
 
     /// <inheritdoc/>
-    IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+    IEnumerator<T> IEnumerable<T>.GetEnumerator() {
+        return GetEnumerator();
+    }
 
     /// <inheritdoc/>
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() {
+        return GetEnumerator();
+    }
 
     /// <inheritdoc />
     public bool MoveNext() {
-        var index = _pos + 1;
+        int index = _pos + 1;
 
-        if ((uint)index < (uint)_count) {
+        if ((uint) index < (uint) _count) {
             _pos = index;
             return true;
         }
@@ -137,8 +141,11 @@ public struct VecIter<T>
     ///     Instantiates a new <see cref="ArraySegment{T}"/> representing the same segment as the iterator.
     /// </summary>
     /// <param name="segment">The iterator.</param>
-    public static implicit operator ArraySegment<T>(VecIter<T> segment) => segment.Array is not null ? new(segment.Array, segment.Offset, segment.Length) : default;
+    public static implicit operator ArraySegment<T>(VecIter<T> segment) {
+        return segment.Array is not null ? new(segment.Array, segment.Offset, segment.Length) : default;
+    }
 }
+
 /// <summary>
 ///     Extension methods for <see cref="ArraySegment{T}"/> and <see cref="Array"/>.
 /// </summary>
@@ -148,18 +155,20 @@ public static class VecIterExtensions {
     /// </summary>
     /// <param name="segment">The segment.</param>
     /// <typeparam name="T">The type of elements in the array.</typeparam>
-    [Pure]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static VecIter<T> GetIterator<T>(this ArraySegment<T> segment) => new(segment.Array, segment.Offset, segment.Count);
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
+    public static VecIter<T> GetIterator<T>(this ArraySegment<T> segment) {
+        return new(segment.Array, segment.Offset, segment.Count);
+    }
 
     /// <summary>
     ///     Initializes a new <see cref="VecIter{T}"/> for the array.
     /// </summary>
     /// <param name="array">The array.</param>
     /// <typeparam name="T">The type of elements in the array.</typeparam>
-    [Pure]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static VecIter<T> GetIterator<T>(this T[] array) => new(array, 0, array.Length);
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
+    public static VecIter<T> GetIterator<T>(this T[] array) {
+        return new(array, 0, array.Length);
+    }
 
     /// <summary>
     ///     Initializes a new <see cref="VecIter{T}"/> for the array.
@@ -169,9 +178,10 @@ public static class VecIterExtensions {
     /// <typeparam name="T">The type of elements in the array.</typeparam>
     ///
     ///
-    [Pure]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static VecIter<T> GetIterator<T>(this T[] array, int offset) => new(array, offset, array.Length - offset);
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
+    public static VecIter<T> GetIterator<T>(this T[] array, int offset) {
+        return new(array, offset, array.Length - offset);
+    }
 
     /// <summary>
     ///     Initializes a new <see cref="VecIter{T}"/> for the array.
@@ -180,7 +190,8 @@ public static class VecIterExtensions {
     /// <param name="offset">The zero-based index of the first element in the array.</param>
     /// <param name="count">The number of elements form the <paramref name="offset"/>.</param>
     /// <typeparam name="T">The type of elements in the array.</typeparam>
-    [Pure]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static VecIter<T> GetIterator<T>(this T[] array, int offset, int count) => new(array, offset, count);
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
+    public static VecIter<T> GetIterator<T>(this T[] array, int offset, int count) {
+        return new(array, offset, count);
+    }
 }

@@ -11,65 +11,73 @@ namespace Rustic;
 /// <summary>Centralized functionality related to validation and throwing exceptions.</summary>
 #pragma warning disable RCS1138,CS1591
 public static class ThrowHelper {
-    #region ArgumentExceptions
+#region ArgumentExceptions
 
-    [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
+    [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining),]
     public static void ThrowArgumentException(string message, string? name = null, Exception? inner = null) {
         throw new ArgumentException(message, name, inner);
     }
 
-    [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
+    [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining),]
     public static void ThrowArgumentNullException(string name, string? message = null) {
         throw new ArgumentNullException(name, message);
     }
 
-    [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
+    [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining),]
     public static void ThrowArgumentOutOfRangeException(string name, object actual, string? message = null) {
         throw new ArgumentOutOfRangeException(name, actual, message);
     }
 
-    #endregion ArgumentExceptions
+#endregion ArgumentExceptions
 
-    #region InvalidOperation
+#region InvalidOperation
 
-    [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
+    [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining),]
     public static void ThrowInvalidOperationException(string? message = null, Exception? ex = null) {
         throw new InvalidOperationException(message, ex);
     }
 
-    [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
+    [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining),]
     public static void ThrowNotSupportedException(string? message = null, Exception? ex = null) {
         throw new NotSupportedException(message, ex);
     }
 
-    #endregion InvalidOperation
+#endregion InvalidOperation
 
-    #region Format
+#region Format
 
-    [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
+    [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining),]
     public static void ThrowFormatException(string? message = null, Exception? ex = null) {
         throw new FormatException(message, ex);
     }
 
-    [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
+    [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining),]
     public static void ThrowFormatException(int start, int end, string? message = null, Exception? ex = null) {
         throw new FormatException($"Formatter failed at {start}..{end}. {message}", ex);
     }
 
-    #endregion
+#endregion
 
-    #region Validations
+#region Validations
 
-    [DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void ArgumentIs<T>(T value, [DoesNotReturnIf(false)] bool condition, [CallerArgumentExpression("value")] string name = null!, [CallerArgumentExpression("condition")] string message = null!)
+    [DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining),]
+    public static void ArgumentIs<T>(
+        T value,
+        [DoesNotReturnIf(false)] bool condition,
+        [CallerArgumentExpression("value")] string name = null!,
+        [CallerArgumentExpression("condition")] string message = null!)
         where T : notnull {
         if (!condition) {
             ThrowArgumentException($"The argument \"{value}\" does not fulfill \"{message}\".", name);
         }
     }
 
-    [DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void ArgumentInRange<T>(T value, [DoesNotReturnIf(false)] bool condition, [CallerArgumentExpression("value")] string name = null!, [CallerArgumentExpression("condition")] string message = null!)
+    [DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining),]
+    public static void ArgumentInRange<T>(
+        T value,
+        [DoesNotReturnIf(false)] bool condition,
+        [CallerArgumentExpression("value")] string name = null!,
+        [CallerArgumentExpression("condition")] string message = null!)
         where T : notnull {
         if (!condition) {
             ThrowArgumentOutOfRangeException(name, value, $"The argument does not fulfill \"{message}\".");
@@ -83,32 +91,34 @@ public static class ThrowHelper {
         }
     }
 
-    #endregion Validations
+#endregion Validations
 
-    #region KeyNotFoundException
+#region KeyNotFoundException
 
-    [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
+    [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining),]
     public static void ThrowKeyNotFoundException(string? message = null, Exception? ex = null) {
         throw new KeyNotFoundException(message, ex);
     }
 
-    #endregion
-    #region Special Exceptions
+#endregion
 
-    [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
+#region Special Exceptions
+
+    [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining),]
     public static void ThrowUnreachableException(string? message = null, Exception? ex = null) {
         throw new UnreachableException(message, ex);
     }
 
-    [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining),]
     public static void ObjectDisposedException<T>(string? message = null) {
         ObjectDisposedException(typeof(T).FullName ?? "Unknown", message);
     }
 
-    [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
+    [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining),]
     public static void ObjectDisposedException(string typeName, string? message = null) {
         throw new ObjectDisposedException(typeName, message);
     }
-    #endregion
+
+#endregion
 }
 #pragma warning disable RCS1138,CS1591

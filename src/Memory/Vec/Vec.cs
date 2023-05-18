@@ -11,7 +11,7 @@ namespace Rustic.Memory;
 ///     Represents a strongly typed list of object that can be accessed by ref. Provides a similar interface as <see cref="List{T}"/>.
 /// </summary>
 /// <typeparam name="T">The type of items of the list.</typeparam>
-[DebuggerDisplay("Length = {Count}"), DebuggerTypeProxy(typeof(IReadOnlyCollectionDebugView<>))]
+[DebuggerDisplay("Length = {Count}"), DebuggerTypeProxy(typeof(IReadOnlyCollectionDebugView<>)),]
 public class Vec<T> : IVector<T> {
     /// <summary>
     /// The internal storage.
@@ -49,7 +49,7 @@ public class Vec<T> : IVector<T> {
 
     /// <inheritdoc />
     public int Length {
-        [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
         get => _count;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set {
@@ -72,7 +72,7 @@ public class Vec<T> : IVector<T> {
     bool ICollection<T>.IsReadOnly => false;
 
     /// <inheritdoc />
-    public bool IsEmpty => 0u >= (uint)Length;
+    public bool IsEmpty => 0u >= (uint) Length;
 
     /// <inheritdoc/>
     public bool IsDefault => Data.Array is null;
@@ -84,7 +84,7 @@ public class Vec<T> : IVector<T> {
 
     /// <inheritdoc />
     public ref T this[int index] {
-        [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Pure, MethodImpl(MethodImplOptions.AggressiveInlining),]
         get {
             Debug.Assert(index < Length);
             return ref RawStorage[index];
@@ -96,7 +96,10 @@ public class Vec<T> : IVector<T> {
     ref readonly T IReadOnlyVector<T>.this[int index] => ref this[index];
 
     /// <inheritdoc/>
-    T IList<T>.this[int index] { get => this[index]; set => this[index] = value; }
+    T IList<T>.this[int index] {
+        get => this[index];
+        set => this[index] = value;
+    }
 
     /// <inheritdoc/>
     T IReadOnlyList<T>.this[int index] => this[index];
@@ -110,7 +113,7 @@ public class Vec<T> : IVector<T> {
         {
             int offset = index.GetOffset(Length);
             ThrowHelper.ArgumentInRange(offset, offset >= 0 && offset < Length);
-            return ref RawStorage![offset];
+            return ref RawStorage[offset];
         }
     }
 
@@ -155,7 +158,7 @@ public class Vec<T> : IVector<T> {
         Debug.Assert(capacity >= 0);
 
         // If the caller has a bug and calls this with negative capacity, make sure to call Grow to throw an exception.
-        if ((uint)capacity > (uint)Capacity) {
+        if ((uint) capacity > (uint) Capacity) {
             Grow(capacity - Length);
         }
 
@@ -163,7 +166,6 @@ public class Vec<T> : IVector<T> {
     }
 
 #if NET5_0_OR_GREATER || NETCOREAPP3_0_OR_GREATER
-
     /// <summary>
     ///     Get a pinnable reference to the list.
     ///     This overload is pattern matched in the C# 7.3+ compiler so you can omit
@@ -195,7 +197,7 @@ public class Vec<T> : IVector<T> {
     public void Add(T item) {
         int pos = Length;
 
-        if ((uint)pos < (uint)Capacity) {
+        if ((uint) pos < (uint) Capacity) {
             RawStorage[pos] = item;
             Length = pos + 1;
         } else {
@@ -233,7 +235,9 @@ public class Vec<T> : IVector<T> {
     }
 
     /// <inheritdoc/>
-    bool ICollection<T>.Contains(T item) => this.Contains(in item);
+    bool ICollection<T>.Contains(T item) {
+        return this.Contains(in item);
+    }
 
     /// <inheritdoc />
     public bool TryCopyTo(Span<T> destination) {
@@ -246,7 +250,9 @@ public class Vec<T> : IVector<T> {
     }
 
     /// <inheritdoc />
-    void ICollection.CopyTo(Array array, int index) => CopyTo((T[])array, index);
+    void ICollection.CopyTo(Array array, int index) {
+        CopyTo((T[]) array, index);
+    }
 
     /// <inheritdoc />
     [Pure]
@@ -261,6 +267,7 @@ public class Vec<T> : IVector<T> {
 
             return i;
         }
+
         return -1;
     }
 
@@ -271,7 +278,9 @@ public class Vec<T> : IVector<T> {
     }
 
     /// <inheritdoc />
-    int IList<T>.IndexOf(T item) => this.IndexOf(in item);
+    int IList<T>.IndexOf(T item) {
+        return this.IndexOf(in item);
+    }
 
     /// <inheritdoc cref="List{T}.Insert"/>
     [CLSCompliant(false)]
@@ -287,7 +296,9 @@ public class Vec<T> : IVector<T> {
     }
 
     /// <inheritdoc />
-    void IList<T>.Insert(int index, T item) => Insert(index, item);
+    void IList<T>.Insert(int index, T item) {
+        Insert(index, item);
+    }
 
     /// <inheritdoc cref="List{T}.InsertRange"/>
     public void InsertRange(int index, ReadOnlySpan<T> values) {
@@ -327,7 +338,9 @@ public class Vec<T> : IVector<T> {
     }
 
     /// <inheritdoc/>
-    bool ICollection<T>.Remove(T item) => this.Remove(in item);
+    bool ICollection<T>.Remove(T item) {
+        return this.Remove(in item);
+    }
 
     /// <inheritdoc cref="List{T}.RemoveAt"/>
     public void RemoveAt(int index) {
@@ -337,6 +350,7 @@ public class Vec<T> : IVector<T> {
         if (remaining != 0) {
             RawStorage.Slice(index + 1, remaining).CopyTo(RawStorage.Slice(index));
         }
+
         Length -= 1;
         RawStorage[last] = default!;
     }
@@ -385,7 +399,9 @@ public class Vec<T> : IVector<T> {
     /// Creates a <see cref="List{T}"/> from a <see cref="RefVec{T}"/>.
     /// </summary>
     /// <returns>A <see cref="List{T}"/> that contains elements form the input sequence.</returns>
-    public List<T> ToList() => IsEmpty ? new() : new(this);
+    public List<T> ToList() {
+        return IsEmpty ? new() : new(this);
+    }
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -394,6 +410,7 @@ public class Vec<T> : IVector<T> {
         if (req > Capacity) {
             Grow(additionalCapacity);
         }
+
         return Capacity;
     }
 
@@ -416,25 +433,34 @@ public class Vec<T> : IVector<T> {
         Debug.Assert(additionalCapacityBeyondPos > 0);
 
         if (Capacity != 0) {
-            Debug.Assert(Length > Capacity - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
+            Debug.Assert(
+                Length > Capacity - additionalCapacityBeyondPos,
+                "Grow called incorrectly, no resize is needed."
+            );
 
             T[] temp = new T[(Length + additionalCapacityBeyondPos).Max(Capacity * 2)];
             RawStorage.Slice(0, Count).CopyTo(temp);
             Data = new(temp);
         } else {
-            Data = new(new T[(int)Math.Max(16u, (uint)additionalCapacityBeyondPos)]);
+            Data = new(new T[(int) Math.Max(16u, (uint) additionalCapacityBeyondPos)]);
         }
     }
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [Pure]
-    public Enumerator GetEnumerator() => new(this);
+    public Enumerator GetEnumerator() {
+        return new(this);
+    }
 
     /// <inheritdoc/>
-    IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+    IEnumerator<T> IEnumerable<T>.GetEnumerator() {
+        return GetEnumerator();
+    }
 
     /// <inheritdoc/>
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() {
+        return GetEnumerator();
+    }
 
     /// <inheritdoc/>
     public void Sort(int start, int count) {
@@ -467,6 +493,7 @@ public class Vec<T> : IVector<T> {
                 return i;
             }
         }
+
         return -1;
     }
 
@@ -483,7 +510,6 @@ public class Vec<T> : IVector<T> {
 
                 return i;
             }
-
         } else {
             EqualityComparer<T> defaultCmp = EqualityComparer<T>.Default;
             for (int i = end - 1; i >= start; i--) {
@@ -494,6 +520,7 @@ public class Vec<T> : IVector<T> {
                 return i;
             }
         }
+
         return -1;
     }
 
@@ -522,7 +549,7 @@ public class Vec<T> : IVector<T> {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext() {
             int index = _index + 1;
-            if ((uint)index < (uint)_list.Count) {
+            if ((uint) index < (uint) _list.Count) {
                 _index = index;
                 return true;
             }
