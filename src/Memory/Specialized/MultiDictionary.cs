@@ -76,7 +76,8 @@ public sealed class MultiDictionary<K, V> : IReadOnlyDictionary<K, IReadOnlyColl
             ref var entry = ref CollectionsMarshal.GetValueRefOrAddDefault(_backing, key, out bool exists);
 #else
             if (!_backing.TryGetValue(key, out var entry)) {
-                _backing.Add(key, new Vec<V>());
+                entry = new Vec<V>();
+                _backing.Add(key, entry);
             }
 #endif
             entry.Clear();
