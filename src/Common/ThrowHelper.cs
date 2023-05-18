@@ -102,7 +102,7 @@ public static class ThrowHelper {
 
     [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void ObjectDisposedException<T>(string? message = null) {
-        ObjectDisposedException(typeof(T).FullName, message);
+        ObjectDisposedException(typeof(T).FullName ?? "Unknown", message);
     }
 
     [DoesNotReturn, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
