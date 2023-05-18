@@ -37,7 +37,7 @@ public class ILReflectTests {
 
     [Test]
     public void Can_Get_Property() {
-        TestObject testObject = new TestObject();
+        TestObject testObject = new();
         PropertyInfo propertyInfo = typeof(TestObject).GetProperty("SomeProperty");
         MemberGetter<object, object> getter = propertyInfo.DelegateForGet();
 
@@ -60,7 +60,7 @@ public class ILReflectTests {
 
     [Test]
     public void Can_Set_Property() {
-        TestObject testObject = new TestObject();
+        TestObject testObject = new();
         object testObjectAsObj = (object) testObject;
         PropertyInfo propertyInfo = typeof(TestObject).GetProperty("SomeProperty");
         MemberSetter<object, object> setter = propertyInfo.DelegateForSet();
@@ -86,7 +86,7 @@ public class ILReflectTests {
 
     [Test]
     public void Can_Get_Field() {
-        TestObject testObject = new TestObject();
+        TestObject testObject = new();
         FieldInfo fieldInfo = typeof(TestObject).GetField("SomeField");
         MemberGetter<object, object> getter = fieldInfo.DelegateForGet();
 
@@ -109,7 +109,7 @@ public class ILReflectTests {
 
     [Test]
     public void Can_Set_Field() {
-        TestObject testObject = new TestObject();
+        TestObject testObject = new();
         object testObjectAsObj = (object) testObject;
         FieldInfo fieldInfo = typeof(TestObject).GetField("SomeField");
         MemberSetter<object, object> setter = fieldInfo.DelegateForSet();
@@ -135,7 +135,7 @@ public class ILReflectTests {
 
     [Test]
     public void Can_Get_Readonly_Field() {
-        TestObject testObject = new TestObject();
+        TestObject testObject = new();
         FieldInfo fieldInfo = typeof(TestObject).GetField("SomeReadonlyField");
         MemberGetter<object, object> getter = fieldInfo.DelegateForGet();
 
@@ -158,7 +158,7 @@ public class ILReflectTests {
 
     [Test]
     public void Can_Get_Const_Field() {
-        TestObject testObject = new TestObject();
+        TestObject testObject = new();
         FieldInfo fieldInfo = typeof(TestObject).GetField("SomeConstField");
         MemberGetter<object, object> getter = fieldInfo.DelegateForGet();
 
@@ -188,7 +188,7 @@ public class ILReflectTests {
 
     [Test]
     public void Can_Get_Readonly_Backing_Field() {
-        TestObject testObject = new TestObject();
+        TestObject testObject = new();
         PropertyInfo propertyInfo = typeof(TestObject).GetProperty("SomeReadonlyProperty");
         MemberGetter<object, object> getter = propertyInfo.DelegateForGet();
 
@@ -211,7 +211,7 @@ public class ILReflectTests {
 
     [Test]
     public void Can_Get_Const_Backing_Field() {
-        TestObject testObject = new TestObject();
+        TestObject testObject = new();
         PropertyInfo propertyInfo = typeof(TestObject).GetProperty("SomeConstProperty");
         MemberGetter<object, object> getter = propertyInfo.DelegateForGet();
 

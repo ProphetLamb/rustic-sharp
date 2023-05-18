@@ -318,7 +318,7 @@ public static class ILReflect {
         MethodInfo? method,
         Type? targetType,
         Type[] ctorParamTypes) {
-        AssemblyName? asmName = new AssemblyName("Asm");
+        AssemblyName? asmName = new("Asm");
         AssemblyBuilder? asmBuilder =
             AssemblyBuilder.DefineDynamicAssembly(asmName, AssemblyBuilderAccess.RunAndCollect);
 
@@ -403,7 +403,7 @@ public static class ILReflect {
         Type[] paramTypes)
         where D : class
         where M : MemberInfo {
-        DynamicMethod? dynMethod = new DynamicMethod(dynMethodName, returnType, paramTypes, true);
+        DynamicMethod? dynMethod = new(dynMethodName, returnType, paramTypes, true);
 
         Emit.Gen = dynMethod.GetILGenerator();
         generator(member);

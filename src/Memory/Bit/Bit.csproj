@@ -19,11 +19,11 @@
     </PropertyGroup>
 
     <ItemGroup Condition="!$(DefineConstants.Contains('NET5_0_OR_GREATER'))">
-        <PackageReference Include="System.Memory" Version="4.5.5"/>
+        <PackageReference Include="System.Memory" Version="4.5.5" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Common\Common.csproj"/>
+        <ProjectReference Include="..\..\Common\Common.csproj" />
     </ItemGroup>
 
 </Project>
