@@ -1,14 +1,16 @@
-﻿using System;
+﻿#pragma warning disable IDE1006, IDE0058, CA1707, CS1591
+#nullable disable
+// ReSharper disable InconsistentNaming
+
+using System;
 using System.Reflection;
 using System.Reflection.Emit;
 
 namespace Rustic.Reflect;
 
+/// <summary>Fluent builder simplifying the composition of IL code at runtime.</summary>
 [CLSCompliant(false)]
-public class ILEmitter
-{
-#pragma warning disable IDE1006, IDE0058, CA1707
-#nullable disable
+public sealed class ILEmitter {
     public ILGenerator Gen = null!;
 
     public ILEmitter ret() { Gen.Emit(OpCodes.Ret); return this; }

@@ -2,10 +2,12 @@
 
 ## Rustic.Memory
 
-[TinySpan](./rustic.memory.tinyspan.md)
+[TinyRoSpan](./rustic.memory.tinyrospan.md)
 
-[TinySpan&lt;T&gt;](./rustic.memory.tinyspan-1.md)
+[TinyRoSpan&lt;T&gt;](./rustic.memory.tinyrospan-1.md)
 
-[TinyVec](./rustic.memory.tinyvec.md)
+[TinyRoVec](./rustic.memory.tinyrovec.md)
+
+[TinyRoVec&lt;T&gt;](./rustic.memory.tinyrovec-1.md)
 
 [TinyVec&lt;T&gt;](./rustic.memory.tinyvec-1.md)

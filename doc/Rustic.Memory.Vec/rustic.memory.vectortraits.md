@@ -157,23 +157,28 @@ public static void Reverse<T>(IVector<T> self)
 
 `self` IVector&lt;T&gt;<br>
 
-### **Pop&lt;T&gt;(IVector&lt;T&gt;)**
+### **TryPop&lt;T&gt;(IVector&lt;T&gt;, T&)**
 
-Removes to topmost element from the stack.
+Attempts to remove the topmost element from the stack.
 
 ```csharp
-public static Option<T> Pop<T>(IVector<T> self)
+public static bool TryPop<T>(IVector<T> self, T& value)
 ```
 
 #### Type Parameters
 
 `T`<br>
+The type of elements in the stack
 
 #### Parameters
 
 `self` IVector&lt;T&gt;<br>
+The stack
+
+`value` T&<br>
+The value removed from the stack, or default
 
 #### Returns
 
-Option&lt;T&gt;<br>
-Returns  if an element was removed; otherwise, returns .
+[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+true if a value was removed; otherwise false

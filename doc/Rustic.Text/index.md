@@ -4,8 +4,6 @@
 
 [Fmt](./rustic.text.fmt.md)
 
-[FmtBuilder&lt;D&gt;](./rustic.text.fmtbuilder-1.md)
-
 [IdxDef&lt;T&gt;](./rustic.text.idxdef-1.md)
 
 [IFmtDef](./rustic.text.ifmtdef.md)
@@ -21,5 +19,7 @@
 [SplitIterExtensions](./rustic.text.splititerextensions.md)
 
 [SplitOptions](./rustic.text.splitoptions.md)
+
+[StrBuilderExtensions](./rustic.text.strbuilderextensions.md)
 
 [Tokenizer&lt;T&gt;](./rustic.text.tokenizer-1.md)

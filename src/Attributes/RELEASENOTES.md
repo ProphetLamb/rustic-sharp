@@ -1,3 +1,7 @@
+# Version 0.6.0
+
+- Fix invalid preprocessor directives for certain target frameworks.
+
 # Version 0.5
 
 - Build pipeline

@@ -260,12 +260,12 @@ The comparer used to determine whether two objects are equal.
 SeqSplitIter&lt;T, S&gt;<br>
 The iterator splitting the  span with the specified parameters.
 
-### **Split&lt;T, S&gt;(ReadOnlySpan&lt;T&gt;, TinySpan&lt;S&gt;, SplitOptions, IEqualityComparer&lt;T&gt;)**
+### **Split&lt;T, S&gt;(ReadOnlySpan&lt;T&gt;, TinyRoSpan&lt;S&gt;, SplitOptions, IEqualityComparer&lt;T&gt;)**
 
 Splits the  span at the positions defined by the .
 
 ```csharp
-public static SeqSplitIter<T, S> Split<T, S>(ReadOnlySpan<T> span, TinySpan<S> separators, SplitOptions options, IEqualityComparer<T> comparer)
+public static SeqSplitIter<T, S> Split<T, S>(ReadOnlySpan<T> span, TinyRoSpan<S> separators, SplitOptions options, IEqualityComparer<T> comparer)
 ```
 
 #### Type Parameters
@@ -281,7 +281,7 @@ The type of a sequence of elements.
 `span` ReadOnlySpan&lt;T&gt;<br>
 The span.
 
-`separators` TinySpan&lt;S&gt;<br>
+`separators` TinyRoSpan&lt;S&gt;<br>
 The separators by which to split the .
 
 `options` [SplitOptions](./rustic.text.splitoptions.md)<br>
@@ -294,35 +294,6 @@ The comparer used to determine whether two objects are equal.
 
 SeqSplitIter&lt;T, S&gt;<br>
 The iterator splitting the  with the specified parameters.
-
-### **Split&lt;T, S&gt;(Span&lt;T&gt;, S&)**
-
-Splits the  span at the positions defined by the .
-
-```csharp
-public static SeqSplitIter<T, S> Split<T, S>(Span<T> span, S& separator)
-```
-
-#### Type Parameters
-
-`T`<br>
-The type of the elements of the .
-
-`S`<br>
-The type of a sequence of elements.
-
-#### Parameters
-
-`span` Span&lt;T&gt;<br>
-The span.
-
-`separator` S&<br>
-The separator by which to split the .
-
-#### Returns
-
-SeqSplitIter&lt;T, S&gt;<br>
-The iterator splitting the  span with the specified parameters.
 
 ### **Split&lt;T, S&gt;(Span&lt;T&gt;, S&, SplitOptions, IEqualityComparer&lt;T&gt;)**
 
@@ -397,12 +368,12 @@ The comparer used to determine whether two objects are equal.
 SeqSplitIter&lt;T, S&gt;<br>
 The iterator splitting the  span with the specified parameters.
 
-### **Split&lt;T, S&gt;(Span&lt;T&gt;, TinySpan&lt;S&gt;, SplitOptions, IEqualityComparer&lt;T&gt;)**
+### **Split&lt;T, S&gt;(Span&lt;T&gt;, TinyRoSpan&lt;S&gt;, SplitOptions, IEqualityComparer&lt;T&gt;)**
 
 Splits the  span at the positions defined by the .
 
 ```csharp
-public static SeqSplitIter<T, S> Split<T, S>(Span<T> span, TinySpan<S> separators, SplitOptions options, IEqualityComparer<T> comparer)
+public static SeqSplitIter<T, S> Split<T, S>(Span<T> span, TinyRoSpan<S> separators, SplitOptions options, IEqualityComparer<T> comparer)
 ```
 
 #### Type Parameters
@@ -418,7 +389,7 @@ The type of a sequence of elements.
 `span` Span&lt;T&gt;<br>
 The span.
 
-`separators` TinySpan&lt;S&gt;<br>
+`separators` TinyRoSpan&lt;S&gt;<br>
 The separators by which to split the .
 
 `options` [SplitOptions](./rustic.text.splitoptions.md)<br>

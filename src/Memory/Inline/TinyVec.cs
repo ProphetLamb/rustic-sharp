@@ -3,462 +3,326 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Contracts;
-using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Rustic.Memory;
 
-/// <summary>Partially inlined immutable collection of function parameters.</summary>
-public static class TinyVec
-{
-    /// <summary>Returns an empty <see cref="TinyVec{T}"/>.</summary>
-    /// <typeparam name="T">The type of the span.</typeparam>
-    /// <returns>An empty <see cref="TinyVec{T}"/>.</returns>
-    public static TinyVec<T> Empty<T>() => default;
+/// <summary>Partially inlined mutable collection of items.</summary>
+/// <remarks>Use with care, because <see cref="TinyVec{T}"/> is a struct, and thus requires a reference to mutate.</remarks>
+/// <example>A usage example is usage as <see cref="Dictionary{TKey,TValue}"/> values when interacting via the CollectionsMarshal methods.</example>
+public struct TinyVec<T> : IReadOnlyList<T>, IList<T> {
+    [AllowNull] private T _singleValue;
+    private Vec<T>? _values;
 
-    /// <summary>Initializes a new parameter span with one value.</summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="arg0">The first value.</param>
-    public static TinyVec<T> From<T>(in T arg0)
-    {
-        return new(1, arg0, default, default, default);
+    /// Always empty list indicating that the TinyVec has exactly one element in _singleValue.
+    /// The guard is used in this manner to ensure that `TinyVec{T} v = default` is valid.
+    private static readonly Vec<T> SingleValueGuard = new();
+
+
+    /// <summary>
+    /// Initializes a new <see cref="TinyVec{T}"/> with a single value.
+    /// </summary>
+    /// <param name="item">The single item populating this list</param>
+    public TinyVec(T item) {
+        _singleValue = item;
+        _values = SingleValueGuard;
     }
 
-    /// <summary>Initializes a new parameter span with one value.</summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="arg0">The first value.</param>
-    /// <param name="arg1">The second value.</param>
-    public static TinyVec<T> From<T>(in T arg0, in T arg1)
-    {
-        return new(2, arg0, arg1, default, default);
+    /// <summary>
+    /// Initializes a new <see cref="TinyVec{T}"/> with the specified capacity.
+    /// </summary>
+    /// <param name="capacity">The capacity.</param>
+    public TinyVec(int capacity) {
+        _singleValue = default;
+        _values = capacity >= 2 ? new(capacity) : default;
     }
-
-    /// <summary>Initializes a new parameter span with one value.</summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="arg0">The first value.</param>
-    /// <param name="arg1">The second value.</param>
-    /// <param name="arg2">The third value.</param>
-    public static TinyVec<T> From<T>(in T arg0, in T arg1, in T arg2)
-    {
-        return new(3, arg0, arg1, arg2, default);
-    }
-
-    /// <summary>Initializes a new parameter span with one value.</summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="arg0">The first value.</param>
-    /// <param name="arg1">The second value.</param>
-    /// <param name="arg2">The third value.</param>
-    /// <param name="arg3">The fourth value.</param>
-    public static TinyVec<T> From<T>(in T arg0, in T arg1, in T arg2, in T arg3)
-    {
-        return new(4, arg0, arg1, arg2, arg3);
-    }
-
-    /// <summary>Initializes a new parameter span with a sequence of values.</summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="values">The values array.</param>
-    public static TinyVec<T> From<T>(in ArraySegment<T> values)
-    {
-        return new(values);
-    }
-
-    /// <summary>Initializes a new parameter span with a sequence of values.</summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="values">The values array.</param>
-    public static TinyVec<T> From<T>(T[] values)
-    {
-        return new(new ArraySegment<T>(values, 0, values.Length));
-    }
-
-    /// <summary>Initializes a new parameter span with a sequence of values.</summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="values">The values collection.</param>
-    /// <param name="start">The zero-based index of the first value.</param>
-    public static TinyVec<T> From<T>(T[] values, int start)
-    {
-        return new(new ArraySegment<T>(values, start, values.Length - start));
-    }
-
-    /// <summary>Initializes a new parameter span with a sequence of values.</summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="values">The values collection.</param>
-    /// <param name="start">The zero-based index of the first value.</param>
-    /// <param name="length">The number of values form the <paramref name="start"/>.</param>
-    public static TinyVec<T> From<T>(T[] values, int start, int length)
-    {
-        return new(new ArraySegment<T>(values, start, length));
-    }
-
-    /// <summary>Initializes a new parameter span with a sequence of values. Performs a shallow copy.</summary>
-    /// <typeparam name="T"></typeparam>
-    /// <typeparam name="E"></typeparam>
-    /// <param name="values">The sequence of values.</param>
-    public static TinyVec<T> Copy<T, E>(E values)
-        where E : IEnumerable<T>
-    {
-        if (values is T[] array)
-        {
-            // This should never occur.
-            return From(array);
-        }
-        if (values is ArraySegment<T> segment)
-        {
-            return new(segment);
-        }
-        using var en = values.GetEnumerator();
-        if (!en.MoveNext())
-        {
-            return default;
-        }
-        var arg0 = en.Current;
-        if (!en.MoveNext())
-        {
-            return From(arg0);
-        }
-        var arg1 = en.Current;
-        if (!en.MoveNext())
-        {
-            return From(arg0, arg1);
-        }
-        var arg2 = en.Current;
-        if (!en.MoveNext())
-        {
-            return From(arg0, arg1, arg2);
-        }
-        var arg3 = en.Current;
-        if (!en.MoveNext())
-        {
-            return From(arg0, arg1, arg2, arg3);
-        }
-        BufWriter<T> args = new(8)
-        {
-            arg0,
-            arg1,
-            arg2,
-            arg3,
-            en.Current
-        };
-        while (en.MoveNext())
-        {
-            args.Add(en.Current);
-        }
-        var count = args.Length;
-        return new(args.ToSegment());
-    }
-}
-
-/// <summary>A structure representing a immutable sequence of function parameters.</summary>
-/// <typeparam name="T"></typeparam>
-[DebuggerDisplay("{GetDebuggerDisplay(),nq}")]
-public readonly struct TinyVec<T>
-    : IReadOnlyList<T>
-{
-    private readonly int _length;
-    [AllowNull] private readonly T _arg0;
-    [AllowNull] private readonly T _arg1;
-    [AllowNull] private readonly T _arg2;
-    [AllowNull] private readonly T _arg3;
-    private readonly ArraySegment<T> _params;
-
-    /// <summary>Initializes a new parameter span with one value.</summary>
-    /// <param name="length">The number of non default values.</param>
-    /// <param name="arg0">The first value.</param>
-    /// <param name="arg1">The second value.</param>
-    /// <param name="arg2">The third value.</param>
-    /// <param name="arg3">The fourth value.</param>
-    internal TinyVec(int length, [AllowNull] in T arg0, [AllowNull] in T arg1, [AllowNull] in T arg2, [AllowNull] in T arg3)
-    {
-        length.ValidateArgRange(length <= 4);
-
-        _params = default;
-        _length = length;
-        _arg0 = arg0;
-        _arg1 = arg1;
-        _arg2 = arg2;
-        _arg3 = arg3;
-    }
-
-    /// <summary>Initializes a new parameter span with a sequence of parameters.</summary>
-    /// <param name="segment">The segment of parameters.</param>
-    internal TinyVec(in ArraySegment<T> segment)
-    {
-        _params = segment;
-        _length = segment.Count;
-
-        if (segment.Array is null)
-        {
-            _arg0 = default!;
-            _arg1 = default!;
-            _arg2 = default!;
-            _arg3 = default!;
-        }
-        else
-        {
-            var i = 0;
-            _arg0 = _length > 0 ? segment.Array[i++] : default!;
-            _arg1 = _length > 1 ? segment.Array[i++] : default!;
-            _arg2 = _length > 2 ? segment.Array[i++] : default!;
-            _arg3 = _length > 3 ? segment.Array[i] : default!;
-        }
-    }
-
-    /// <inheritdoc/>
-    public int Count => _length;
 
     /// <inheritdoc cref="IReadOnlyVector{T}.IsEmpty"/>
-    public bool IsEmpty => 0 >= (uint)_length;
+    public bool IsEmpty => Count == 0;
 
-    /// <inheritdoc/>
-    public T this[int index]
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get
-        {
-            index.ValidateArgRange(index >= 0 && index < Count);
-            return index switch
-            {
-                0 => _arg0!,
-                1 => _arg1!,
-                2 => _arg2!,
-                3 => _arg3!,
-                _ => _params.Array![index],
-            };
+    bool ICollection<T>.IsReadOnly => false;
+
+    /// <summary>
+    /// Number of entries in this collections.
+    /// </summary>
+    public int Count => ReferenceEquals(_values, SingleValueGuard) ? 1 : _values?.Length ?? 0;
+
+    /// <summary>Returns the maximum number of elements the vector can hold before resizing.</summary>
+    public int Capacity => ReferenceEquals(_values, SingleValueGuard) ? 1 : _values?.Capacity ?? 1;
+
+    /// <inheritdoc />
+    public T this[int index] {
+        get {
+            if (ReferenceEquals(_values, SingleValueGuard)) {
+                ThrowHelper.ArgumentInRange(index, index == 0);
+                return _singleValue;
+            }
+            if (_values is not null) {
+                // this will throw since the list is EmptyListGuard
+                return _values[index];
+            }
+            ThrowHelper.ArgumentInRange(index, index >= 0 && index < Count);
+            Debug.Fail("Unreachable, expected to throw above.");
+            return default!;
+        }
+        set {
+            if (ReferenceEquals(_values, SingleValueGuard)) {
+                ThrowHelper.ArgumentInRange(index, index == 0);
+                _singleValue = value;
+            }
+            if (_values is not null) {
+                // this will throw since the list is EmptyListGuard
+                _values[index] = value;
+                return;
+            }
+
+            ThrowHelper.ArgumentInRange(index, index >= 0 && index < Count);
+            Debug.Fail("Unreachable, expected to throw above.");
         }
     }
 
-    /// <inheritdoc/>
-    public void CopyTo(Span<T> destination)
-    {
-        if (_params.Count > 0)
-        {
-            _params.AsSpan().CopyTo(destination);
+    /// <inheritdoc cref="Vec{T}.GetEnumerator" />
+    public ReadOnlySpan<T>.Enumerator GetEnumerator() => AsSpan().GetEnumerator();
+
+    IEnumerator<T> IEnumerable<T>.GetEnumerator() => new Enumerator(this);
+
+    IEnumerator IEnumerable.GetEnumerator() => new Enumerator(this);
+
+    /// <inheritdoc />
+    public void Add(T value) {
+        if (ReferenceEquals(_values, SingleValueGuard)) {
+            // convert to a list boxing _singleValue and _values
+            _values = new() { _singleValue, value };
+            _singleValue = default; // set to default so that the GC may collect if T is a reference type.
+            return;
+        }
+        if (_values is not null) {
+            _values.Add(value);
+            return;
         }
 
-        if ((uint)_length <= (uint)destination.Length)
-        {
-            SetBlock(destination);
+        _values = SingleValueGuard;
+        _singleValue = value;
+    }
+
+    /// <inheritdoc cref="List{T}.AddRange"/>
+    public void AddRange(ReadOnlySpan<T> values) => InsertRange(Count, values);
+
+    /// <inheritdoc />
+    public bool Remove(T value) {
+        int index = IndexOf(value);
+        if (index == -1) {
+            return false;
+        }
+        RemoveAt(index);
+        return true;
+    }
+
+    /// <inheritdoc />
+    public int IndexOf(T item) {
+        if (ReferenceEquals(_values, SingleValueGuard)) {
+            return EqualityComparer<T>.Default.Equals(_singleValue, item) ? 0 : -1;
+        }
+
+        if (_values is not null) {
+            return _values.IndexOf(item);
+        }
+
+        return -1;
+    }
+
+    /// <inheritdoc />
+    public void Insert(int index, T item) {
+        if (ReferenceEquals(_values, SingleValueGuard)) {
+            ThrowHelper.ArgumentInRange(index, index is >= 0 and <= 1);
+            _values = index == 0 ? new() { item, _singleValue } : new() { _singleValue, item };
+            _singleValue = default;
+            return;
+        }
+
+        if (_values is not null) {
+            _values.Insert(index, item);
+            return;
+        }
+
+        ThrowHelper.ArgumentInRange(index, index == 0);
+        _values = SingleValueGuard;
+        _singleValue = item;
+    }
+
+    /// <inheritdoc cref="IVector{T}.InsertRange"/>
+    public void InsertRange(int index, ReadOnlySpan<T> values) {
+        if (values.IsEmpty) {
+            return;
+        }
+        if (values.Length == 1) {
+            Insert(index, values[0]);
+            return;
+        }
+        // we will always need to construct a list, bc we will have at least two elements.
+        // other conditions are handled above
+        if (ReferenceEquals(_values, SingleValueGuard)) {
+            ThrowHelper.ArgumentInRange(index, index is >= 0 and <= 1);
+            _values = new(values.Length + 1);
+            if (index == 0) {
+                _values.Add(_singleValue);
+            }
+            _values.AddRange(values);
+            if (index != 0) {
+                _values.Add(_singleValue);
+            }
+
+            _singleValue = default;
+            return;
+        }
+
+        if (_values is not null) {
+            _values.InsertRange(index, values);
+            return;
+        }
+
+        ThrowHelper.ArgumentInRange(index, index == 0);
+        _values = new();
+        _values.AddRange(values);
+    }
+
+    /// <inheritdoc />
+    public void RemoveAt(int index) {
+        if (ReferenceEquals(_values, SingleValueGuard)) {
+            ThrowHelper.ArgumentInRange(index, index == 0);
+            _values = default;
+            _singleValue = default;
+            return;
+        }
+
+        if (_values is not null) {
+            _values.RemoveAt(index);
+            return;
+        }
+
+        ThrowHelper.ThrowArgumentOutOfRangeException(nameof(index), index);
+    }
+
+    /// <summary>Removes the element at the specified <paramref name="index"/> from the vector by over-writing it with the last element.</summary>
+    /// <remarks>No block of elements in moved. The order of the vector is disturbed.</remarks>
+    public void SwapRemove(int index) {
+        if (ReferenceEquals(_values, SingleValueGuard)) {
+            ThrowHelper.ArgumentInRange(index, index == 0);
+            _values = default;
+            _singleValue = default;
+            return;
+        }
+
+        if (_values is not null) {
+            _values.SwapRemove(index);
+            return;
+        }
+
+        ThrowHelper.ThrowArgumentOutOfRangeException(nameof(index), index);
+    }
+
+    /// <inheritdoc />
+    public void Clear() {
+        if (_values is not null && !ReferenceEquals(_values, SingleValueGuard)) {
+            _values.Clear();
+            return;
+        }
+
+        _values = default;
+        _singleValue = default;
+    }
+
+    /// <inheritdoc />
+    public bool Contains(T item) => IndexOf(item) != -1;
+
+    /// <inheritdoc />
+    public void CopyTo(T[] array, int arrayIndex) {
+        if (!TryCopyTo(array.AsSpan(arrayIndex))) {
+            ThrowHelper.ThrowArgumentOutOfRangeException(nameof(array), array);
         }
     }
 
-    /// <inheritdoc/>
-    public bool TryCopyTo(Span<T> destination)
-    {
-        if (_params.Count > 0)
-        {
-            return _params.AsSpan().TryCopyTo(destination);
+    /// <inheritdoc cref="IReadOnlyVector{T}.TryCopyTo(Span{T})"/>
+    public bool TryCopyTo(Span<T> span) {
+        if (span.Length < Count) {
+            return false;
         }
-        else if ((uint)_length <= (uint)destination.Length)
-        {
-            SetBlock(destination);
+        switch (_values) {
+        case null:
+            return true;
+        case T existing:
+            span[0] = existing;
+            return true;
+        default:
+            return _values.TryCopyTo(span);
+        }
+    }
+
+    /// <summary>
+    /// Returns a span view over the values in the collection.
+    /// </summary>
+    /// <param name="start">The start index.</param>
+    /// <param name="length">The length of the span.</param>
+    /// <remarks>Do not modify the length of the collection while handling the span!</remarks>
+    public ReadOnlySpan<T> AsSpan(int start, int length) {
+        ThrowHelper.ArgumentInRange(start, start >= 0);
+        ThrowHelper.ArgumentInRange(length, length >= 0 && start + length <= Count);
+        if (_values is null) {
+            return default;
+        }
+        if (_values is T existing) {
+#if NETSTANDARD2_1_OR_GREATER ||NET5_0_OR_GREATER
+            return MemoryMarshal.CreateReadOnlySpan(ref existing, 1);
+#else
+            // box the entry in a vector and replace _entry with the box
+            Vec<T> entryBox = new(1) { existing };
+            _values = entryBox;
+            Debug.Assert(entryBox.Length == length);
+            return entryBox.AsSpan();
+#endif
+        }
+
+        Vec<T> list = Unsafe.As<Vec<T>>(_values);
+        return list.AsSpan(start, length);
+    }
+
+    /// <inhertidoc cref="AsSpan(int, int)"/>
+    public ReadOnlySpan<T> AsSpan(int start) => AsSpan(start, Count - start);
+
+    /// <inhertidoc cref="AsSpan(int, int)"/>
+    public ReadOnlySpan<T> AsSpan() => AsSpan(0, Count);
+
+    private sealed class Enumerator : IEnumerator<T> {
+        private readonly TinyVec<T> _source;
+        private int _index = -1;
+
+        public Enumerator(TinyVec<T> source) {
+            _source = source;
+        }
+
+        public T Current => _source[_index];
+
+        object IEnumerator.Current => Current!;
+
+        public bool MoveNext() {
+            int index = _index + 1;
+
+            if ((nuint)index >= (nuint)_source.Count) {
+                _index = -1;
+                return false;
+            }
+
+            _index = index;
             return true;
         }
 
-        return false;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void SetBlock(Span<T> destination)
-    {
-        var index = 0;
-        switch (_length)
-        {
-            case 4:
-                destination[index++] = _arg0!;
-                destination[index++] = _arg1!;
-                destination[index++] = _arg2!;
-                destination[index] = _arg3!;
-                break;
-
-            case 3:
-                destination[index++] = _arg0!;
-                destination[index++] = _arg1!;
-                destination[index] = _arg2!;
-                break;
-
-            case 2:
-                destination[index++] = _arg0!;
-                destination[index] = _arg1!;
-                break;
-
-            case 1:
-                destination[index] = _arg0!;
-                break;
-            default:
-                // noop
-                break;
-        }
-    }
-
-    /// <inheritdoc/>
-    public bool Equals(in TinyVec<T> other)
-    {
-        return this == other;
-    }
-
-    /// <inheritdoc/>
-    public override bool Equals(object? obj)
-    {
-        return obj is TinyVec<T> other && Equals(other);
-    }
-
-    /// <inheritdoc/>
-    public override int GetHashCode()
-    {
-        return base.GetHashCode();
-    }
-
-    /// <summary>
-    ///     Returns <see langword="false"/> if left and right point at the same memory and have the same length.  Note that
-    ///     this does *not* necessarily check to see if the *contents* are equal.
-    /// </summary>
-    public static bool operator ==(TinyVec<T> left, TinyVec<T> right)
-    {
-        if (left._length != right._length)
-        {
-            return false;
-        }
-
-        if (left._length > 4)
-        {
-            return left._params.AsSpan() == right._params.AsSpan();
-        }
-
-        return EqualityComparer<T>.Default.Equals(left._arg0, right._arg0)
-            && EqualityComparer<T>.Default.Equals(left._arg1, right._arg1)
-            && EqualityComparer<T>.Default.Equals(left._arg2, right._arg2)
-            && EqualityComparer<T>.Default.Equals(left._arg3, right._arg3);
-    }
-
-    /// <summary>
-    ///     Returns <see langword="false"/> if left and right point at the same memory and have the same length.  Note that
-    ///     this does *not* check to see if the *contents* are equal.
-    /// </summary>
-    public static bool operator !=(TinyVec<T> left, TinyVec<T> right) => !(left == right);
-
-    /// <summary>Retrieves the backing span of the <see cref="TinyVec{T}"/> or allocates a array which is returned as a span.</summary>
-    /// <returns>The span containing all items.</returns>
-    [Pure]
-    public ReadOnlySpan<T> ToSpan() => ToSpan(false);
-
-    /// <summary>Returns the span representation of the <see cref="TinyVec{T}"/>.</summary>
-    /// <param name="onlyIfCheap">Whether return an empty span instead of allocating an array, if no span is backing the <see cref="TinyVec{T}"/>.</param>
-    /// <returns>The span containing all items.</returns>
-    [Pure]
-    public ReadOnlySpan<T> ToSpan(bool onlyIfCheap)
-    {
-        if (onlyIfCheap || IsEmpty || _params.Count > 0)
-        {
-            return _params.Array is null ? default : new ReadOnlySpan<T>(_params.Array, _params.Offset, _params.Count);
-        }
-
-        var array = _length switch
-        {
-            4 => new[] { _arg0!, _arg1!, _arg2!, _arg3! },
-            3 => new[] { _arg0!, _arg1!, _arg2! },
-            2 => new[] { _arg0!, _arg1! },
-            1 => new[] { _arg0! },
-            _ => Array.Empty<T>()
-        };
-
-        return new ReadOnlySpan<T>(array, 0, _length);
-    }
-
-    /// <summary>Initializes a new span from the value.</summary>
-    /// <param name="self">The value.</param>
-    public static implicit operator TinyVec<T>(in T self) => TinyVec.From(self);
-
-    /// <summary>Initializes a new span from the sequence.</summary>
-    /// <param name="self">The sequence of values.</param>
-    public static implicit operator TinyVec<T>(in T[] self) => TinyVec.From(self);
-
-    /// <summary>Initializes a new span from the sequence.</summary>
-    /// <param name="self">The sequence of values.</param>
-    public static implicit operator TinyVec<T>(in ArraySegment<T> self) => TinyVec.From(self);
-
-    private string GetDebuggerDisplay()
-    {
-        StrBuilder vsb = new(stackalloc char[256]);
-        vsb.Append("Length = ");
-        vsb.Append(Count.ToString(CultureInfo.InvariantCulture));
-        vsb.Append(", Params = {");
-
-        var last = _length - 1;
-        for (var i = 0; i < last; i++)
-        {
-            vsb.Append(this[i]!.ToString());
-            vsb.Append(", ");
-        }
-
-        if (!IsEmpty)
-        {
-            vsb.Append(this[last]!.ToString());
-        }
-
-        vsb.Append('}');
-        return vsb.ToString();
-    }
-
-    /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
-    [Pure]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Enumerator GetEnumerator() => new(this);
-
-    /// <inheritdoc/>
-    IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
-
-    /// <inheritdoc/>
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-    /// <summary>Enumerates the elements of a <see cref="TinyVec{T}"/>.</summary>
-    public struct Enumerator : IEnumerator<T>
-    {
-        private TinyVec<T> _array;
-        private int _index;
-
-        /// <summary>Initialize the enumerator.</summary>
-        /// <param name="TinyVec">The span to enumerate.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal Enumerator(in TinyVec<T> TinyVec)
-        {
-            _array = TinyVec;
+        public void Reset() {
             _index = -1;
         }
 
-        /// <summary>Advances the enumerator to the next element of the span.</summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool MoveNext()
-        {
-            var index = _index + 1;
-
-            if ((uint)index < (uint)_array.Count)
-            {
-                _index = index;
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>Gets the element at the current position of the enumerator.</summary>
-        public T Current
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _array[_index]!;
-        }
-
-        object? IEnumerator.Current => Current;
-
-        /// <summary>Resets the enumerator to the initial state.</summary>
-        public void Reset()
-        {
-            _index = -1;
-        }
-
-        /// <summary>Disposes the enumerator.</summary>
-        public void Dispose()
-        {
-            this = default;
+        public void Dispose() {
+            _index = -2;
         }
     }
 }

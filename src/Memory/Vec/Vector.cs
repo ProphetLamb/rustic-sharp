@@ -6,15 +6,12 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 
-using static Rustic.Option;
-
 namespace Rustic.Memory;
 
 /// <summary>Represents a strongly typed vector of object that can be accessed by ref. Provides a similar interface as <see cref="List{T}"/>.</summary>
 /// <typeparam name="T">The type of items of the vector.</typeparam>
 public interface IReadOnlyVector<T>
-    : IReadOnlyList<T>
-{
+    : IReadOnlyList<T> {
     /// <summary>Returns a value that indicates whether the vector is empty.</summary>
     [Pure]
     bool IsEmpty { get; }
@@ -34,7 +31,7 @@ public interface IReadOnlyVector<T>
     [Pure]
     new ref readonly T this[int index] { get; }
 
-#if NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
     /// <summary>Gets the element at the specified <paramref name="index"/>.</summary>
     /// <param name="index">The index of the element to get or set.</param>
     [Pure]
@@ -112,13 +109,12 @@ public interface IReadOnlyVector<T>
 /// <summary>Represents a strongly typed vector of object that can be accessed by ref. Provides a similar interface as <see cref="List{T}"/>.</summary>
 /// <typeparam name="T">The type of items of the vector.</typeparam>
 public interface IVector<T>
-    : IReadOnlyVector<T>, IList<T>, ICollection
-{
+    : IReadOnlyVector<T>, IList<T>, ICollection {
     /// <summary>Gets or sets the element at the specified <paramref name="index"/>.</summary>
     /// <param name="index">The index of the element to get or set.</param>
     new ref T this[int index] { get; }
 
-#if NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
     /// <summary>Gets or sets the element at the specified <paramref name="index"/>.</summary>
     /// <param name="index">The index of the element to get or set.</param>
     new ref T this[Index index] { get; }
@@ -162,18 +158,16 @@ public interface IVector<T>
 }
 
 /// <summary>Collection of extensions and utility functions related to <see cref="IReadOnlyVector{T}"/>.</summary>
-public static class ReadOnlyVectorTraits
-{
+public static class ReadOnlyVectorTraits {
     /// <summary>Creates a new span over a target vector.</summary>
     /// <typeparam name="T">The type of elements in the vector.</typeparam>
     /// <returns>The span representation of the vector.</returns>
     [Pure]
-    public static ReadOnlySpan<T> AsSpan<T>(this IReadOnlyVector<T> self)
-    {
+    public static ReadOnlySpan<T> AsSpan<T>(this IReadOnlyVector<T> self) {
         return self.AsSpan(0, self.Count);
     }
 
-#if NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
     /// <summary>Creates a new span over a target vector.</summary>
     /// <typeparam name="T">The type of elements in the vector.</typeparam>
     /// <returns>The span representation of the vector.</returns>
@@ -218,8 +212,7 @@ public static class ReadOnlyVectorTraits
     /// <inheritdoc cref="IList{T}.IndexOf"/>
     [Pure]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int IndexOf<T>(this IReadOnlyVector<T> self, in T item)
-    {
+    public static int IndexOf<T>(this IReadOnlyVector<T> self, in T item) {
         return self.IndexOf(0, self.Count, item);
     }
 
@@ -227,12 +220,11 @@ public static class ReadOnlyVectorTraits
     [Pure]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int IndexOf<T, E>(this IReadOnlyVector<T> self, in T item, in E comparer)
-        where E : IEqualityComparer<T>
-    {
+        where E : IEqualityComparer<T> {
         return self.IndexOf(0, self.Count, item, comparer);
     }
 
-#if NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
     /// <inheritdoc cref="List{T}.LastIndexOf(T)"/>
     [Pure]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -256,8 +248,7 @@ public static class ReadOnlyVectorTraits
     /// <inheritdoc cref="List{T}.LastIndexOf(T)"/>
     [Pure]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int LastIndexOf<T>(this IReadOnlyVector<T> self, in T item)
-    {
+    public static int LastIndexOf<T>(this IReadOnlyVector<T> self, in T item) {
         return self.LastIndexOf(0, self.Count, item);
     }
 
@@ -265,12 +256,11 @@ public static class ReadOnlyVectorTraits
     [Pure]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int LastIndexOf<T, E>(this IReadOnlyVector<T> self, in T item, E comparer)
-        where E : IEqualityComparer<T>
-    {
+        where E : IEqualityComparer<T> {
         return self.LastIndexOf(0, self.Count, item, comparer);
     }
 
-#if NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
     /// <inheritdoc cref="List{T}.BinarySearch(T, IComparer{T})"/>
     [Pure]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -294,8 +284,7 @@ public static class ReadOnlyVectorTraits
     /// <inheritdoc cref="List{T}.BinarySearch(T, IComparer{T})"/>
     [Pure]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int BinarySearch<T>(this IReadOnlyVector<T> self, in T item)
-    {
+    public static int BinarySearch<T>(this IReadOnlyVector<T> self, in T item) {
         return self.BinarySearch(0, self.Count, item);
     }
 
@@ -303,16 +292,13 @@ public static class ReadOnlyVectorTraits
     [Pure]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int BinarySearch<T, C>(this IReadOnlyVector<T> self, in T item, C comparer)
-        where C : IComparer<T>
-    {
+        where C : IComparer<T> {
         return self.BinarySearch(0, self.Count, item, comparer);
     }
 
     /// <inheritdoc cref="Span{T}.CopyTo"/>
-    public static void CopyTo<T>(this IReadOnlyVector<T> self, Span<T> destination)
-    {
-        if (!self.TryCopyTo(destination))
-        {
+    public static void CopyTo<T>(this IReadOnlyVector<T> self, Span<T> destination) {
+        if (!self.TryCopyTo(destination)) {
             ThrowHelper.ThrowArgumentException("Unable to copy the vector to the destination", nameof(destination));
         }
     }
@@ -325,16 +311,14 @@ public static class ReadOnlyVectorTraits
 }
 
 /// <summary>Collection of extensions and utility functions related to <see cref="IVector{T}"/>.</summary>
-public static class VectorTraits
-{
+public static class VectorTraits {
 
     /// <inheritdoc cref="List{T}.AddRange"/>
-    public static void AddRange<T>(this IVector<T> self, ReadOnlySpan<T> values)
-    {
+    public static void AddRange<T>(this IVector<T> self, ReadOnlySpan<T> values) {
         self.InsertRange(self.Count, values);
     }
 
-#if NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
     /// <inheritdoc cref="List{T}.InsertRange"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void InsertRange<T>(this IVector<T> self, Index index, ReadOnlySpan<T> values)
@@ -345,11 +329,9 @@ public static class VectorTraits
 #endif
 
     /// <inheritdoc cref="List{T}.Remove"/>
-    public static bool Remove<T>(this IVector<T> self, in T item)
-    {
+    public static bool Remove<T>(this IVector<T> self, in T item) {
         var index = self.IndexOf(in item);
-        if (index >= 0)
-        {
+        if (index >= 0) {
             self.RemoveAt(index);
             return true;
         }
@@ -359,11 +341,9 @@ public static class VectorTraits
 
     /// <inheritdoc cref="List{T}.Remove"/>
     public static bool Remove<T, E>(this IVector<T> self, in T item, E comparer)
-        where E : IEqualityComparer<T>
-    {
+        where E : IEqualityComparer<T> {
         var index = self.IndexOf(in item, comparer);
-        if (index >= 0)
-        {
+        if (index >= 0) {
             self.RemoveAt(index);
             return true;
         }
@@ -371,7 +351,7 @@ public static class VectorTraits
         return false;
     }
 
-#if NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
     /// <inheritdoc cref="List{T}.RemoveRange"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void RemoveRange<T>(this IVector<T> self, Range range)
@@ -392,15 +372,14 @@ public static class VectorTraits
     /// <summary>Removes the element at the specified <paramref name="index"/> from the vector by over-writing it with the last element.</summary>
     /// <typeparam name="T">The type of elements in the vector.</typeparam>
     /// <remarks>No block of elements in moved. The order of the vector is disturbed.</remarks>
-    public static void SwapRemove<T>(this IVector<T> self, int index)
-    {
-        index.ValidateArgRange(index >= 0 && index < self.Count);
+    public static void SwapRemove<T>(this IVector<T> self, int index) {
+        ThrowHelper.ArgumentInRange(index, index >= 0 && index < self.Count);
         var last = self.Count - 1;
         self[index] = self[last];
         self.RemoveAt(last); // Should not copy when removing the last element.
     }
 
-#if NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
     /// <summary>Removes the element at the specified <paramref name="index"/> from the vector by over-writing it with the last element.</summary>
     /// <typeparam name="T">The type of elements in the vector.</typeparam>
     /// <remarks>No block of elements in moved. The order of the vector is disturbed.</remarks>
@@ -413,27 +392,24 @@ public static class VectorTraits
 
     /// <inheritdoc cref="List{T}.Sort()"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Sort<T>(this IVector<T> self)
-    {
+    public static void Sort<T>(this IVector<T> self) {
         self.Sort(0, self.Count);
     }
 
     /// <inheritdoc cref="List{T}.Sort(IComparer{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Sort<T, C>(this IVector<T> self, C comparer)
-        where C : IComparer<T>
-    {
+        where C : IComparer<T> {
         self.Sort(0, self.Count, comparer);
     }
 
     /// <inheritdoc cref="List{T}.Sort(Comparison{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Sort<T>(this IVector<T> self, Comparison<T> comparison)
-    {
+    public static void Sort<T>(this IVector<T> self, Comparison<T> comparison) {
         self.Sort(new ComparisonCmp<T>(comparison));
     }
 
-#if NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
     /// <inheritdoc cref="List{T}.Reverse()"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Reverse<T>(this IVector<T> self, Range range)
@@ -445,46 +421,43 @@ public static class VectorTraits
 
     /// <inheritdoc cref="List{T}.Reverse()"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Reverse<T>(this IVector<T> self)
-    {
+    public static void Reverse<T>(this IVector<T> self) {
         self.Reverse(0, self.Count);
     }
 
-    /// <summary>Removes to topmost element from the stack.</summary>
-    /// <returns>Returns <see cref="Option.Some{T}"/> if an element was removed; otherwise, returns <see cref="Option.None{T}"/>.</returns>
-    public static Option<T> Pop<T>(this IVector<T> self)
-    {
-        if (!self.IsEmpty)
-        {
+    /// <summary>Attempts to remove the topmost element from the stack.</summary>
+    /// <param name="self">The stack</param>
+    /// <param name="value">The value removed from the stack, or default</param>
+    /// <typeparam name="T">The type of elements in the stack</typeparam>
+    /// <returns><c>true</c> if a value was removed; otherwise <c>false</c></returns>
+    public static bool TryPop<T>(this IVector<T> self, [NotNullWhen(true)] out T? value) {
+        if (!self.IsEmpty) {
             var last = self.Count - 1;
-            T value = self[last];
+            value = self[last]!;
             self.RemoveAt(last);
-            return Some(value);
+            return true;
         }
-        return default;
+
+        value = default!;
+        return false;
     }
 
-    private struct ComparisonCmp<T> : IComparer<T>, IEqualityComparer<T>
-    {
+    private struct ComparisonCmp<T> : IComparer<T>, IEqualityComparer<T> {
         public Comparison<T> Comparison { get; }
 
-        public ComparisonCmp(Comparison<T> comparison)
-        {
+        public ComparisonCmp(Comparison<T> comparison) {
             Comparison = comparison;
         }
 
-        public int Compare([AllowNull] T x, [AllowNull] T y)
-        {
+        public int Compare([AllowNull] T x, [AllowNull] T y) {
             return Comparison(x!, y!);
         }
 
-        public bool Equals([AllowNull] T x, [AllowNull] T y)
-        {
+        public bool Equals([AllowNull] T x, [AllowNull] T y) {
             return Compare(x, y) == 0;
         }
 
-        public int GetHashCode(T obj)
-        {
+        public int GetHashCode(T obj) {
             Debug.Fail("Comparison cannot compute a hashcode. Fallback to obj.GetHashCode()");
             return obj is null ? 0 : obj.GetHashCode();
         }

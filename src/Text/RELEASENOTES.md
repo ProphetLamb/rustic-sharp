@@ -1,3 +1,10 @@
+# Version 0.6
+
+- Fix various bugs in Formatter
+- Fix various bugs in Tokenizer
+- Add GetAtCursor and GetAddPosition methods to Tokenizer
+- Fix ref an in keyword related compiler errors introduced in C#11
+
 # Version 0.5
 
 - Build pipeline

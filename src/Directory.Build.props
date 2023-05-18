@@ -1,45 +1,47 @@
 <Project>
-  <PropertyGroup>
-    <LangVersion>10.0</LangVersion>
-    <Nullable>enable</Nullable>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Features>strict</Features>
+	<PropertyGroup>
+		<LangVersion>11.0</LangVersion>
+		<Nullable>enable</Nullable>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<Features>strict</Features>
 
-    <CodeAnalysisRuleSet>$(SolutionDir)\ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
+		<CodeAnalysisRuleSet>$(SolutionDir)\ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
+	</PropertyGroup>
 
-  <PropertyGroup Label="Nuget Package Info">
-    <Authors>ProphetLamb</Authors>
-    <Owners>ProhetLamb</Owners>
-    <AssemblyVersion>0.5.0</AssemblyVersion>
-    <Version>0.5.0</Version>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Copyright>Copyright (c) ProphetLamb 2022</Copyright>
-    <PackageProjectUrl>https://github.com/ProphetLamb/rustic-sharp</PackageProjectUrl>
-    <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/ProphetLamb/rustic-sharp.git</RepositoryUrl>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>$([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)/RELEASENOTES.md"))</PackageReleaseNotes>
-  </PropertyGroup>
+	<PropertyGroup Label="Nuget Package Info">
+		<Authors>ProphetLamb</Authors>
+		<Owners>ProhetLamb</Owners>
+		<Version>0.6.2</Version>
+		<AssemblyVersion>$(Version)</AssemblyVersion>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+		<Copyright>Copyright (c) ProphetLamb 2023</Copyright>
+		<PackageProjectUrl>https://github.com/ProphetLamb/rustic-sharp</PackageProjectUrl>
+		<RepositoryType>git</RepositoryType>
+		<RepositoryUrl>https://github.com/ProphetLamb/rustic-sharp.git</RepositoryUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageReleaseNotes>
+			$([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)/RELEASENOTES.md"))</PackageReleaseNotes>
+	</PropertyGroup>
 
-  <PropertyGroup Label="Nuget Pack Options">
-    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb;.xml</AllowedOutputExtensionsInPackageBuildOutputFolder>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <DebugType>embedded</DebugType>
-    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
+	<PropertyGroup Label="Nuget Pack Options">
+		<AllowedOutputExtensionsInPackageBuildOutputFolder>
+			$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb;.xml</AllowedOutputExtensionsInPackageBuildOutputFolder>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+		<DebugType>embedded</DebugType>
+		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Include="$(SolutionDir)\.editorconfig" Link=".editorconfig" />
-    <Compile Include="$(SolutionDir)\AssemblyInfo.cs" Link="AssemblyInfo.cs" />
-    <None Include="$(SolutionDir)\README.md" Pack="true" PackagePath="\" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="$(SolutionDir)\.editorconfig" Link=".editorconfig" />
+		<Compile Include="$(SolutionDir)\AssemblyInfo.cs" Link="AssemblyInfo.cs" />
+		<None Include="$(SolutionDir)\README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
 
-  <ItemGroup Label="Nuget Pack Source Link">
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-  </ItemGroup>
+	<ItemGroup Label="Nuget Pack Source Link">
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+	</ItemGroup>
 
 </Project>

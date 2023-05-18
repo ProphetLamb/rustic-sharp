@@ -3,24 +3,20 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 
-using Rustic;
 using Rustic.Memory;
 
 namespace Rustic.Text;
 
 /// <summary>Collection of extensions and utility functionality related to <see cref="SplitIter{T}"/>.</summary>
-public static class SeqSplitIterExtensions
-{
+public static class SeqSplitIterExtensions {
     /// <summary>Enumerates the remaining elements in the <see cref="SplitIter{T}"/> into a array.</summary>
     /// <remarks>Does consume from the iterator.</remarks>
     /// <typeparam name="S">The type of a sequence of chars.</typeparam>
     [Pure]
     public static string[] ToArray<S>(this SeqSplitIter<char, S> self)
-        where S : IEnumerable<char>
-    {
+        where S : IEnumerable<char> {
         using PoolBufWriter<string> buf = new();
-        while (self.MoveNext())
-        {
+        while (self.MoveNext()) {
             buf.Add(self.Current.ToString());
         }
         return buf.ToArray();
@@ -34,14 +30,12 @@ public static class SeqSplitIterExtensions
     /// <param name="aggregate">The function used to aggregate the items in each iterator element.</param>
     public static O[] ToArray<T, O, S>(this SeqSplitIter<T, S> self, Func<O, T, O> aggregate)
         where O : new()
-        where S : IEnumerable<T>
-    {
+        where S : IEnumerable<T> {
         using PoolBufWriter<O> buf = new();
-        foreach (var seg in self)
-        {
+        while (self.MoveNext()) {
+            ReadOnlySpan<T> seg = self.Current;
             O cur = new();
-            foreach (var itm in seg)
-            {
+            foreach (var itm in seg) {
                 cur = aggregate(cur, itm);
             }
         }
@@ -56,14 +50,12 @@ public static class SeqSplitIterExtensions
     /// <param name="aggregate">The function used to aggregate the items in each iterator element.</param>
     /// <param name="seed">The initial value used for aggregating each element.</param>
     public static O[] ToArray<T, O, S>(this SeqSplitIter<T, S> self, Func<O, T, O> aggregate, Func<O> seed)
-        where S : IEnumerable<T>
-    {
+        where S : IEnumerable<T> {
         using PoolBufWriter<O> buf = new();
-        foreach (var seg in self)
-        {
+        while (self.MoveNext()) {
+            ReadOnlySpan<T> seg = self.Current;
             var cur = seed();
-            foreach (var itm in seg)
-            {
+            foreach (var itm in seg) {
                 cur = aggregate(cur, itm);
             }
         }
@@ -79,9 +71,8 @@ public static class SeqSplitIterExtensions
     /// <typeparam name="S">The type of a sequence of elements.</typeparam>
     /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
     public static SeqSplitIter<T, S> Split<T, S>(this ReadOnlySpan<T> span, in S separator, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
-        where S : IEnumerable<T>
-    {
-        return new(span, TinySpan.From(separator), options, comparer);
+        where S : IEnumerable<T> {
+        return new(span, TinyRoSpan.From(separator), options, comparer);
     }
 
     /// <summary>Splits the <paramref name="span"/> span at the positions defined by the separators.</summary>
@@ -94,9 +85,8 @@ public static class SeqSplitIterExtensions
     /// <typeparam name="S">The type of a sequence of elements.</typeparam>
     /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
     public static SeqSplitIter<T, S> Split<T, S>(this ReadOnlySpan<T> span, in S separator0, in S separator1, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
-        where S : IEnumerable<T>
-    {
-        return new(span, TinySpan.From(separator0, separator1), options, comparer);
+        where S : IEnumerable<T> {
+        return new(span, TinyRoSpan.From(separator0, separator1), options, comparer);
     }
 
     /// <summary>Splits the <paramref name="span"/> span at the positions defined by the separators.</summary>
@@ -110,9 +100,8 @@ public static class SeqSplitIterExtensions
     /// <typeparam name="S">The type of a sequence of elements.</typeparam>
     /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
     public static SeqSplitIter<T, S> Split<T, S>(this ReadOnlySpan<T> span, in S separator0, in S separator1, in S separator2, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
-        where S : IEnumerable<T>
-    {
-        return new(span, TinySpan.From(separator0, separator1, separator2), options, comparer);
+        where S : IEnumerable<T> {
+        return new(span, TinyRoSpan.From(separator0, separator1, separator2), options, comparer);
     }
 
     /// <summary>Splits the <paramref name="span"/> span at the positions defined by the separators.</summary>
@@ -127,9 +116,8 @@ public static class SeqSplitIterExtensions
     /// <typeparam name="S">The type of a sequence of elements.</typeparam>
     /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
     public static SeqSplitIter<T, S> Split<T, S>(this ReadOnlySpan<T> span, in S separator0, in S separator1, in S separator2, in S separator3, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
-        where S : IEnumerable<T>
-    {
-        return new(span, TinySpan.From(separator0, separator1, separator2, separator3), options, comparer);
+        where S : IEnumerable<T> {
+        return new(span, TinyRoSpan.From(separator0, separator1, separator2, separator3), options, comparer);
     }
 
     /// <summary>Splits the <paramref name="span"/> span at the positions defined by the <paramref name="separators"/>.</summary>
@@ -140,22 +128,9 @@ public static class SeqSplitIterExtensions
     /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
     /// <typeparam name="S">The type of a sequence of elements.</typeparam>
     /// <returns>The iterator splitting the <paramref name="span"/> with the specified parameters.</returns>
-    public static SeqSplitIter<T, S> Split<T, S>(this ReadOnlySpan<T> span, TinySpan<S> separators, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
-        where S : IEnumerable<T>
-    {
+    public static SeqSplitIter<T, S> Split<T, S>(this ReadOnlySpan<T> span, TinyRoSpan<S> separators, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
+        where S : IEnumerable<T> {
         return new(span, separators, options, comparer);
-    }
-
-    /// <summary>Splits the <paramref name="span"/> span at the positions defined by the <paramref name="separator"/>.</summary>
-    /// <param name="span">The span.</param>
-    /// <param name="separator">The separator by which to split the <paramref name="span"/>.</param>
-    /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
-    /// <typeparam name="S">The type of a sequence of elements.</typeparam>
-    /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
-    public static SeqSplitIter<T, S> Split<T, S>(this Span<T> span, in S separator)
-        where S : IEnumerable<T>
-    {
-        return new(span, TinySpan.From(separator), SplitOptions.None, null);
     }
 
     /// <summary>Splits the <paramref name="span"/> span at the positions defined by the <paramref name="separator"/>.</summary>
@@ -167,9 +142,8 @@ public static class SeqSplitIterExtensions
     /// <typeparam name="S">The type of a sequence of elements.</typeparam>
     /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
     public static SeqSplitIter<T, S> Split<T, S>(this Span<T> span, in S separator, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
-        where S : IEnumerable<T>
-    {
-        return new(span, TinySpan.From(separator), options, comparer);
+        where S : IEnumerable<T> {
+        return new(span, TinyRoSpan.From(separator), options, comparer);
     }
 
 
@@ -183,9 +157,8 @@ public static class SeqSplitIterExtensions
     /// <typeparam name="S">The type of a sequence of elements.</typeparam>
     /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
     public static SeqSplitIter<T, S> Split<T, S>(this Span<T> span, in S separator0, in S separator1, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
-        where S : IEnumerable<T>
-    {
-        return new(span, TinySpan.From(separator0, separator1), options, comparer);
+        where S : IEnumerable<T> {
+        return new(span, TinyRoSpan.From(separator0, separator1), options, comparer);
     }
 
     /// <summary>Splits the <paramref name="span"/> span at the positions defined by the <paramref name="separators"/>.</summary>
@@ -196,9 +169,8 @@ public static class SeqSplitIterExtensions
     /// <typeparam name="T">The type of the elements of the <paramref name="span"/>.</typeparam>
     /// <typeparam name="S">The type of a sequence of elements.</typeparam>
     /// <returns>The iterator splitting the <paramref name="span"/> span with the specified parameters.</returns>
-    public static SeqSplitIter<T, S> Split<T, S>(this Span<T> span, TinySpan<S> separators, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
-        where S : IEnumerable<T>
-    {
+    public static SeqSplitIter<T, S> Split<T, S>(this Span<T> span, TinyRoSpan<S> separators, SplitOptions options = SplitOptions.None, IEqualityComparer<T>? comparer = default)
+        where S : IEnumerable<T> {
         return new(span, separators, options, comparer);
     }
 }
@@ -207,15 +179,14 @@ public static class SeqSplitIterExtensions
 /// <typeparam name="T">The type of an element of the span.</typeparam>
 /// <typeparam name="S">The type of a sequence of elements.</typeparam>
 public ref struct SeqSplitIter<T, S>
-    where S : IEnumerable<T>
-{
-    private TinySpan<S> _separators;
+    where S : IEnumerable<T> {
+    private TinyRoSpan<S> _separators;
     private Tokenizer<T> _tokenizer;
     private SplitOptions _options;
     private int _sepLen;
 
-    internal SeqSplitIter(ReadOnlySpan<T> input, in TinySpan<S> separators, SplitOptions options, IEqualityComparer<T>? comparer)
-    {
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal SeqSplitIter(ReadOnlySpan<T> input, TinyRoSpan<S> separators, SplitOptions options, IEqualityComparer<T>? comparer) {
         _separators = separators;
         _tokenizer = new Tokenizer<T>(input, comparer);
         _options = options;
@@ -223,53 +194,52 @@ public ref struct SeqSplitIter<T, S>
     }
 
     /// <summary>The segment of the current state of the enumerator.</summary>
-    public ReadOnlySpan<T> Current
-    {
-        [Pure]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ReadOnlySpan<T> Current {
+        [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _tokenizer.Raw.Slice(Position, Width);
     }
 
     /// <summary>Represents the zero-based start-index of the current segment inside the source span.</summary>
-    public int Position => _tokenizer.Position;
+    public int Position {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _tokenizer.Position;
+    }
 
     /// <summary>Represents the length of the current segment.</summary>
-    public int Width => _tokenizer.Width - SepOff();
+    public int Width {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _tokenizer.Width - SepOff();
+    }
 
     /// <summary>Indicates whether the <see cref="Current"/> item is terminated by the separator.</summary>
-    public bool IncludesSeparator => (_options & SplitOptions.IncludeSeparator) != 0 && _tokenizer.Head < _tokenizer.Length;
+    public bool IncludesSeparator {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => (_options & SplitOptions.IncludeSeparator) != 0 && _tokenizer.CursorPosition < _tokenizer.Length;
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private int SepOff()
-    {
-        return (_options & SplitOptions.IncludeSeparator) != 0 || _tokenizer.Head == _tokenizer.Length ? 0 : _sepLen;
+    private int SepOff() {
+        return (_options & SplitOptions.IncludeSeparator) != 0 || _tokenizer.CursorPosition == _tokenizer.Length ? 0 : _sepLen;
     }
 
     /// <summary>Returns a new <see cref="SplitIter{T}"/> enumerator with the same input in the initial state. </summary>
-    [Pure]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SeqSplitIter<T, S> GetEnumerator()
-    {
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public SeqSplitIter<T, S> GetEnumerator() {
         return new SeqSplitIter<T, S>(_tokenizer.Raw, _separators, _options, _tokenizer.Comparer);
     }
 
     /// <summary>Attempts to move the enumerator to the next segment.</summary>
     /// <returns><see langword="true"/> if the enumerator successfully moved to the next segment; otherwise, <see langword="false"/>.</returns>
-    public bool MoveNext()
-    {
-        if (_tokenizer.Head == _tokenizer.Length)
-        {
+    public bool MoveNext() {
+        if (_tokenizer.CursorPosition == _tokenizer.Length) {
             return false;
         }
 
-        do
-        {
+        do {
             _tokenizer.FinalizeToken();
             var head = _tokenizer.Length;
-            foreach (var sep in _separators)
-            {
-                if (_tokenizer.Peek(sep, out var h, out var l) && head > h)
-                {
+            foreach (var sep in _separators) {
+                if (_tokenizer.Peek(sep, out var h, out var l) && head > h) {
                     _sepLen = l;
                     head = h;
                 }
@@ -282,8 +252,7 @@ public ref struct SeqSplitIter<T, S>
     }
 
     /// <summary>Resets the enumerator to the initial state.</summary>
-    public void Reset()
-    {
+    public void Reset() {
         _tokenizer.Reset();
         _sepLen = 0;
     }
@@ -291,8 +260,7 @@ public ref struct SeqSplitIter<T, S>
     /// <summary>
     ///     Disposes the enumerator.
     /// </summary>
-    public void Dispose()
-    {
+    public void Dispose() {
         _tokenizer.Dispose();
         this = default;
     }

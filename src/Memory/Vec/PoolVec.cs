@@ -10,80 +10,69 @@ namespace Rustic.Memory;
 ///     The list allocated from a <see cref="ArrayPool{T}"/>.
 /// </summary>
 /// <typeparam name="T">The type of items of the list.</typeparam>
-public class PoolVec<T>
-    : Vec<T>, IDisposable
-{
+public sealed class PoolVec<T>
+    : Vec<T>, IDisposable {
     /// <summary>The pool from which to rent and to wich to return the internal storage.</summary>
-    protected ArrayPool<T> Pool;
+    private readonly ArrayPool<T> _pool;
 
     /// <summary>Initializes a new list.</summary>
     /// <param name="pool">The pool from which to allocate.</param>
-    public PoolVec(ArrayPool<T>? pool = null)
-    {
-        Pool = pool ?? ArrayPool<T>.Shared;
+    public PoolVec(ArrayPool<T>? pool = null) {
+        _pool = pool ?? ArrayPool<T>.Shared;
     }
 
     /// <summary>Initializes a new list with a initial buffer.</summary>
     /// <param name="initialBuffer">The initial buffer.</param>
     /// <param name="pool">The pool from which to allocate.</param>
-    public PoolVec(T[] initialBuffer, ArrayPool<T>? pool = null)
-        : base(initialBuffer)
-    {
-        Pool = pool ?? ArrayPool<T>.Shared;
+    public PoolVec(ArraySegment<T> initialBuffer, ArrayPool<T>? pool = null)
+        : base(initialBuffer) {
+        _pool = pool ?? ArrayPool<T>.Shared;
     }
 
     /// <summary>Initializes a new list with a specified minimum initial capacity.</summary>
     /// <param name="initialMinimumCapacity">The minimum initial capacity.</param>
     /// <param name="pool">The pool from which to allocate.</param>
-    public PoolVec(int initialMinimumCapacity, ArrayPool<T>? pool = null)
-    {
-        Pool = pool ?? ArrayPool<T>.Shared;
-        Storage = Pool.Rent(initialMinimumCapacity);
+    public PoolVec(int initialMinimumCapacity, ArrayPool<T>? pool = null) {
+        _pool = pool ?? ArrayPool<T>.Shared;
+        Data = new(_pool.Rent(initialMinimumCapacity));
     }
 
     /// <summary>Grows the list to have at least additional capacity beyond pos.</summary>
     /// <param name="additionalCapacityBeyondPos">Additional capacity beyond pos.</param>
-    protected override void Grow(int additionalCapacityBeyondPos)
-    {
+    protected override void Grow(int additionalCapacityBeyondPos) {
         Debug.Assert(additionalCapacityBeyondPos > 0);
 
-        if (Storage is not null)
-        {
-            Debug.Assert(Count > Storage.Length - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
+        if (Capacity != 0) {
+            Debug.Assert(Count > Capacity - additionalCapacityBeyondPos, "Grow called incorrectly, no resize is needed.");
 
-            var temp = Pool.Rent((Count + additionalCapacityBeyondPos).Max(Storage.Length * 2));
-            Array.Copy(Storage, 0, temp, 0, Count);
-            Storage = temp;
-            if (temp is not null)
-            {
-                Pool.Return(temp);
+            T[]? returnToPool = Data.Array;
+            T[] temp = _pool.Rent((Count + additionalCapacityBeyondPos).Max(Capacity * 2));
+            RawStorage.Slice(0, Count).CopyTo(temp);
+            Data = new(temp);
+            if (returnToPool is not null) {
+                _pool.Return(returnToPool);
             }
-        }
-        else
-        {
-            Storage = Pool.Rent(additionalCapacityBeyondPos);
+        } else {
+            Data = new(_pool.Rent(additionalCapacityBeyondPos));
         }
     }
 
     /// <inheritdoc cref="IDisposable.Dispose"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Dispose()
-    {
+    public void Dispose() {
         Dispose(true);
-        GC.SuppressFinalize(this);
     }
 
     /// <inheritdoc cref="IDisposable.Dispose"/>
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            var temp = Storage;
-            Storage = null;
-            if (temp is not null)
-            {
-                Pool.Return(temp);
-            }
+    private void Dispose(bool disposing) {
+        if (!disposing) {
+            return;
+        }
+
+        T[]? returnToPool = Data.Array;
+        Data = default;
+        if (returnToPool is not null) {
+            _pool.Return(returnToPool);
         }
     }
 }

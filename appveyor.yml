@@ -22,7 +22,7 @@ install:
 configuration:
   - Debug
 
-version: "0.5.{build}"
+version: "0.6.{build}"
 
 dotnet_csproj:
   patch: true

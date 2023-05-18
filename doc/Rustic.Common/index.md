@@ -15,3 +15,7 @@
 ## System
 
 [HashCode](./system.hashcode.md)
+
+## System.Diagnostics
+
+[UnreachableException](./system.diagnostics.unreachableexception.md)

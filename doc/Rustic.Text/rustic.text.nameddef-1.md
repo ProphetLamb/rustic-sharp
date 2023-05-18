@@ -2,6 +2,8 @@
 
 Namespace: Rustic.Text
 
+Format definition for named text based formatting
+
 ```csharp
 public struct NamedDef<T>
 ```
@@ -9,6 +11,7 @@ public struct NamedDef<T>
 #### Type Parameters
 
 `T`<br>
+The type of the formatting arguments.
 
 Inheritance [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object) → [ValueType](https://docs.microsoft.com/en-us/dotnet/api/system.valuetype) → [NamedDef&lt;T&gt;](./rustic.text.nameddef-1.md)<br>
 Implements [IFmtDef](./rustic.text.ifmtdef.md)
@@ -16,6 +19,8 @@ Implements [IFmtDef](./rustic.text.ifmtdef.md)
 ## Properties
 
 ### **Prefix**
+
+The prefix required before curly bracket open to identify a hole.
 
 ```csharp
 public string Prefix { get; }
@@ -27,6 +32,8 @@ public string Prefix { get; }
 
 ### **Arguments**
 
+The formatting arguments used to fill holes in the format.
+
 ```csharp
 public IReadOnlyDictionary<string, T> Arguments { get; }
 ```
@@ -37,6 +44,8 @@ IReadOnlyDictionary&lt;String, T&gt;<br>
 
 ### **Count**
 
+The number of formatting arguments.
+
 ```csharp
 public int Count { get; }
 ```
@@ -46,6 +55,8 @@ public int Count { get; }
 [Int32](https://docs.microsoft.com/en-us/dotnet/api/system.int32)<br>
 
 ### **Format**
+
+The formatter providing localization.
 
 ```csharp
 public IFormatProvider Format { get; }
@@ -59,6 +70,8 @@ public IFormatProvider Format { get; }
 
 ### **NamedDef(IReadOnlyDictionary&lt;String, T&gt;, IFormatProvider)**
 
+Initializes a new instance of [IdxDef&lt;T&gt;](./rustic.text.idxdef-1.md).
+
 ```csharp
 NamedDef(IReadOnlyDictionary<string, T> arguments, IFormatProvider format)
 ```
@@ -66,10 +79,14 @@ NamedDef(IReadOnlyDictionary<string, T> arguments, IFormatProvider format)
 #### Parameters
 
 `arguments` IReadOnlyDictionary&lt;String, T&gt;<br>
+The formatting arguments used to fill holes in the format.
 
 `format` [IFormatProvider](https://docs.microsoft.com/en-us/dotnet/api/system.iformatprovider)<br>
+The formatter providing localization.
 
 ### **NamedDef(String, IReadOnlyDictionary&lt;String, T&gt;, IFormatProvider)**
+
+Initializes a new instance of [IdxDef&lt;T&gt;](./rustic.text.idxdef-1.md).
 
 ```csharp
 NamedDef(string prefix, IReadOnlyDictionary<string, T> arguments, IFormatProvider format)
@@ -78,68 +95,59 @@ NamedDef(string prefix, IReadOnlyDictionary<string, T> arguments, IFormatProvide
 #### Parameters
 
 `prefix` [String](https://docs.microsoft.com/en-us/dotnet/api/system.string)<br>
+The prefix required before curly bracket open to identify a hole.
 
 `arguments` IReadOnlyDictionary&lt;String, T&gt;<br>
+The formatting arguments used to fill holes in the format.
 
 `format` [IFormatProvider](https://docs.microsoft.com/en-us/dotnet/api/system.iformatprovider)<br>
+The formatter providing localization.
 
 ## Methods
 
-### **NextTextEnd(Tokenizer`1&)**
+### **NextTextEnd(Tokenizer`1&, StrBuilder&)**
 
 ```csharp
-bool NextTextEnd(Tokenizer`1& tokenizer)
+bool NextTextEnd(Tokenizer`1& tokenizer, StrBuilder& builder)
 ```
 
 #### Parameters
 
 `tokenizer` [Tokenizer`1&](./rustic.text.tokenizer-1&.md)<br>
 
+`builder` StrBuilder&<br>
+
 #### Returns
 
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
 
-### **NextHoleBegin(Tokenizer`1&)**
+### **NextTextStart(Tokenizer`1&, StrBuilder&)**
 
 ```csharp
-bool NextHoleBegin(Tokenizer`1& tokenizer)
+bool NextTextStart(Tokenizer`1& tokenizer, StrBuilder& builder)
 ```
 
 #### Parameters
 
 `tokenizer` [Tokenizer`1&](./rustic.text.tokenizer-1&.md)<br>
 
+`builder` StrBuilder&<br>
+
 #### Returns
 
 [Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
 
-### **NextHoleEnd(Tokenizer`1&)**
+### **FinalTextEnd(Tokenizer`1&, StrBuilder&)**
 
 ```csharp
-bool NextHoleEnd(Tokenizer`1& tokenizer)
+void FinalTextEnd(Tokenizer`1& tokenizer, StrBuilder& builder)
 ```
 
 #### Parameters
 
 `tokenizer` [Tokenizer`1&](./rustic.text.tokenizer-1&.md)<br>
 
-#### Returns
-
-[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
-
-### **NextTextStart(Tokenizer`1&)**
-
-```csharp
-bool NextTextStart(Tokenizer`1& tokenizer)
-```
-
-#### Parameters
-
-`tokenizer` [Tokenizer`1&](./rustic.text.tokenizer-1&.md)<br>
-
-#### Returns
-
-[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+`builder` StrBuilder&<br>
 
 ### **TryGetValue(ReadOnlySpan`1&, ReadOnlySpan`1&)**
 
@@ -152,6 +160,48 @@ bool TryGetValue(ReadOnlySpan`1& key, ReadOnlySpan`1& value)
 `key` [ReadOnlySpan`1&](https://docs.microsoft.com/en-us/dotnet/api/system.readonlyspan-1&)<br>
 
 `value` [ReadOnlySpan`1&](https://docs.microsoft.com/en-us/dotnet/api/system.readonlyspan-1&)<br>
+
+#### Returns
+
+[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+
+### **&lt;NextTextEnd&gt;g__determineHoleEnd|15_0(Char)**
+
+```csharp
+bool <NextTextEnd>g__determineHoleEnd|15_0(char c)
+```
+
+#### Parameters
+
+`c` [Char](https://docs.microsoft.com/en-us/dotnet/api/system.char)<br>
+
+#### Returns
+
+[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+
+### **&lt;NextTextStart&gt;g__determineHoleEnd|16_0(Char)**
+
+```csharp
+bool <NextTextStart>g__determineHoleEnd|16_0(char c)
+```
+
+#### Parameters
+
+`c` [Char](https://docs.microsoft.com/en-us/dotnet/api/system.char)<br>
+
+#### Returns
+
+[Boolean](https://docs.microsoft.com/en-us/dotnet/api/system.boolean)<br>
+
+### **&lt;FinalTextEnd&gt;g__noop|17_0(Char)**
+
+```csharp
+bool <FinalTextEnd>g__noop|17_0(char _)
+```
+
+#### Parameters
+
+`_` [Char](https://docs.microsoft.com/en-us/dotnet/api/system.char)<br>
 
 #### Returns
 

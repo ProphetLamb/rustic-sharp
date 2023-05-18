@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 
 using Rustic;
-using Rustic.Memory.Common;
+using Rustic.Memory;
 
 #pragma warning disable IDE0130
 namespace System;
@@ -10,8 +10,7 @@ namespace System;
 /// <summary>
 ///     Extensions for <see cref="Span{T}"/>, <see cref="ReadOnlySpan{T}"/>.
 /// </summary>
-public static class MemoryExtensions
-{
+public static class MemoryExtensions {
 #if !NET5_0_OR_GREATER
 
     /// <summary>
@@ -19,8 +18,7 @@ public static class MemoryExtensions
     /// </summary>
     /// <param name="span">>The <see cref="Span{T}"/> to sort.</param>
     /// <typeparam name="T">The type of the elements of the span.</typeparam>
-    public static void Sort<T>(this Span<T> span)
-    {
+    public static void Sort<T>(this Span<T> span) {
         Sort(span, Comparer<T>.Default);
     }
 
@@ -32,10 +30,8 @@ public static class MemoryExtensions
     /// <typeparam name="T">The type of the elements of the span.</typeparam>
     /// <typeparam name="C">The type of the comparer to use to compare elements.</typeparam>
     public static void Sort<T, C>(this Span<T> span, C comparer)
-        where C : IComparer<T>
-    {
-        if (span.Length > 1)
-        {
+        where C : IComparer<T> {
+        if (span.Length > 1) {
             SpanSortHelper<T>.Sort(span, comparer.Compare);
         }
     }
@@ -46,11 +42,9 @@ public static class MemoryExtensions
     /// <param name="span">The <see cref="Span{T}"/> to sort.</param>
     /// <param name="comparison">The <see cref="Comparison{T}"/> to use when comparing elements.</param>
     /// <typeparam name="T">The type of the elements of the span.</typeparam>
-    public static void Sort<T>(this Span<T> span, Comparison<T> comparison)
-    {
-        comparison.ValidateArgNotNull();
-        if (span.Length > 1)
-        {
+    public static void Sort<T>(this Span<T> span, Comparison<T> comparison) {
+        ThrowHelper.ArgumentNotNull(comparison);
+        if (span.Length > 1) {
             SpanSortHelper<T>.Sort(span, comparison!);
         }
     }
@@ -65,11 +59,9 @@ public static class MemoryExtensions
     /// <param name="output">The output buffer.</param>
     /// <typeparam name="T">The type of the elements of the sets.</typeparam>
     public static void Union<T>(in this ReadOnlySpan<T> set, in ReadOnlySpan<T> other, in Span<T> output)
-        where T : IComparable<T>
-    {
+        where T : IComparable<T> {
         int outI = 0, leftI = 0, rightI = 0;
-        while ((leftI < set.Length) & (rightI < other.Length))
-        {
+        while ((leftI < set.Length) & (rightI < other.Length)) {
             var v1 = set[leftI];
             var v2 = other[rightI];
             output[outI++] = v1.CompareTo(v2) <= 0 ? v1 : v2;
@@ -88,11 +80,9 @@ public static class MemoryExtensions
     /// <typeparam name="T">The type of the elements of the sets.</typeparam>
     /// <typeparam name="C">The type of the comparer.</typeparam>
     public static void Union<T, C>(in this ReadOnlySpan<T> set, in ReadOnlySpan<T> other, in Span<T> output, in C comparer)
-        where C : IComparer<T>
-    {
+        where C : IComparer<T> {
         int outI = 0, leftI = 0, rightI = 0;
-        while ((leftI < set.Length) & (rightI < other.Length))
-        {
+        while ((leftI < set.Length) & (rightI < other.Length)) {
             var v1 = set[leftI];
             var v2 = other[rightI];
             output[outI++] = comparer.Compare(v1, v2) <= 0 ? v1 : v2;

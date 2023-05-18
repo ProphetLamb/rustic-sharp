@@ -6,15 +6,14 @@ using System.Runtime.CompilerServices;
 namespace Rustic.Memory;
 
 /// <summary>Represents a collection of bits with a list-like interface. Resorts to <see cref="ArrayPool{T}.Shared"/> when growing.</summary>
-public ref struct BitVec
-{
+public ref struct BitVec {
     private int[]? _returnToPool;
     private BitSet _raw;
     private int _pos;
 
     /// <summary>Initializes a new <see cref="BitVec"/> with the specified <paramref name="initialStorage"/>.</summary>
-    public BitVec(Span<int> initialStorage)
-    {
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public BitVec(Span<int> initialStorage) {
         _returnToPool = null;
         _raw = new(initialStorage);
         _pos = 0;
@@ -22,8 +21,8 @@ public ref struct BitVec
 
     /// <summary>Initializes a new <see cref="BitVec"/> able to contain the specified number of bits.</summary>
     /// <param name="capacity">The lower limit to the number of bits the collection can contain.</param>
-    public BitVec(int capacity)
-    {
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public BitVec(int capacity) {
         var cap = Arithmetic.IntsToContainBits(capacity);
         var temp = ArrayPool<int>.Shared.Rent(cap);
         _returnToPool = temp;
@@ -32,38 +31,37 @@ public ref struct BitVec
     }
 
     /// <summary>The number of bits in the collection.</summary>
-    public int Count
-    {
+    public int Count {
         get => _pos;
-        set
-        {
-            value.ValidateArgRange(value >= 0);
-            value.ValidateArgRange(value <= Capacity);
+        set {
+            ThrowHelper.ArgumentInRange(value, value >= 0);
+            ThrowHelper.ArgumentInRange(value, value <= Capacity);
             _pos = Count;
         }
     }
 
     /// <summary>The upper limit to the amount of bits the collection can hold without reallocating.</summary>
-    public int Capacity => _raw.RawStorage.Length << Arithmetic.IntWidth;
+    public int Capacity {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _raw.RawStorage.Length << Arithmetic.IntShift;
+    }
 
     /// <summary>Gets or sets the value of the bit at the specified index.</summary>
-    public bool this[int index]
-    {
-        get
-        {
-            index.ValidateArgRange(index >= 0 && index < Count);
+    public bool this[int index] {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get {
+            ThrowHelper.ArgumentInRange(index, index >= 0 && index < Count);
             return _raw.IsMarked(index);
         }
-        set
-        {
-            index.ValidateArgRange(index >= 0 && index < Count);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        set {
+            ThrowHelper.ArgumentInRange(index, index >= 0 && index < Count);
             _raw.Set(index, Convert.ToInt32(value));
         }
     }
 
     /// <summary>Add the value to the end of the collection.</summary>
-    public void Add(bool value)
-    {
+    public void Add(bool value) {
         Reserve(1);
         var pos = _pos;
         _raw.Set(pos, Convert.ToInt32(value));
@@ -72,17 +70,14 @@ public ref struct BitVec
 
     /// <summary>Ensures that the collection can hold at least <paramref name="additionalCapacityBeyondPos"/> bits.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Reserve(int additionalCapacityBeyondPos)
-    {
-        if (Count > Capacity - additionalCapacityBeyondPos)
-        {
+    public void Reserve(int additionalCapacityBeyondPos) {
+        if (Count > Capacity - additionalCapacityBeyondPos) {
             Grow(additionalCapacityBeyondPos);
         }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void Grow(int additionalCapacityBeyondPos)
-    {
+    private void Grow(int additionalCapacityBeyondPos) {
         Debug.Assert(Count > Capacity - additionalCapacityBeyondPos);
 
         var req = (Capacity * 2).Max(Count + additionalCapacityBeyondPos);
@@ -95,19 +90,16 @@ public ref struct BitVec
     }
 
     /// <inheritdoc cref="IDisposable.Dispose"/>
-    public void Dispose()
-    {
+    public void Dispose() {
         ReturnToPool();
         this = default;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ReturnToPool()
-    {
+    private void ReturnToPool() {
         var temp = _returnToPool;
         _returnToPool = null;
-        if (temp is not null)
-        {
+        if (temp is not null) {
             ArrayPool<int>.Shared.Return(temp);
         }
     }

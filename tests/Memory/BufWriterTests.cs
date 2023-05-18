@@ -12,19 +12,16 @@ using Rustic.Memory;
 namespace Rustic.Memory.Tests;
 
 [TestFixture]
-public class BufWriterTests
-{
+public class BufWriterTests {
     [Test]
-    public void TestAdd()
-    {
+    public void TestAdd() {
         List<User> reference = new();
         BufWriter<User> list = new();
 
         list.Add(null);
         reference.Add(null);
 
-        for (var i = 0; i < 123; i++)
-        {
+        for (var i = 0; i < 123; i++) {
             list.Add(SampleData.Users[i]);
             reference.Add(SampleData.Users[i]);
         }
@@ -33,14 +30,12 @@ public class BufWriterTests
     }
 
     [Test]
-    public void TestAddRange()
-    {
+    public void TestAddRange() {
         List<User> reference = new();
         BufWriter<User> list = new();
 
         int increment;
-        for (var i = 0; i < 400; i += increment)
-        {
+        for (var i = 0; i < 400; i += increment) {
             increment = Randomizer.Seed.Next(2, 10);
 
             var users = SampleData.Users.AsSpan(i, increment).ToArray();
@@ -52,8 +47,7 @@ public class BufWriterTests
     }
 
     [Test]
-    public void TestClear()
-    {
+    public void TestClear() {
         List<User> reference = new();
         BufWriter<User> list = new();
 
@@ -77,16 +71,14 @@ public class BufWriterTests
     }
 
     [Test]
-    public void TestIndexOf()
-    {
+    public void TestIndexOf() {
         List<User> reference = new();
         BufWriter<User> list = new();
 
         list.AddRange(SampleData.Users);
         reference.AddRange(SampleData.Users);
 
-        for (var i = 0; i < 100; i++)
-        {
+        for (var i = 0; i < 100; i++) {
             var user = Randomizer.Seed.ChooseFrom(SampleData.Users);
             list.IndexOf(user).Should().Be(reference.IndexOf(user));
         }
@@ -95,13 +87,11 @@ public class BufWriterTests
     }
 
     [Test]
-    public void TestInsert()
-    {
+    public void TestInsert() {
         List<User> reference = new();
         BufWriter<User> list = new();
 
-        for (var i = 0; i < 100; i++)
-        {
+        for (var i = 0; i < 100; i++) {
             var user = Randomizer.Seed.ChooseFrom(SampleData.Users);
             var index = Randomizer.Seed.Next(0, reference.Count);
             reference.Insert(index, user);
@@ -113,14 +103,12 @@ public class BufWriterTests
     }
 
     [Test]
-    public void TestInsertRange()
-    {
+    public void TestInsertRange() {
         List<User> reference = new();
         BufWriter<User> list = new();
 
         int increment;
-        for (var i = 0; i < 400; i += increment)
-        {
+        for (var i = 0; i < 400; i += increment) {
             increment = Randomizer.Seed.Next(2, 10);
 
             var users = SampleData.Users.AsSpan(i, increment).ToArray();
@@ -136,16 +124,14 @@ public class BufWriterTests
     }
 
     [Test]
-    public void TestLastIndexOf()
-    {
+    public void TestLastIndexOf() {
         List<User> reference = new();
         BufWriter<User> list = new();
 
         list.AddRange(SampleData.Users);
         reference.AddRange(SampleData.Users);
 
-        for (var i = 0; i < 100; i++)
-        {
+        for (var i = 0; i < 100; i++) {
             var user = Randomizer.Seed.ChooseFrom(SampleData.Users);
             list.LastIndexOf(user).Should().Be(reference.LastIndexOf(user));
         }
@@ -154,16 +140,14 @@ public class BufWriterTests
     }
 
     [Test]
-    public void TestRemove()
-    {
+    public void TestRemove() {
         List<User> reference = new();
         BufWriter<User> list = new();
 
         list.AddRange(SampleData.Users);
         reference.AddRange(SampleData.Users);
 
-        for (var i = 0; i < 100; i++)
-        {
+        for (var i = 0; i < 100; i++) {
             var user = Randomizer.Seed.ChooseFrom(SampleData.Users);
             list.Remove(user).Should().Be(reference.Remove(user));
         }
@@ -176,16 +160,14 @@ public class BufWriterTests
     }
 
     [Test]
-    public void TestRemoveAt()
-    {
+    public void TestRemoveAt() {
         List<User> reference = new();
         BufWriter<User> list = new();
 
         list.AddRange(SampleData.Users);
         reference.AddRange(SampleData.Users);
 
-        for (var i = 0; i < 100; i++)
-        {
+        for (var i = 0; i < 100; i++) {
             var index = Randomizer.Seed.Next(0, list.Count);
             list.RemoveAt(index);
             reference.RemoveAt(index);
@@ -198,8 +180,7 @@ public class BufWriterTests
     }
 
     [Test]
-    public void TestRemoveRange()
-    {
+    public void TestRemoveRange() {
         List<User> reference = new();
         BufWriter<User> list = new();
 
@@ -207,8 +188,7 @@ public class BufWriterTests
         reference.AddRange(SampleData.Users);
 
         int increment;
-        for (var i = 0; i < 400; i += increment)
-        {
+        for (var i = 0; i < 400; i += increment) {
             increment = Randomizer.Seed.Next(2, 10);
 
             var index = Randomizer.Seed.Next(0, list.Count - increment);
@@ -230,8 +210,7 @@ public class BufWriterTests
     }
 
     [Test]
-    public void TestReverse()
-    {
+    public void TestReverse() {
         List<User> reference = new();
         BufWriter<User> list = new();
 
@@ -250,20 +229,17 @@ public class BufWriterTests
     }
 
     [Test]
-    public void TestSort()
-    {
+    public void TestSort() {
         new BufWriter<User>().Sort();
         BufWriter<User> list = new();
-        foreach (var user in SampleData.Users)
-        {
+        foreach (var user in SampleData.Users) {
             list.Add(user);
         }
         Assert.Throws<InvalidOperationException>(() => list.Sort());
     }
 
     [Test]
-    public void TestSortComparer()
-    {
+    public void TestSortComparer() {
         List<User> reference = new();
         BufWriter<User> list = new();
 
@@ -287,8 +263,7 @@ public class BufWriterTests
     }
 
     [Test]
-    public void TestSortComparison()
-    {
+    public void TestSortComparison() {
         List<User> reference = new();
         BufWriter<User> list = new();
 

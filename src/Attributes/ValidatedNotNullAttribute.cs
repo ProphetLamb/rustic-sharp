@@ -8,6 +8,5 @@ namespace Microsoft.VisualStudio.Validation;
 /// Indicates to Code Analysis that a method validates a particular parameter.
 /// </summary>
 [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = false)]
-public sealed class ValidatedNotNullAttribute : Attribute
-{
+public sealed class ValidatedNotNullAttribute : Attribute {
 }
