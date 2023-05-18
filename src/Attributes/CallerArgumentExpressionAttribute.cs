@@ -1,6 +1,7 @@
 #if !(NET5_0_OR_GREATER || NETCOREAPP3_0_OR_GREATER)
 
 #pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace
 namespace System.Runtime.CompilerServices;
 #pragma warning restore IDE0130
 

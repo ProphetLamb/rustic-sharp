@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace
 namespace System.Diagnostics.CodeAnalysis;
 #pragma warning restore IDE0130
 

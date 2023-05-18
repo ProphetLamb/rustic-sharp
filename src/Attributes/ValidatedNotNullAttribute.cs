@@ -1,6 +1,7 @@
 using System;
 
 #pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace
 namespace Microsoft.VisualStudio.Validation;
 #pragma warning restore IDE0130
 
