@@ -11,7 +11,7 @@
     <PropertyGroup Label="Nuget Package Info">
         <Authors>ProphetLamb</Authors>
         <Owners>ProhetLamb</Owners>
-				<Version>0.6.3</Version>
+        <Version>0.6.4</Version>
         <AssemblyVersion>$(Version)</AssemblyVersion>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
