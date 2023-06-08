@@ -1,3 +1,7 @@
+# Version 0.6.4
+
+- Attributes: Make IsExternalInit public
+
 # Version 0.6.3
 
 - Native: Add PEHeader
