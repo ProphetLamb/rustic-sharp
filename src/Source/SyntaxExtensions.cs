@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
@@ -56,8 +56,8 @@ public static class SyntaxExtensions {
     /// <param name="node">The node</param>
     /// <typeparam name="P">The type of parents allowed in the trace. Throws if the type of any parent doesnt match.</typeparam>
     /// <exception cref="InvalidOperationException">The type of a node is not assignable to <typeparamref name="P"/>.</exception>
-    public static (NamespaceDeclarationSyntax, ImmutableArray<P>) GetHierarchy<P>(this CSharpSyntaxNode node)
-        where P : MemberDeclarationSyntax {
+    public static (BaseNamespaceDeclarationSyntax?, ImmutableArray<P>) GetHierarchy<P>(this CSharpSyntaxNode node)
+        where P : SyntaxNode {
         ImmutableArray<P>.Builder? nesting = ImmutableArray.CreateBuilder<P>(16);
         SyntaxNode? p = node;
         while ((p = p?.Parent) is not null) {
@@ -65,14 +65,14 @@ public static class SyntaxExtensions {
             case P member:
                 nesting.Add(member);
                 break;
-            case NamespaceDeclarationSyntax ns:
+            case BaseNamespaceDeclarationSyntax ns:
                 return (ns, nesting.ToImmutable());
             default:
                 throw new InvalidOperationException($"{p.GetType().Name} is not allowed in the hierarchy.");
             }
         }
 
-        throw new InvalidOperationException("No namespace declaration found.");
+        return (default, nesting.ToImmutable());
     }
 
     /// <summary>Returns the type name of the node inside the model.</summary>
@@ -129,5 +129,18 @@ public static class SyntaxExtensions {
                 }
             }
         }
+    }
+    /// <summary>Returns the first <see cref="SyntaxToken"/> of the specified kind.</summary>
+    /// <param name="tokens">The tokens</param>
+    /// <param name="kind">The kind of the desired token</param>
+    /// <returns>If the token of the kind exists, the first <see cref="SyntaxToken"/> of the specified kind; otherwise null</returns>
+    public static SyntaxToken? FirstOrDefault(this SyntaxTokenList tokens, SyntaxKind kind) {
+        foreach (SyntaxToken t in tokens) {
+            if (t.IsKind(kind)) {
+                return t;
+            }
+        }
+
+        return default;
     }
 }

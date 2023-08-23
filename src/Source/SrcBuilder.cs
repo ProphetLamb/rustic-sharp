@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -461,6 +461,28 @@ public class SrcBuilder {
             static (c, s) => c.Builder.AppendIndent().Append(s),
             static (b) => b.Append(',').NL(),
             static (b) => b.Append(',').NL().Outdent().AppendLine("};")
+        );
+    }
+
+    /// <summary>Adds a attribute list. Returns a fluent builder used to defined the attribute elements.</summary>
+    /// <param name="attributeTarget">The attribute target</param>
+    /// <example>[attributeTarget: Attribute1, Attribute2("Parameter")]</example>
+    public SrcColl AttrList(string? attributeTarget = null)
+    {
+        AppendIndent();
+        return new SrcColl(
+            this,
+            b =>
+            {
+                b.Append('[');
+                if (!string.IsNullOrEmpty(attributeTarget))
+                {
+                    b.Append(attributeTarget).Append(": ");
+                }
+            },
+            static (c, s) => c.Builder.Append(s),
+            static b => b.Append(", "),
+            static b => b.Append(']')
         );
     }
 
